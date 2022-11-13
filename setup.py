@@ -9,5 +9,5 @@ setup(
     author='Xavier Arnaus',
     author_email='xavi@arnaus.net',
     url='https://github.com/XaviArnaus/python-bundle',
-    packages=['python-bundle']
+    packages=['bundle']
 )
