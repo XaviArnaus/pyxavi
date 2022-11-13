@@ -1,4 +1,4 @@
-# Python Bundles
+# Python Bundle
 Simple set of packages to be used in Python apps
 
 # Disclaimer
@@ -10,7 +10,7 @@ Suggestions are welcome :)
 In your own Python project,
 1. Open the `requirements.txt` file and add (update with the preferred tag, check the [CHANGELOG](CHANGELOG.md)):
 ```
-git+https://github.com/XaviArnaus/python-bundle@v0.0.1
+git+https://github.com/XaviArnaus/python-bundle@v0.0.4
 ```
 2. Save, close and execute:
 ```
