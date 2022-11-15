@@ -2,10 +2,12 @@ from .config import Config
 from .logger import Logger
 from .storage import Storage
 from .debugger import dd
+from .downloader import download_media_from_url
 
 __all__ = [
     "Config",
     "Logger",
-    "Storage"
-    "dd"
+    "Storage",
+    "dd",
+    "download_media_from_url"
 ]

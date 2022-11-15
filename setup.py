@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='Python Bundle',
-    version='0.0.4',
+    version='0.0.5',
     description='Simple Python utilities for small apps',
     author='Xavier Arnaus',
     author_email='xavi@arnaus.net',

@@ -10,7 +10,7 @@ Suggestions are welcome :)
 In your own Python project,
 1. Open the `requirements.txt` file and add (update with the preferred tag, check the [CHANGELOG](CHANGELOG.md)):
 ```
-git+https://github.com/XaviArnaus/python-bundle@v0.0.4
+git+https://github.com/XaviArnaus/python-bundle@v0.0.5
 ```
 2. Save, close and execute:
 ```
