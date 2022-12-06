@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "bundle"
+name = "bundle_media"
 version = "0.1.0"
-description = "Set of simple utilities to assist on simple Python projects"
+description = "Set of media utilities to assist on simple Python projects"
 authors = ["Xavier Arnaus <xavi@arnaus.net>"]
 
 [tool.poetry.dependencies]

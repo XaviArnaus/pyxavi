@@ -28,9 +28,35 @@ html5lib = ["html5lib"]
 lxml = ["lxml"]
 
 [[package]]
-name = "bundle"
+name = "bundle-basic"
 version = "0.1.0"
-description = "Set of simple utilities to assist on simple Python projects"
+description = "Set of basic utilities to assist on simple Python projects"
+category = "main"
+optional = false
+python-versions = "^3.9"
+develop = true
+
+[package.source]
+type = "directory"
+url = "src/bundle_basic"
+
+[[package]]
+name = "bundle-debug"
+version = "0.1.0"
+description = "Set of debugging utilities to assist on simple Python projects"
+category = "main"
+optional = false
+python-versions = "^3.9"
+develop = true
+
+[package.source]
+type = "directory"
+url = "src/bundle_debug"
+
+[[package]]
+name = "bundle-media"
+version = "0.1.0"
+description = "Set of media utilities to assist on simple Python projects"
 category = "main"
 optional = false
 python-versions = "^3.9"
@@ -41,7 +67,7 @@ beautifulsoup4 = "^4.11"
 
 [package.source]
 type = "directory"
-url = "src/bundle"
+url = "src/bundle_media"
 
 [[package]]
 name = "colorama"
@@ -225,7 +251,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "a829c5fd8cfbbf3388f615890f29032020d6835ca8acde937ddd2464d0e79e9d"
+content-hash = "50305f52ebec0470723aff70c1154b012e8ab9938571777c058e2dca8a6e2f3c"
 
 [metadata.files]
 attrs = [
@@ -236,7 +262,9 @@ beautifulsoup4 = [
     {file = "beautifulsoup4-4.11.1-py3-none-any.whl", hash = "sha256:58d5c3d29f5a36ffeb94f02f0d786cd53014cf9b3b3951d42e0080d8a9498d30"},
     {file = "beautifulsoup4-4.11.1.tar.gz", hash = "sha256:ad9aa55b65ef2808eb405f46cf74df7fcb7044d5cbc26487f96eb2ef2e436693"},
 ]
-bundle = []
+bundle-basic = []
+bundle-debug = []
+bundle-media = []
 colorama = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
