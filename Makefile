@@ -25,6 +25,10 @@ flake8:
 	# Full linter run.
 	$(POETRY) run flake8 --max-line-length=96 .
 
+.PHONY: format
+format:
+	make flake8; make yapf
+
 .PHONY: test
 test:
 	$(POETRY) run pytest

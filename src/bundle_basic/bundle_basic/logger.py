@@ -28,7 +28,7 @@ class Logger:
             handlers=handlers
         )
         # Define your own logger name
-        self._logger = logging.getLogger(config.get("logger.name", "mastodon_publisher_bot"))
+        self._logger = logging.getLogger(config.get("logger.name", "custom_logger"))
 
     def getLogger(self) -> logging:
         return self._logger

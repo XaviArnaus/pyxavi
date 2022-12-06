@@ -26,6 +26,11 @@ force_grid_wrap = 3
 minversion = "6.2"
 addopts = "-ra -q -vvv"
 markers = ["slow"]
+pythonpath = [
+  "src/bundle_basic",
+  "src/bundle_media",
+  "src/bundle_debug"
+]
 
 [tool.yapf]
 column_limit = 96
