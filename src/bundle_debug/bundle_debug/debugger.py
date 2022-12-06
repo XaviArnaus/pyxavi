@@ -14,4 +14,3 @@ def dd(var, prefix=''):
                 print(prefix, i, ': (', var[i].__class__.__name__, ') ', var[i], sep='')
             else:
                 print(prefix, '(', i.__class__.__name__, ') ', i, sep='')
-  

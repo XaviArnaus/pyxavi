@@ -2,16 +2,21 @@ from .config import Config
 import logging
 import sys
 
+
 class Logger:
+
     def __init__(self, config: Config) -> None:
-        log_format = (config.get("logger.format","[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s"))
+        log_format = (
+            config.get(
+                "logger.format", "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s"
+            )
+        )
 
         handlers = []
         if config.get("logger.to_file", False):
             handlers.append(logging.FileHandler(config.get("logger.filename", 'debug.log')))
         if config.get("logger.to_stdout", False):
             handlers.append(logging.StreamHandler(sys.stdout))
-
 
         # Define basic configuration
         logging.basicConfig(
