@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "python-bundle"
+name = "python_bundle"
 version = "0.1.0"
 description = "A collection of packages to abstract complexity and funcionality"
 authors = ["Xavier Arnaus <xavi@arnaus.net>"]
