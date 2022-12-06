@@ -7,10 +7,6 @@ class Media:
         soup = BeautifulSoup(text, 'html.parser')
         img = soup.select('img')
         if img:
-            return [
-                {
-                    "url": i['src'], "alt_text": i['alt'] if "alt" in i else None
-                } for i in img if i['src']
-            ]
+            return [{"url": i['src'], "alt_text": i.get('alt', None)} for i in img if i['src']]
         else:
             return None
