@@ -18,6 +18,14 @@ def test_initialize_config():
 
 @patch("yaml.safe_load", new=patched_yaml_safe_load)
 @patch("builtins.open", mock_open(read_data=""))
+def test_get_all():
+    config = Config()
+
+    assert config.get_all() == CONFIG
+
+
+@patch("yaml.safe_load", new=patched_yaml_safe_load)
+@patch("builtins.open", mock_open(read_data=""))
 def test_get_first_level():
     config = Config()
 
