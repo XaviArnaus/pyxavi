@@ -25,11 +25,6 @@ flake8:
 	# Full linter run.
 	$(POETRY) run flake8 --max-line-length=96 .
 
-.PHONY: pyright
-pyright:
-	$(POETRY) run pyright --lib .
-
-
 .PHONY: test
 test:
 	$(POETRY) run pytest
