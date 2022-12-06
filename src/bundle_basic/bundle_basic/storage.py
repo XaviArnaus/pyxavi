@@ -39,21 +39,30 @@ class Storage:
     def get_all(self) -> dict:
         return self._content
 
-    def set(self, param_name: str, value: any = None):
+    def set(self, param_name: str, value: any = None, dictionary=None):
         if param_name is None:
             raise RuntimeError("Params must have a name")
 
         if param_name.find(".") > 0:
-            local_content = self._content
-            for item in param_name.split("."):
-                if local_content and item in local_content:
-                    local_content = local_content[item]
+            pieces = param_name.split(".")
+            if (not dictionary and pieces[0] not in self._content) or \
+                    (dictionary and pieces[0] not in dictionary):
+                raise RuntimeError(
+                    "Storage path [{}] unknown in [{}]".format(
+                        param_name, dictionary if dictionary else self._content
+                    )
+                )
 
-            local_content = value
+            self.set(
+                ".".join(pieces[1:]),
+                value,
+                self._content[pieces[0]] if not dictionary else dictionary[pieces[0]]
+            )
         else:
-            if not self._content:
-                self._content = {}
-            self._content[param_name] = value
+            if dictionary:
+                dictionary[param_name] = value
+            else:
+                self._content[param_name] = value
 
     def get_hashed(self, param_name: str = "", default_value: any = None) -> any:
         # if param_name.find(".") > 0:
