@@ -21,10 +21,9 @@ flake8:
 	$(POETRY) run flake8 . \
 		--select=E9,F63,F7,F82 \
 		--show-source \
-		--statistics \
-		--extend-exclude=$(PY_ENV_NAMES)
+		--statistics
 	# Full linter run.
-	$(POETRY) run flake8 .
+	$(POETRY) run flake8 --max-line-length=96 .
 
 .PHONY: pyright
 pyright:

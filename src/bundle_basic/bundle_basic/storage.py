@@ -34,13 +34,13 @@ class Storage:
 
         return self._content[param_name] \
             if self._content and param_name in self._content \
-                else default_value
+            else default_value
 
     def get_all(self) -> dict:
         return self._content
 
     def set(self, param_name: str, value: any = None):
-        if param_name == None:
+        if param_name is None:
             raise RuntimeError("Params must have a name")
 
         if param_name.find(".") > 0:

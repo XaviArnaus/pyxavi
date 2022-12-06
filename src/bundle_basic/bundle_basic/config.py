@@ -29,7 +29,7 @@ class Config:
         return self._config
 
     def set(self, param_name: str, value: any = None):
-        if param_name == None:
+        if param_name is None:
             raise RuntimeError("Params must have a name")
 
         self._config[param_name] = value
