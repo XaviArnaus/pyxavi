@@ -1,12 +1,5 @@
-# v0.0.6
+# v0.1.0
 
-- Added Downloader
-
-# v0.0.5
-
-- Added Downloader
-
-# v0.0.4
-
-- Created package
-- Added Config, Logger, Storage and Debugger
+- Adding Package structure, including new `toml` file
+o Adding Makefile to easily run dev/test scripts
+x Adding Python checks

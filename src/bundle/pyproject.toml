@@ -1,0 +1,13 @@
+[tool.poetry]
+name = "bundle"
+version = "0.1.0"
+description = "Set of simple utilities to assist on simple Python projects"
+authors = ["Xavier Arnaus <xavi@arnaus.net>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+beautifulsoup4 = "^4.11"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
