@@ -90,7 +90,7 @@ jobs:
       - name: Create Coverage Reports
         run: |
           poetry run pytest --junitxml=pyxavi.xml --cov-report=term-missing \
-          --cov=pyxavi tests/normalizer/ | tee pyxavi.txt
+          --cov=pyxavi tests/ | tee pyxavi.txt
 
       - name: Create Coverage Comment
         if: ${{ github.event_name == 'pull_request' }}
