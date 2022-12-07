@@ -1,5 +1,5 @@
 from unittest.mock import patch, mock_open
-from pybundlebasic.config import Config
+from pyxavi.config import Config
 from unittest import TestCase
 
 CONFIG = {"foo": {"bar": "hola", "foo2": {"bar2": "adios"}}, "que": "tal"}

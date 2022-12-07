@@ -1,4 +1,4 @@
-from pybundlemedia.media import Media
+from pyxavi.media import Media
 
 FIXTURES = [
     ["<a><p src=\"image_1.png\">whatever</p>", None, None],

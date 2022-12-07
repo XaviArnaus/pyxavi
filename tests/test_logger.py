@@ -1,6 +1,6 @@
 from unittest.mock import patch
-from pybundlebasic.config import Config
-from pybundlebasic.logger import Logger
+from pyxavi.config import Config
+from pyxavi.logger import Logger
 import logging
 
 CONFIG = {
@@ -21,8 +21,8 @@ def patched_config_get(self, param: str, default) -> str:
     return CONFIG[param]
 
 
-@patch("bundle_basic.config.Config.__init__", new=patched_config_init)
-@patch("bundle_basic.config.Config.get", new=patched_config_get)
+@patch("pyxavi.config.Config.__init__", new=patched_config_init)
+@patch("pyxavi.config.Config.get", new=patched_config_get)
 def test_initialize_logger():
 
     config = Config()

@@ -1,5 +1,0 @@
-from .debugger import dd
-
-__all__ = [
-    "dd"
-]

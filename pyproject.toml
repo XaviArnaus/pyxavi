@@ -1,14 +1,13 @@
 [tool.poetry]
-name = "python_bundle"
+name = "pyxavi"
 version = "0.1.0"
-description = "A collection of packages to abstract complexity and funcionality"
+description = "Set of utilities to assist on simple Python projects"
 authors = ["Xavier Arnaus <xavi@arnaus.net>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pybundlebasic = { path = "src/pybundlebasic", develop = true }
-pybundlemedia = { path = "src/pybundlemedia", develop = true }
-pybundledebug = { path = "src/pybundledebug", develop = true }
+pyyaml = "^6.0"
+beautifulsoup4 = "^4.11"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0"
@@ -27,9 +26,7 @@ minversion = "6.2"
 addopts = "-ra -q -vvv"
 markers = ["slow"]
 pythonpath = [
-  "src/bundle_basic",
-  "src/bundle_media",
-  "src/bundle_debug"
+  "pyxavi"
 ]
 
 [tool.yapf]
