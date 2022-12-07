@@ -1,6 +1,6 @@
 from unittest.mock import patch
-from bundle_basic.config import Config
-from bundle_basic.logger import Logger
+from pybundlebasic.config import Config
+from pybundlebasic.logger import Logger
 import logging
 
 CONFIG = {

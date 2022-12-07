@@ -1,4 +1,4 @@
-from bundle_media.media import Media
+from pybundlemedia.media import Media
 
 FIXTURES = [
     ["<a><p src=\"image_1.png\">whatever</p>", None, None],

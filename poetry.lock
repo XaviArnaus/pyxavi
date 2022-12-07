@@ -28,51 +28,6 @@ html5lib = ["html5lib"]
 lxml = ["lxml"]
 
 [[package]]
-name = "bundle-basic"
-version = "0.1.0"
-description = "Set of basic utilities to assist on simple Python projects"
-category = "main"
-optional = false
-python-versions = "^3.9"
-develop = true
-
-[package.dependencies]
-pyyaml = "^6.0"
-
-[package.source]
-type = "directory"
-url = "src/bundle_basic"
-
-[[package]]
-name = "bundle-debug"
-version = "0.1.0"
-description = "Set of debugging utilities to assist on simple Python projects"
-category = "main"
-optional = false
-python-versions = "^3.9"
-develop = true
-
-[package.source]
-type = "directory"
-url = "src/bundle_debug"
-
-[[package]]
-name = "bundle-media"
-version = "0.1.0"
-description = "Set of media utilities to assist on simple Python projects"
-category = "main"
-optional = false
-python-versions = "^3.9"
-develop = true
-
-[package.dependencies]
-beautifulsoup4 = "^4.11"
-
-[package.source]
-type = "directory"
-url = "src/bundle_media"
-
-[[package]]
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
@@ -156,6 +111,51 @@ python-versions = ">=3.6"
 [package.extras]
 dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
+
+[[package]]
+name = "pybundlebasic"
+version = "0.1.0"
+description = "Set of basic utilities to assist on simple Python projects"
+category = "main"
+optional = false
+python-versions = "^3.9"
+develop = true
+
+[package.dependencies]
+pyyaml = "^6.0"
+
+[package.source]
+type = "directory"
+url = "src/pybundlebasic"
+
+[[package]]
+name = "pybundledebug"
+version = "0.1.0"
+description = "Set of debugging utilities to assist on simple Python projects"
+category = "main"
+optional = false
+python-versions = "^3.9"
+develop = true
+
+[package.source]
+type = "directory"
+url = "src/pybundledebug"
+
+[[package]]
+name = "pybundlemedia"
+version = "0.1.0"
+description = "Set of media utilities to assist on simple Python projects"
+category = "main"
+optional = false
+python-versions = "^3.9"
+develop = true
+
+[package.dependencies]
+beautifulsoup4 = "^4.11"
+
+[package.source]
+type = "directory"
+url = "src/pybundlemedia"
 
 [[package]]
 name = "pycodestyle"
@@ -262,7 +262,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "50305f52ebec0470723aff70c1154b012e8ab9938571777c058e2dca8a6e2f3c"
+content-hash = "69ea5cc24050028a332731460292039a2d7993c00d029a5292ff1557bd9ba25c"
 
 [metadata.files]
 attrs = [
@@ -273,9 +273,6 @@ beautifulsoup4 = [
     {file = "beautifulsoup4-4.11.1-py3-none-any.whl", hash = "sha256:58d5c3d29f5a36ffeb94f02f0d786cd53014cf9b3b3951d42e0080d8a9498d30"},
     {file = "beautifulsoup4-4.11.1.tar.gz", hash = "sha256:ad9aa55b65ef2808eb405f46cf74df7fcb7044d5cbc26487f96eb2ef2e436693"},
 ]
-bundle-basic = []
-bundle-debug = []
-bundle-media = []
 colorama = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
@@ -356,6 +353,9 @@ pluggy = [
     {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
     {file = "pluggy-1.0.0.tar.gz", hash = "sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159"},
 ]
+pybundlebasic = []
+pybundledebug = []
+pybundlemedia = []
 pycodestyle = [
     {file = "pycodestyle-2.8.0-py2.py3-none-any.whl", hash = "sha256:720f8b39dde8b293825e7ff02c475f3077124006db4f440dcbc9a20b76548a20"},
     {file = "pycodestyle-2.8.0.tar.gz", hash = "sha256:eddd5847ef438ea1c7870ca7eb78a9d47ce0cdb4851a5523949f2601d0cbbe7f"},

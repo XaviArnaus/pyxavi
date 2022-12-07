@@ -1,12 +1,11 @@
 [tool.poetry]
-name = "bundle_media"
+name = "pybundledebug"
 version = "0.1.0"
-description = "Set of media utilities to assist on simple Python projects"
+description = "Set of debugging utilities to assist on simple Python projects"
 authors = ["Xavier Arnaus <xavi@arnaus.net>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-beautifulsoup4 = "^4.11"
 
 [build-system]
 requires = ["poetry-core"]

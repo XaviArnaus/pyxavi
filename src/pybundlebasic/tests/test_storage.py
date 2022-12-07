@@ -1,5 +1,5 @@
 from unittest.mock import patch, mock_open
-from bundle_basic.storage import Storage
+from pybundlebasic.storage import Storage
 from unittest import TestCase
 
 FILE = {

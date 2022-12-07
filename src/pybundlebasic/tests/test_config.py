@@ -1,5 +1,5 @@
 from unittest.mock import patch, mock_open
-from bundle_basic.config import Config
+from pybundlebasic.config import Config
 from unittest import TestCase
 
 CONFIG = {"foo": {"bar": "hola", "foo2": {"bar2": "adios"}}, "que": "tal"}

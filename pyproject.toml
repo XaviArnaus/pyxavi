@@ -6,9 +6,9 @@ authors = ["Xavier Arnaus <xavi@arnaus.net>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-bundle_basic = { path = "src/bundle_basic", develop = true }
-bundle_media = { path = "src/bundle_media", develop = true }
-bundle_debug = { path = "src/bundle_debug", develop = true }
+pybundlebasic = { path = "src/pybundlebasic", develop = true }
+pybundlemedia = { path = "src/pybundlemedia", develop = true }
+pybundledebug = { path = "src/pybundledebug", develop = true }
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0"
