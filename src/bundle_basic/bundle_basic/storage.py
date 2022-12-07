@@ -5,16 +5,28 @@ import os
 
 
 class Storage:
+    """Class to handle file-based simple storage
+
+    Basic load/write, get/set behaviour for key/value
+    file-based storage.
+
+    :Authors:
+        Xavier Arnaus <xavi@arnaus.net>
+
+    """
 
     def __init__(self, filename) -> None:
         self._filename = filename
         self._content = {}
         self.read_file()
 
+    def _load_file_contents(self) -> None:
+        with open(self._filename, 'r') as stream:
+            self._content = yaml.safe_load(stream)
+
     def read_file(self) -> None:
         if os.path.exists(self._filename):
-            with open(self._filename, 'r') as stream:
-                self._content = yaml.safe_load(stream)
+            self._load_file_contents()
         else:
             Path(self._filename).touch()
 

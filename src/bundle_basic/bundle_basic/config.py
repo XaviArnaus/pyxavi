@@ -1,29 +1,34 @@
-import yaml
+from .storage import Storage
+import os
 
 CONFIG_FILENAME = "config.yaml"
 
 
-class Config:
+class Config(Storage):
+    """Class to handle a config file
 
-    def __init__(self) -> None:
-        self._config = {}
-        self.read_file()
+    It inherits from the Storage class but denying all
+    writes. It is a read-only class.
+
+    :Authors:
+        Xavier Arnaus <xavi@arnaus.net>
+
+    """
+
+    def __init__(self, filename: str = CONFIG_FILENAME) -> None:
+        super().__init__(filename=filename)
 
     def read_file(self) -> None:
-        with open(CONFIG_FILENAME, 'r') as stream:
-            self._config = yaml.safe_load(stream)
+        if os.path.exists(self._filename):
+            super()._load_file_contents()
+        else:
+            raise RuntimeError("Config file not found")
 
-    def get(self, param_name: str = "", default_value: any = None) -> any:
-        if param_name.find(".") > 0:
-            local_config = self._config
-            for item in param_name.split("."):
-                if local_config[item]:
-                    local_config = local_config[item]
-                else:
-                    return default_value
-            return local_config
+    def write_file(self) -> None:
+        raise RuntimeError("Config class does not allow writting")
 
-        return self._config[param_name] if self._config[param_name] else default_value
+    def set(self, param_name: str, value: any = None, dictionary=None):
+        raise RuntimeError("Config class does not allow writting")
 
-    def get_all(self) -> dict:
-        return self._config
+    def set_hashed(self, param_name: str, value: any = None):
+        raise RuntimeError("Config class does not allow writting")

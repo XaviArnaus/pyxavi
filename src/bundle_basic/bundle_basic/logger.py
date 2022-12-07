@@ -4,6 +4,22 @@ import sys
 
 
 class Logger:
+    """Class to help on instantiating Logging
+
+    It uses the built-in logging infra, but takes the
+    configuration from the given config object.
+
+    It is meant to be used the first time in the initial
+    executor, then passed through the code.
+
+    The built-in logging system can also be used to pick up
+    an already instantiated logger with this class,
+    making it very versatile.
+
+    :Authors:
+        Xavier Arnaus <xavi@arnaus.net>
+
+    """
 
     def __init__(self, config: Config) -> None:
         log_format = (
