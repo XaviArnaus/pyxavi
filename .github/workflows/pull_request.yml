@@ -89,14 +89,8 @@ jobs:
 
       - name: Create Coverage Reports
         run: |
-          poetry run pytest --junitxml=normalizer.xml --cov-report=term-missing \
-          --cov=src/normalizer tests/normalizer/ | tee normalizer.txt
-
-          poetry run pytest --junitxml=image-id-gen.xml --cov-report=term-missing \
-          --cov=src/image_id_gen tests/image_id_gen/ | tee image-id-gen.txt
-          
-          poetry run pytest --junitxml=verifier.xml --cov-report=term-missing \
-          --cov=src/verifier tests/verifier/ | tee verifier.txt
+          poetry run pytest --junitxml=pyxavi.xml --cov-report=term-missing \
+          --cov=pyxavi tests/ | tee pyxavi.txt
 
       - name: Create Coverage Comment
         if: ${{ github.event_name == 'pull_request' }}
@@ -107,9 +101,7 @@ jobs:
           title: Coverage Report by Package
           badge-title: Coverage
           multiple-files: |
-            Normalizer, normalizer.txt, normalizer.xml
-            Image ID Generation, image-id-gen.txt, image-id-gen.xml
-            Verifier, verifier.txt, verifier.xml
+            PyXavi, pyxavi.txt, pyxavi.xml
 
   unified-coverage-report:
     name: Unified Coverage Report
