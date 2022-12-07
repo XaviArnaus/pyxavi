@@ -21,7 +21,7 @@ class Media:
         else:
             return None
 
-    def download_from_url(url: str, destination_path: str) -> dict:
+    def download_from_url(self, url: str, destination_path: str) -> dict:
         parsed_url = urlparse(url)
 
         result = {
