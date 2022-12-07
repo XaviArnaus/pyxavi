@@ -28,4 +28,4 @@ FIXTURES = [
 def test_parser_detects_img_tag():
     for fixture in FIXTURES:
 
-        assert fixture[2] == Media().get_media_url_from_text(fixture[0])
+        assert fixture[2] == Media().get_image_url_from_text(fixture[0])

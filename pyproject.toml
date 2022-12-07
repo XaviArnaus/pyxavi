@@ -8,6 +8,7 @@ authors = ["Xavier Arnaus <xavi@arnaus.net>"]
 python = "^3.9"
 pyyaml = "^6.0"
 beautifulsoup4 = "^4.11"
+requests =  "^2.28.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0"

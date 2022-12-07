@@ -3,7 +3,6 @@ from .logger import Logger
 from .storage import Storage
 from .debugger import dd
 from .media import Media
-from .downloader import download_media_from_url
 
 __all__ = [
     "Config",
@@ -11,5 +10,4 @@ __all__ = [
     "Storage",
     "dd",
     "Media",
-    "download_media_from_url"
 ]
