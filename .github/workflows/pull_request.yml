@@ -6,7 +6,7 @@ jobs:
   # Autoformatter
   yapf:
     name: Yapf
-    runs-on: [self-hosted, shared-vpc]
+    runs-on: [ubuntu-latest]
     strategy:
       matrix:
         python-version: ["3.9"]
@@ -34,7 +34,7 @@ jobs:
   # Linter
   flake8:
     name: Flake8
-    runs-on: [self-hosted, shared-vpc]
+    runs-on: [ubuntu-latest]
     strategy:
       matrix:
         python-version: ["3.9"]
@@ -65,7 +65,7 @@ jobs:
   # Coverage
   coverage-reports:
     name: Coverage Reports
-    runs-on: [self-hosted, shared-vpc]
+    runs-on: [ubuntu-latest]
     strategy:
       matrix:
         python-version: ["3.9"]
@@ -113,7 +113,7 @@ jobs:
 
   unified-coverage-report:
     name: Unified Coverage Report
-    runs-on: [self-hosted, shared-vpc]
+    runs-on: [ubuntu-latest]
     strategy:
       matrix:
         python-version: ["3.9"]
@@ -157,7 +157,7 @@ jobs:
   # Tests
   tests:
     name: Tests
-    runs-on: [self-hosted, shared-vpc]
+    runs-on: [ubuntu-latest]
     strategy:
       matrix:
         python-version: ["3.9"]
