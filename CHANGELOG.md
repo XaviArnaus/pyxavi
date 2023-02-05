@@ -1,3 +1,7 @@
+# v0.1.2
+
+- Bump Poetry required version to 1.2.0
+
 # v0.1.1
 
 - Minor fix in `Media`.
