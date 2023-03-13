@@ -1,6 +1,8 @@
 from .config import Config
 import logging
 import sys
+import os
+from pathlib import Path
 
 
 class Logger:
@@ -27,10 +29,13 @@ class Logger:
                 "logger.format", "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s"
             )
         )
+        filepath = config.get("logger.filename", 'debug.log')
+
+
 
         handlers = []
         if config.get("logger.to_file", False):
-            handlers.append(logging.FileHandler(config.get("logger.filename", 'debug.log')))
+            handlers.append(logging.FileHandler(filepath, mode='a'))
         if config.get("logger.to_stdout", False):
             handlers.append(logging.StreamHandler(sys.stdout))
 

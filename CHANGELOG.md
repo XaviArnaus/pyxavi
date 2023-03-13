@@ -1,3 +1,7 @@
+# v0.1.3
+
+- Make Logger to create the log file in case it does not exist yet
+
 # v0.1.2
 
 - Bump Poetry required version to 1.2.0
