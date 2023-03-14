@@ -73,8 +73,10 @@ class Storage:
         else:
             if dictionary:
                 dictionary[param_name] = value
-            else:
+            elif self._content:
                 self._content[param_name] = value
+            else:
+                self._content = {param_name: value}
 
     def get_hashed(self, param_name: str = "", default_value: any = None) -> any:
         # if param_name.find(".") > 0:

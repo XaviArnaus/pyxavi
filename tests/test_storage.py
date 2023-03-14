@@ -37,18 +37,22 @@ def initialize() -> Storage:
     return Storage(FILENAME)
 
 
+@patch("yaml.safe_load", new=patched_yaml_safe_load)
+@patch("builtins.open", mock_open(read_data=""))
+@patch("os.path.exists", new=os_path_exists_false)
+@patch("pathlib.Path.touch", new=path_touch)
+def initialize_file_not_exists():
+    return Storage(FILENAME)
+
+
 def test_initialize_storage_file_exists():
     instance = initialize()
 
     assert instance._content == FILE
 
 
-@patch("yaml.safe_load", new=patched_yaml_safe_load)
-@patch("builtins.open", mock_open(read_data=""))
-@patch("os.path.exists", new=os_path_exists_false)
-@patch("pathlib.Path.touch", new=path_touch)
 def test_initialize_storage_file_not_exists():
-    instance = Storage(FILENAME)
+    instance = initialize_file_not_exists()
 
     assert instance._content == {}
 
@@ -83,6 +87,18 @@ def test_set_first_level_new_value():
     assert instance.get("test") is None
 
     instance.set("test", "value")
+
+    assert instance.get("test"), "value"
+
+
+def test_set_first_level_file_not_exists():
+    instance = initialize_file_not_exists()
+
+    assert instance.get("test") is None
+
+    instance.set("test", "value")
+
+    print(instance.get("test"))
 
     assert instance.get("test"), "value"
 

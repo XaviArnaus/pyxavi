@@ -1,8 +1,6 @@
 from .config import Config
 import logging
 import sys
-import os
-from pathlib import Path
 
 
 class Logger:
@@ -30,8 +28,6 @@ class Logger:
             )
         )
         filepath = config.get("logger.filename", 'debug.log')
-
-
 
         handlers = []
         if config.get("logger.to_file", False):
