@@ -59,6 +59,7 @@ class Storage:
             pieces = param_name.split(".")
             if (dictionary is None and pieces[0] not in self._content) or \
                     (dictionary is not None and pieces[0] not in dictionary):
+
                 if force:
                     if dictionary is not None and dictionary is dict:
                         dictionary[pieces[0]] = {}
@@ -67,21 +68,23 @@ class Storage:
                 else:
                     raise RuntimeError(
                         "Storage path [{}] unknown in [{}]".format(
-                            param_name, dictionary if dictionary else self._content
+                            param_name, dictionary if dictionary is not None else self._content
                         )
                     )
 
             self.set(
                 ".".join(pieces[1:]),
                 value,
-                self._content[pieces[0]] if dictionary is None else dictionary[pieces[0]] if dictionary is dict else dictionary,
+                self._content[pieces[0]] if dictionary is None else dictionary[pieces[0]] if dictionary else dictionary,
                 force = force
             )
         else:
             if dictionary is not None:
                 dictionary[param_name] = value
-            else:
+            elif self._content is not None:
                 self._content[param_name] = value
+            else:
+                self._content = {param_name: value}
 
     def get_hashed(self, param_name: str = "", default_value: any = None) -> any:
         # if param_name.find(".") > 0:

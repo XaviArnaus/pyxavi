@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyxavi"
-version = "0.1.1"
+version = "0.1.5"
 description = "Set of utilities to assist on simple Python projects"
 authors = ["Xavier Arnaus <xavi@arnaus.net>"]
 
@@ -55,5 +55,5 @@ omit = [
 ]
 
 [build-system]
-requires = ['poetry-core~=1.0']
+requires = ['poetry-core>=1.2.0']
 build-backend = 'poetry.core.masonry.api'

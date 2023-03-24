@@ -1,3 +1,19 @@
+# v0.1.5
+
+- Bugfix in Storage when set needs to identify empty dictionaries
+
+# v0.1.4
+
+- Initialize in-memory stack for Storage when the file is just touched
+
+# v0.1.3
+
+- Make Logger to create the log file in case it does not exist yet
+
+# v0.1.2
+
+- Bump Poetry required version to 1.2.0
+
 # v0.1.1
 
 - Minor fix in `Media`.
