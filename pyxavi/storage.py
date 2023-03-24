@@ -51,27 +51,34 @@ class Storage:
     def get_all(self) -> dict:
         return self._content
 
-    def set(self, param_name: str, value: any = None, dictionary=None):
+    def set(self, param_name: str, value: any = None, dictionary: dict = None, force: bool = False):
         if param_name is None:
             raise RuntimeError("Params must have a name")
 
         if param_name.find(".") > 0:
             pieces = param_name.split(".")
-            if (not dictionary and pieces[0] not in self._content) or \
-                    (dictionary and pieces[0] not in dictionary):
-                raise RuntimeError(
-                    "Storage path [{}] unknown in [{}]".format(
-                        param_name, dictionary if dictionary else self._content
+            if (dictionary is None and pieces[0] not in self._content) or \
+                    (dictionary is not None and pieces[0] not in dictionary):
+                if force:
+                    if dictionary is not None and dictionary is dict:
+                        dictionary[pieces[0]] = {}
+                    else:
+                        self._content[pieces[0]] = {}
+                else:
+                    raise RuntimeError(
+                        "Storage path [{}] unknown in [{}]".format(
+                            param_name, dictionary if dictionary else self._content
+                        )
                     )
-                )
 
             self.set(
                 ".".join(pieces[1:]),
                 value,
-                self._content[pieces[0]] if not dictionary else dictionary[pieces[0]]
+                self._content[pieces[0]] if dictionary is None else dictionary[pieces[0]] if dictionary is dict else dictionary,
+                force = force
             )
         else:
-            if dictionary:
+            if dictionary is not None:
                 dictionary[param_name] = value
             else:
                 self._content[param_name] = value

@@ -144,6 +144,36 @@ def test_set_bad_key():
         instance.set("foo.foo3.bar2", 99)
 
 
+def test_set_first_level_unexisting_force_new_value():
+    instance = initialize()
+
+    assert instance.get("foo9") is None
+
+    instance.set("foo9", "99", force=True)
+    print(instance.get_all())
+    assert instance.get("foo9") == "99"
+
+
+def test_set_second_level_unexisting_force_new_value():
+    instance = initialize()
+
+    assert instance.get("foo9.bar9") is None
+
+    instance.set("foo9.bar9", "99", force=True)
+    print(instance.get_all())
+    assert instance.get("foo9.bar9") == "99"
+
+
+def test_set_third_level_unexisting_force_new_value():
+    instance = initialize()
+
+    assert instance.get("foo9.foo9.bar9") is None
+
+    instance.set("foo9.foo9.bar9", "99", force=True)
+    print(instance.get_all())
+    assert instance.get("foo9.foo9.bar9") == "99"
+
+
 def test_get_hashed():
     instance = initialize()
 
