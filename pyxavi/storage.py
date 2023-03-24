@@ -57,8 +57,8 @@ class Storage:
 
         if param_name.find(".") > 0:
             pieces = param_name.split(".")
-            if (not dictionary and pieces[0] not in self._content) or \
-                    (dictionary and pieces[0] not in dictionary):
+            if (dictionary is None and pieces[0] not in self._content) or \
+                    (dictionary is not None and pieces[0] not in dictionary):
                 raise RuntimeError(
                     "Storage path [{}] unknown in [{}]".format(
                         param_name, dictionary if dictionary else self._content
@@ -71,9 +71,9 @@ class Storage:
                 self._content[pieces[0]] if not dictionary else dictionary[pieces[0]]
             )
         else:
-            if dictionary:
+            if dictionary is not None:
                 dictionary[param_name] = value
-            elif self._content:
+            elif self._content is not None:
                 self._content[param_name] = value
             else:
                 self._content = {param_name: value}

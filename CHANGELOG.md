@@ -1,4 +1,8 @@
-# v0.1.3
+# v0.1.5
+
+- Bugfix in Storage when set needs to identify empty dictionaries
+
+# v0.1.4
 
 - Initialize in-memory stack for Storage when the file is just touched
 
