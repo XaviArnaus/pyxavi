@@ -1,3 +1,7 @@
+# v0.2.0
+
+- Add *Janitor* API wrapper
+
 # v0.1.5
 
 - Bugfix in Storage when set needs to identify empty dictionaries
