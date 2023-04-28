@@ -1,3 +1,7 @@
+# v0.2.1
+
+- Add traceback function to debugger lib.
+
 # v0.2.0
 
 - Add *Janitor* API wrapper
