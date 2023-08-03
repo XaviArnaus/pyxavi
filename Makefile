@@ -15,6 +15,10 @@ init:
 yapf:
 	$(POETRY) run yapf -r --diff .
 
+.PHONY: do-yapf
+do-yapf:
+	$(POETRY) run yapf -i -r .
+
 .PHONY: flake8
 flake8:
 	$(POETRY) run flake8 . \

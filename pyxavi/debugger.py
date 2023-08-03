@@ -1,6 +1,7 @@
 import traceback
 import sys
 
+
 def dd(what: any, export: bool = False):
     """Function to print the inner of a variable
 
@@ -31,7 +32,7 @@ def dump(what: any, level: int = 0, content: str = "") -> None:
     def needs_recursivity(element) -> bool:
         return True if isinstance(element, (list, dict, tuple, set))\
             or hasattr(element, "__dict__") else False
-    
+
     def has_length(element) -> bool:
         return True if isinstance(element, (list, set, dict, str, tuple))\
             or hasattr(element, "__len__") else False
@@ -50,7 +51,7 @@ def dump(what: any, level: int = 0, content: str = "") -> None:
     i_am_complex = sub_is_complex = False
     sub_complexity = []
     sub_content = []
-    
+
     # The "primitives" dump
     if not needs_recursivity(what):
         if type(what) == str:
@@ -62,44 +63,45 @@ def dump(what: any, level: int = 0, content: str = "") -> None:
     else:
         content += f"{type_string}"
         i_am_complex = True
-        if isinstance(what, (list,tuple)):
+        if isinstance(what, (list, tuple)):
             enter_char = ENTER_LIST
             leave_char = LEAVE_LIST
 
             for element in what:
-                sub_is_complex, sub_content_item = dump(element, level+1)
+                sub_is_complex, sub_content_item = dump(element, level + 1)
                 sub_content.append(sub_content_item)
                 sub_complexity.append(sub_is_complex)
-            
+
         elif isinstance(what, set):
             enter_char = ENTER_DICT
             leave_char = LEAVE_DICT
 
             for element in what:
-                sub_is_complex, sub_content_item = dump(element, level+1)
+                sub_is_complex, sub_content_item = dump(element, level + 1)
                 sub_content.append(sub_content_item)
                 sub_complexity.append(sub_is_complex)
 
-        
         elif hasattr(what, "__dict__"):
             enter_char = ENTER_DICT
             leave_char = LEAVE_DICT
-            
+
             for key, element in what.__dict__.items():
-                sub_is_complex, sub_content_item = dump(element, level+1)
+                sub_is_complex, sub_content_item = dump(element, level + 1)
                 sub_content_item = f"\"{key}\": {sub_content_item}"
                 sub_content.append(sub_content_item)
                 sub_complexity.append(sub_is_complex)
-            
-            methods = f"{SEPARATOR} ".join([a for a in dir(what) if not a.endswith("__") and callable(getattr(what, a))])
+
+            methods = f"{SEPARATOR} ".join(
+                [a for a in dir(what) if not a.endswith("__") and callable(getattr(what, a))]
+            )
             sub_content.append(f"class methods: {methods}")
-        
+
         elif isinstance(what, dict):
             enter_char = ENTER_DICT
             leave_char = LEAVE_DICT
 
             for key, element in what.items():
-                sub_is_complex, sub_content_item = dump(element, level+1)
+                sub_is_complex, sub_content_item = dump(element, level + 1)
                 sub_content_item = f"\"{key}\": {sub_content_item}"
                 sub_content.append(sub_content_item)
                 sub_complexity.append(sub_is_complex)
@@ -115,7 +117,9 @@ def dump(what: any, level: int = 0, content: str = "") -> None:
             else:
                 #content += justify(f"{enter_char}", level) + "\n"
                 content += f"{enter_char}" + "\n"
-                content += f"{SEPARATOR}\n".join([justify(element,level+1) for element in sub_content])
+                content += f"{SEPARATOR}\n".join(
+                    [justify(element, level + 1) for element in sub_content]
+                )
                 content += "\n" + justify(f"{leave_char}", level)
     return i_am_complex, content
 
