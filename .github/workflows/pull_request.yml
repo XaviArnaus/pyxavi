@@ -19,7 +19,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Setting up Poetry
-        uses: Gr1N/setup-poetry@v7
+        uses: Gr1N/setup-poetry@v8
         with:
           poetry-preview: true
           poetry-version: "1.2.2"
@@ -47,7 +47,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Setting up Poetry
-        uses: Gr1N/setup-poetry@v7
+        uses: Gr1N/setup-poetry@v8
         with:
           poetry-preview: true
           poetry-version: "1.2.2"
@@ -78,7 +78,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Setting up Poetry
-        uses: Gr1N/setup-poetry@v7
+        uses: Gr1N/setup-poetry@v8
         with:
           poetry-preview: true
           poetry-version: "1.2.2"
@@ -118,7 +118,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Setting up Poetry
-        uses: Gr1N/setup-poetry@v7
+        uses: Gr1N/setup-poetry@v8
         with:
           poetry-preview: true
           poetry-version: "1.2.2"
@@ -162,7 +162,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Setting up Poetry
-        uses: Gr1N/setup-poetry@v7
+        uses: Gr1N/setup-poetry@v8
         with:
           poetry-preview: true
           poetry-version: "1.2.2"
