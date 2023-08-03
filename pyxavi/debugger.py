@@ -115,7 +115,6 @@ def dump(what: any, level: int = 0, content: str = "") -> None:
                 content += f"{SEPARATOR} ".join([element for element in sub_content])
                 content += f"{leave_char}"
             else:
-                #content += justify(f"{enter_char}", level) + "\n"
                 content += f"{enter_char}" + "\n"
                 content += f"{SEPARATOR}\n".join(
                     [justify(element, level + 1) for element in sub_content]

@@ -69,16 +69,20 @@ class ClassB(ClassA):
         # Classes
         (
             ClassB(1, 2, 3),
-            "(ClassB){\"attribute_a\": (int)1, \"attribute_b\": (int)2, \"attribute_c\": (int)3, class methods: my_method}"
+            "(ClassB){\"attribute_a\": (int)1, \"attribute_b\": (int)2" +\
+            ", \"attribute_c\": (int)3, class methods: my_method}"
         ),
         (
             ClassA(1, "b", [9, "x"]),
-            "(ClassA){\n  \"attribute_a\": (int)1,\n  \"attribute_b\": (str[1])\"b\",\n  \"attribute_c\": (list[2])[(int)9, (str[1])\"x\"],\n  class methods: my_method\n}"
+            "(ClassA){\n  \"attribute_a\": (int)1,\n  \"attribute_b\": (str[1])\"b\"," +\
+            "\n  \"attribute_c\": (list[2])[(int)9, (str[1])\"x\"],\n  class methods" +\
+            ": my_method\n}"
         ),
         # Complex Lists
         (
             [[1, 2], ["a", "b"], "x"],
-            "(list[3])[\n  (list[2])[(int)1, (int)2],\n  (list[2])[(str[1])\"a\", (str[1])\"b\"],\n  (str[1])\"x\"\n]"
+            "(list[3])[\n  (list[2])[(int)1, (int)2],\n  (list[2])[(str[1])\"a\"" +\
+            ", (str[1])\"b\"],\n  (str[1])\"x\"\n]"
         ),
         (
             [{
@@ -86,7 +90,8 @@ class ClassB(ClassA):
             }, {
                 "x": [9, 8]
             }],
-            "(list[2])[\n  (dict[2]){\"a\": (int)1, \"b\": (int)2},\n  (dict[1]){\n    \"x\": (list[2])[(int)9, (int)8]\n  }\n]"
+            "(list[2])[\n  (dict[2]){\"a\": (int)1, \"b\": (int)2},\n  (dict[1]){" +\
+            "\n    \"x\": (list[2])[(int)9, (int)8]\n  }\n]"
         ),
         (
             [{
@@ -94,7 +99,8 @@ class ClassB(ClassA):
             }, {
                 "y": [7, 6]
             }],
-            "(list[2])[\n  (dict[1]){\n    \"x\": (list[2])[(int)9, (int)8]\n  },\n  (dict[1]){\n    \"y\": (list[2])[(int)7, (int)6]\n  }\n]"
+            "(list[2])[\n  (dict[1]){\n    \"x\": (list[2])[(int)9, (int)8]\n  }," +\
+            "\n  (dict[1]){\n    \"y\": (list[2])[(int)7, (int)6]\n  }\n]"
         ),
         # Complex Dicts
         (
@@ -109,7 +115,9 @@ class ClassB(ClassA):
                     }
                 }, "c": 3
             },
-            "(dict[2]){\n  \"a\": (dict[2]){\n    \"aa\": (dict[1]){\"aaa\": (int)1},\n    \"bb\": (dict[1]){\n      \"bbb\": (dict[1]){\"bbbb\": (int)2}\n    }\n  },\n  \"c\": (int)3\n}"
+            "(dict[2]){\n  \"a\": (dict[2]){\n    \"aa\": (dict[1]){\"aaa\": (int)1}," + \
+            "\n    \"bb\": (dict[1]){\n      \"bbb\": (dict[1]){\"bbbb\": (int)2}" + \
+            "\n    }\n  },\n  \"c\": (int)3\n}"
         )
     ],
 )
