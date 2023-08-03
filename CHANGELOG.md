@@ -1,3 +1,7 @@
+# v0.3.0
+
+- Rewrite the `debugger.dd`
+
 # v0.2.1
 
 - Add traceback function to debugger lib.

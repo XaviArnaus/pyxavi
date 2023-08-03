@@ -1,4 +1,6 @@
-def dd(var, prefix=''):
+from types import NoneType
+
+def dd1(var, prefix=''):
     """Function to print the inner of a variable
 
     You know you're a php developer when the first thing you ask for
@@ -17,12 +19,121 @@ def dd(var, prefix=''):
     prefix += '    '
     for i in var:
         if type(i) in (list, tuple, dict, set):
-            dd(i, prefix)
+            dd1(i, prefix)
         else:
             if isinstance(var, dict):
                 print(prefix, i, ': (', var[i].__class__.__name__, ') ', var[i], sep='')
             else:
                 print(prefix, '(', i.__class__.__name__, ') ', i, sep='')
+
+def dd(what: any, export: bool = False):
+    is_complex, result = dump(what)
+    if export:
+        return result
+    else:
+        print(result)
+
+
+def dump(what: any, level: int = 0, content: str = "") -> None:
+    # Constants for customisation
+    ENTER_DICT = "{"
+    LEAVE_DICT = "}"
+    ENTER_LIST = "["
+    LEAVE_LIST = "]"
+    SEPARATOR = ","
+    SPACES_PER_TAB = 2
+
+    # Local functions to easy my life
+    def needs_recursivity(element) -> bool:
+        return True if isinstance(element, (list, dict, tuple, set))\
+            or hasattr(element, "__dict__") else False
+    
+    def has_length(element) -> bool:
+        return True if isinstance(element, (list, set, dict, str, tuple))\
+            or hasattr(element, "__len__") else False
+
+    def justify(line: str, tabs: int = 0) -> str:
+        spaces = ""
+        spaces += " " * (tabs * SPACES_PER_TAB)
+        return f"{spaces}{line}"
+
+    # Preparing the info string about the type
+    type_name = what.__class__.__name__
+    type_length = f"[{str(len(what))}]" if has_length(what) else ""
+    type_string = f"({type_name}{type_length})"
+
+    # Complexity flags and stacks for template choosing
+    i_am_complex = sub_is_complex = False
+    sub_complexity = []
+    sub_content = []
+    
+    # The "primitives" dump
+    if not needs_recursivity(what):
+        if type(what) == str:
+            value = f"\"{what}\""
+        else:
+            value = f"{what}"
+        content += f"{type_string}{value}"
+    # The non "primitives" are considered "complex"
+    else:
+        content += f"{type_string}"
+        i_am_complex = True
+        if isinstance(what, (list,tuple)):
+            enter_char = ENTER_LIST
+            leave_char = LEAVE_LIST
+
+            for element in what:
+                sub_is_complex, sub_content_item = dump(element, level+1)
+                sub_content.append(sub_content_item)
+                sub_complexity.append(sub_is_complex)
+            
+        elif isinstance(what, set):
+            enter_char = ENTER_DICT
+            leave_char = LEAVE_DICT
+
+            for element in what:
+                sub_is_complex, sub_content_item = dump(element, level+1)
+                sub_content.append(sub_content_item)
+                sub_complexity.append(sub_is_complex)
+
+        
+        elif hasattr(what, "__dict__"):
+            enter_char = ENTER_DICT
+            leave_char = LEAVE_DICT
+            
+            for key, element in what.__dict__.items():
+                sub_is_complex, sub_content_item = dump(element, level+1)
+                sub_content_item = f"\"{key}\": {sub_content_item}"
+                sub_content.append(sub_content_item)
+                sub_complexity.append(sub_is_complex)
+            
+            methods = f"{SEPARATOR} ".join([a for a in dir(what) if not a.endswith("__") and callable(getattr(what, a))])
+            sub_content.append(f"class methods: {methods}")
+        
+        elif isinstance(what, dict):
+            enter_char = ENTER_DICT
+            leave_char = LEAVE_DICT
+
+            for key, element in what.items():
+                sub_is_complex, sub_content_item = dump(element, level+1)
+                sub_content_item = f"\"{key}\": {sub_content_item}"
+                sub_content.append(sub_content_item)
+                sub_complexity.append(sub_is_complex)
+
+        # Let's draw
+        if sub_content is not None:
+            # Template inline for non complex types
+            #  or complex types with non-complex sub-elements
+            if not any(sub_complexity):
+                content += f"{enter_char}"
+                content += f"{SEPARATOR} ".join([element for element in sub_content])
+                content += f"{leave_char}"
+            else:
+                #content += justify(f"{enter_char}", level) + "\n"
+                content += f"{enter_char}" + "\n"
+                content += f"{SEPARATOR}\n".join([justify(element,level+1) for element in sub_content])
+                content += "\n" + justify(f"{leave_char}", level)
+    return i_am_complex, content
 
 def full_stack():
     """
