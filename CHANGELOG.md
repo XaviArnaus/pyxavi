@@ -1,6 +1,7 @@
 # v0.3.0
 
-- Rewrite the `debugger.dd`
+- Rewrite the `debugger.dd`.
+- New `terminal_color` class for printing with colors.
 
 # v0.2.1
 
