@@ -19,7 +19,7 @@ def dd(what: any, export: bool = False):
         print(result)
 
 
-def dump(what: any, level: int = 0, content: str = "") -> None:
+def dump(what: any, level: int = 0, content: str = "", allow_deeper: bool = True) -> None:
     # Constants for customisation
     ENTER_DICT = "{"
     LEAVE_DICT = "}"
@@ -27,6 +27,7 @@ def dump(what: any, level: int = 0, content: str = "") -> None:
     LEAVE_LIST = "]"
     SEPARATOR = ","
     SPACES_PER_TAB = 2
+    MAX_DEPTH = 200
 
     # Local functions to easy my life
     def needs_recursivity(element) -> bool:
@@ -34,8 +35,11 @@ def dump(what: any, level: int = 0, content: str = "") -> None:
             or hasattr(element, "__dict__") else False
 
     def has_length(element) -> bool:
-        return True if isinstance(element, (list, set, dict, str, tuple))\
-            or hasattr(element, "__len__") else False
+        try:
+            len(element)
+            return True
+        except TypeError:
+            return False
 
     def justify(line: str, tabs: int = 0) -> str:
         spaces = ""
@@ -59,6 +63,13 @@ def dump(what: any, level: int = 0, content: str = "") -> None:
         else:
             value = f"{what}"
         content += f"{type_string}{value}"
+    # Needs recursivity but it's already too much
+    elif level >= MAX_DEPTH:
+        content += f"Maximum recursion depth of [{MAX_DEPTH}] reached. Returning."
+    # Going deeper is forbidden by the caller
+    elif not allow_deeper:
+        content += "Maximum recursion depth allowed is reached. Returning."
+        i_am_complex = True
     # The non "primitives" are considered "complex"
     else:
         content += f"{type_string}"
@@ -86,7 +97,11 @@ def dump(what: any, level: int = 0, content: str = "") -> None:
             leave_char = LEAVE_DICT
 
             for key, element in what.__dict__.items():
-                sub_is_complex, sub_content_item = dump(element, level + 1)
+                sub_is_complex, sub_content_item = dump(
+                    what=element,
+                    level=level + 1,
+                    allow_deeper=False
+                )
                 sub_content_item = f"\"{key}\": {sub_content_item}"
                 sub_content.append(sub_content_item)
                 sub_complexity.append(sub_is_complex)
