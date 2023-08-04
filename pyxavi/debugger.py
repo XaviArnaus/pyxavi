@@ -1,6 +1,5 @@
 import traceback
 import sys
-from types import NoneType
 from .terminal_color import TerminalColor
 
 
@@ -81,7 +80,7 @@ def dump(
             value = f"{COLOR.STR}\"{what}\"{COLOR.END}"
         elif type(what) in (int, float):
             value = f"{COLOR.INT}{what}{COLOR.END}"
-        elif type(what) in (bool, NoneType):
+        elif type(what) in (bool, type(None)):
             value = f"{COLOR.BOOL}{what}{COLOR.END}"
         else:
             value = f"{what}"
