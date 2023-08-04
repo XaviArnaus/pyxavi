@@ -8,6 +8,7 @@ class TerminalColor:
     MAGENTA = '\033[0;35m'
     CYAN = '\033[0;36m'
     WHITE = '\033[0;37m'
+    ORANGE = '\033[38;5;166m'
 
     # Bright colors
     BLACK_BRIGHT = '\033[1;30m'
@@ -18,6 +19,7 @@ class TerminalColor:
     MAGENTA_BRIGHT = '\033[1;35m'
     CYAN_BRIGHT = '\033[1;36m'
     WHITE_BRIGHT = '\033[1;37m'
+    ORANGE_BRIGHT = '\033[38;5;208m'
 
     # Style
     BOLD = '\033[1m'
