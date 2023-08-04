@@ -57,7 +57,7 @@ def dump(
         try:
             len(element)
             return True
-        except TypeError as e:
+        except TypeError:
             return False
 
     def justify(line: str, tabs: int = 0) -> str:
