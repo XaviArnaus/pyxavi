@@ -67,7 +67,7 @@ def dump(what: any, level: int = 0, content: str = "", allow_deeper: bool = True
     elif level >= MAX_DEPTH:
         content += f"Maximum recursion depth of [{MAX_DEPTH}] reached. Returning."
     # Going deeper is forbidden by the caller
-    elif not allow_deeper:
+    elif not allow_deeper and level > 1:
         content += "Maximum recursion depth allowed is reached. Returning."
         i_am_complex = True
     # The non "primitives" are considered "complex"
