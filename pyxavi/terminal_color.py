@@ -5,19 +5,19 @@ class TerminalColor:
     GREEN = '\033[0;32m'
     YELLOW = '\033[0;33m'
     BLUE = '\033[0;34m'
-    LILA = '\033[0;35m'
+    MAGENTA = '\033[0;35m'
     CYAN = '\033[0;36m'
     WHITE = '\033[0;37m'
 
-    # Double point (bold?) colors
-    BLACK_INTENSE = '\033[1;30m'
-    RED_INTENSE = '\033[1;31m'
-    GREEN_INTENSE = '\033[1;32m'
-    YELLOW_INTENSE = '\033[1;33m'
-    BLUE_INTENSE = '\033[1;34m'
-    LILA_INTENSE = '\033[1;35m'
-    CYAN_INTENSE = '\033[1;36m'
-    WHITE_INTENSE = '\033[1;37m'
+    # Bright colors
+    BLACK_BRIGHT = '\033[1;30m'
+    RED_BRIGHT = '\033[1;31m'
+    GREEN_BRIGHT = '\033[1;32m'
+    YELLOW_BRIGHT = '\033[1;33m'
+    BLUE_BRIGHT = '\033[1;34m'
+    MAGENTA_BRIGHT = '\033[1;35m'
+    CYAN_BRIGHT = '\033[1;36m'
+    WHITE_BRIGHT = '\033[1;37m'
 
     # Style
     BOLD = '\033[1m'
