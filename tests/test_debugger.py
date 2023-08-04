@@ -122,6 +122,6 @@ class ClassB(ClassA):
     ],
 )
 def test_dd(what, expected_result):
-    result = dd(what, True)
+    result = dd(what=what, export=True, colorise=False)
 
     assert expected_result == result
