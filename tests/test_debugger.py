@@ -124,10 +124,17 @@ class ClassB(ClassA):
             "(dict[2]){\n  \"a\": (dict[2]){\n    \"aa\": (dict[1]){\"aaa\": (int)1}," + \
             "\n    \"bb\": (dict[1]){\n      \"bbb\": (dict[1]){\"bbbb\": (int)2}" + \
             "\n    }\n  },\n  \"c\": (int)3\n}"
+        ),
+        # Maximum depth block. In the test is defined as 4
+        (
+            [[[[["a", "b"]],3],2],1],
+            "(list[2])[\n  (list[2])[\n    (list[2])[\n      (list[1])[\n        (list[2])" + \
+                "Max recursion depth of 4 reached.\n      ],\n      (int)3\n    ]," + \
+                    "\n    (int)2\n  ],\n  (int)1\n]"
         )
     ],
 )
 def test_dd(what, expected_result):
-    result = dd(what=what, export=True, colorise=False)
+    result = dd(what=what, export=True, max_depth=4, colorise=False)
 
     assert expected_result == result

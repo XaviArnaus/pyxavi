@@ -10,10 +10,16 @@ ENTER_LIST = "["
 LEAVE_LIST = "]"
 SEPARATOR = ","
 SPACES_PER_TAB = 2
+
+# Max depth for all recursivity
 DEFAULT_MAX_DEPTH = 200
 
+# Max depth only for non built-in objects, like user created classes,
+#   which ignores DEFAULT_MAX_DEPTH.
+NON_BUILTIN_OBJECTS_MAX_DEPTH = 5
 
-def dd(what: any, export: bool = False, colorise: bool = True):
+
+def dd(what: any, export: bool = False, colorise: bool = True, max_depth: int = None):
     """Function to print the inner of a variable
 
     You know you're a php developer when the first thing you ask for
@@ -23,7 +29,8 @@ def dd(what: any, export: bool = False, colorise: bool = True):
         Xavier Arnaus <xavi@arnaus.net>
 
     """
-    is_complex, result = dump(what=what, max_deep_level=DEFAULT_MAX_DEPTH, colorise=colorise)
+    max_depth = DEFAULT_MAX_DEPTH if max_depth is None else max_depth
+    is_complex, result = dump(what=what, max_deep_level=max_depth, colorise=colorise)
     if export:
         return result
     else:
@@ -89,6 +96,7 @@ def dump(
         content += f"{type_string}{value}"
     # Needs recursivity but it's already too much
     elif level >= max_deep_level:
+        content += f"{type_string}"
         content += f"{COLOR.ERROR}Max recursion depth of {max_deep_level} reached.{COLOR.END}"
         i_am_complex = True
     # The non "primitives" are considered "complex"
@@ -131,7 +139,7 @@ def dump(
                 sub_is_complex, sub_content_item = dump(
                     what=element,
                     level=level + 1,
-                    max_deep_level=4,
+                    max_deep_level=NON_BUILTIN_OBJECTS_MAX_DEPTH,
                     colorise=colorise
                 )
                 sub_content_item = f"{COLOR.STR}\"{key}\"{COLOR.END}: {sub_content_item}"
@@ -157,7 +165,7 @@ def dump(
                 sub_content_item = f"{COLOR.STR}\"{key}\"{COLOR.END}: {sub_content_item}"
                 sub_content.append(sub_content_item)
                 sub_complexity.append(sub_is_complex)
-
+        
         else:
             enter_char = ""
             leave_char = ""
