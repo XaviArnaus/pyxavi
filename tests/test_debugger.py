@@ -127,10 +127,10 @@ class ClassB(ClassA):
         ),
         # Maximum depth block. In the test is defined as 4
         (
-            [[[[["a", "b"]],3],2],1],
+            [[[[["a", "b"]], 3], 2], 1],
             "(list[2])[\n  (list[2])[\n    (list[2])[\n      (list[1])[\n        (list[2])" + \
-                "Max recursion depth of 4 reached.\n      ],\n      (int)3\n    ]," + \
-                    "\n    (int)2\n  ],\n  (int)1\n]"
+            "Max recursion depth of 4 reached.\n      ],\n      (int)3\n    ]," + \
+            "\n    (int)2\n  ],\n  (int)1\n]"
         )
     ],
 )

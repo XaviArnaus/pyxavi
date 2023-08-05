@@ -165,7 +165,7 @@ def dump(
                 sub_content_item = f"{COLOR.STR}\"{key}\"{COLOR.END}: {sub_content_item}"
                 sub_content.append(sub_content_item)
                 sub_complexity.append(sub_is_complex)
-        
+
         else:
             enter_char = ""
             leave_char = ""
