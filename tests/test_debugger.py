@@ -1,4 +1,5 @@
 from pyxavi.debugger import dd
+from collections import deque
 import pytest
 
 
@@ -44,6 +45,11 @@ class ClassB(ClassA):
         # (set(["a","a","b"]), "(set[2]){(str[1])\"a\", (str[1])\"b\"}"),
         # (set(["a","a",2]), "(set[2]){(str[1])\"a\", (int)2}"),
         (set([]), "(set[0]){}"),
+        # Deques of primitives
+        (deque([1, 2, 3]), "(deque[3])[(int)1, (int)2, (int)3]"),
+        (deque(["a", "b", "c"]), "(deque[3])[(str[1])\"a\", (str[1])\"b\", (str[1])\"c\"]"),
+        (deque(["a", 2, "c"]), "(deque[3])[(str[1])\"a\", (int)2, (str[1])\"c\"]"),
+        (deque([]), "(deque[0])[]"),
         # Tuples of primitives
         ((1, 2, 3), "(tuple[3])[(int)1, (int)2, (int)3]"),
         (("a", "b", "c"), "(tuple[3])[(str[1])\"a\", (str[1])\"b\", (str[1])\"c\"]"),

@@ -1,6 +1,16 @@
 import traceback
 import sys
+from collections import deque
 from .terminal_color import TerminalColor
+
+# Constants for customisation
+ENTER_DICT = "{"
+LEAVE_DICT = "}"
+ENTER_LIST = "["
+LEAVE_LIST = "]"
+SEPARATOR = ","
+SPACES_PER_TAB = 2
+DEFAULT_MAX_DEPTH = 200
 
 
 def dd(what: any, export: bool = False, colorise: bool = True):
@@ -13,7 +23,7 @@ def dd(what: any, export: bool = False, colorise: bool = True):
         Xavier Arnaus <xavi@arnaus.net>
 
     """
-    is_complex, result = dump(what=what, colorise=colorise)
+    is_complex, result = dump(what=what, max_deep_level=DEFAULT_MAX_DEPTH, colorise=colorise)
     if export:
         return result
     else:
@@ -24,17 +34,9 @@ def dump(
     what: any,
     level: int = 0,
     content: str = "",
-    allow_deeper: bool = True,
+    max_deep_level: int = 200,
     colorise: bool = True
 ) -> None:
-    # Constants for customisation
-    ENTER_DICT = "{"
-    LEAVE_DICT = "}"
-    ENTER_LIST = "["
-    LEAVE_LIST = "]"
-    SEPARATOR = ","
-    SPACES_PER_TAB = 2
-    MAX_DEPTH = 200
 
     # Colors
     class COLOR:
@@ -49,7 +51,7 @@ def dump(
 
     # Local functions to easy my life
     def needs_recursivity(element) -> bool:
-        return True if isinstance(element, (list, dict, tuple, set))\
+        return True if isinstance(element, (list, dict, tuple, set, deque))\
             or hasattr(element, "__dict__") else False
 
     def has_length(element) -> bool:
@@ -86,19 +88,14 @@ def dump(
             value = f"{what}"
         content += f"{type_string}{value}"
     # Needs recursivity but it's already too much
-    elif level >= MAX_DEPTH:
-        content += f"{COLOR.ERROR}Maximum recursion depth of [{MAX_DEPTH}] reached. " + \
-            f"Returning.{COLOR.END}"
-    # Going deeper is forbidden by the caller
-    elif not allow_deeper and level > 1:
-        content += f"{COLOR.ERROR}Maximum recursion depth allowed is reached. " + \
-            f"Returning.{COLOR.END}"
+    elif level >= max_deep_level:
+        content += f"{COLOR.ERROR}Max recursion depth of {max_deep_level} reached.{COLOR.END}"
         i_am_complex = True
     # The non "primitives" are considered "complex"
     else:
         content += f"{type_string}"
         i_am_complex = True
-        if isinstance(what, (list, tuple)):
+        if isinstance(what, (list, tuple, deque)):
             enter_char = f"{COLOR.LIST_KEY}{ENTER_LIST}{COLOR.END}"
             leave_char = f"{COLOR.LIST_KEY}{LEAVE_LIST}{COLOR.END}"
 
@@ -106,6 +103,7 @@ def dump(
                 sub_is_complex, sub_content_item = dump(
                     what=element,
                     level=level + 1,
+                    max_deep_level=max_deep_level,
                     colorise=colorise
                 )
                 sub_content.append(sub_content_item)
@@ -119,12 +117,13 @@ def dump(
                 sub_is_complex, sub_content_item = dump(
                     what=element,
                     level=level + 1,
+                    max_deep_level=max_deep_level,
                     colorise=colorise
                 )
                 sub_content.append(sub_content_item)
                 sub_complexity.append(sub_is_complex)
 
-        elif hasattr(what, "__dict__"):
+        elif hasattr(what, "__dict__") and type_name != "method":
             enter_char = f"{COLOR.DICT_KEY}{ENTER_DICT}{COLOR.END}"
             leave_char = f"{COLOR.DICT_KEY}{LEAVE_DICT}{COLOR.END}"
 
@@ -132,7 +131,7 @@ def dump(
                 sub_is_complex, sub_content_item = dump(
                     what=element,
                     level=level + 1,
-                    allow_deeper=False,
+                    max_deep_level=4,
                     colorise=colorise
                 )
                 sub_content_item = f"{COLOR.STR}\"{key}\"{COLOR.END}: {sub_content_item}"
@@ -152,11 +151,16 @@ def dump(
                 sub_is_complex, sub_content_item = dump(
                     what=element,
                     level=level + 1,
+                    max_deep_level=max_deep_level,
                     colorise=colorise
                 )
                 sub_content_item = f"{COLOR.STR}\"{key}\"{COLOR.END}: {sub_content_item}"
                 sub_content.append(sub_content_item)
                 sub_complexity.append(sub_is_complex)
+
+        else:
+            enter_char = ""
+            leave_char = ""
 
         # Let's draw
         if sub_content is not None:
