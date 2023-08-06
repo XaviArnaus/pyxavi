@@ -107,64 +107,84 @@ def dump(
             enter_char = f"{COLOR.LIST_KEY}{ENTER_LIST}{COLOR.END}"
             leave_char = f"{COLOR.LIST_KEY}{LEAVE_LIST}{COLOR.END}"
 
-            for element in what:
-                sub_is_complex, sub_content_item = dump(
-                    what=element,
-                    level=level + 1,
-                    max_deep_level=max_deep_level,
-                    colorise=colorise
-                )
-                sub_content.append(sub_content_item)
-                sub_complexity.append(sub_is_complex)
+            try:
+                for element in what:
+                    sub_is_complex, sub_content_item = dump(
+                        what=element,
+                        level=level + 1,
+                        max_deep_level=max_deep_level,
+                        colorise=colorise
+                    )
+                    sub_content.append(sub_content_item)
+                    sub_complexity.append(sub_is_complex)
+            except RuntimeError:
+                sub_content.append(f"{COLOR.ERROR}Unknown{COLOR.END}")
 
         elif isinstance(what, set):
             enter_char = f"{COLOR.DICT_KEY}{ENTER_DICT}{COLOR.END}"
             leave_char = f"{COLOR.DICT_KEY}{LEAVE_DICT}{COLOR.END}"
 
-            for element in what:
-                sub_is_complex, sub_content_item = dump(
-                    what=element,
-                    level=level + 1,
-                    max_deep_level=max_deep_level,
-                    colorise=colorise
-                )
-                sub_content.append(sub_content_item)
-                sub_complexity.append(sub_is_complex)
+            try:
+                for element in what:
+                    sub_is_complex, sub_content_item = dump(
+                        what=element,
+                        level=level + 1,
+                        max_deep_level=max_deep_level,
+                        colorise=colorise
+                    )
+                    sub_content.append(sub_content_item)
+                    sub_complexity.append(sub_is_complex)
+            except RuntimeError:
+                sub_content.append(f"{COLOR.ERROR}Unknown{COLOR.END}")
 
         elif hasattr(what, "__dict__") and type_name != "method":
             enter_char = f"{COLOR.DICT_KEY}{ENTER_DICT}{COLOR.END}"
             leave_char = f"{COLOR.DICT_KEY}{LEAVE_DICT}{COLOR.END}"
 
-            for key, element in what.__dict__.items():
-                sub_is_complex, sub_content_item = dump(
-                    what=element,
-                    level=level + 1,
-                    max_deep_level=NON_BUILTIN_OBJECTS_MAX_DEPTH,
-                    colorise=colorise
-                )
-                sub_content_item = f"{COLOR.STR}\"{key}\"{COLOR.END}: {sub_content_item}"
-                sub_content.append(sub_content_item)
-                sub_complexity.append(sub_is_complex)
+            try:
+                for key, element in what.__dict__.items():
+                    sub_is_complex, sub_content_item = dump(
+                        what=element,
+                        level=level + 1,
+                        max_deep_level=NON_BUILTIN_OBJECTS_MAX_DEPTH,
+                        colorise=colorise
+                    )
+                    sub_content_item = f"{COLOR.STR}\"{key}\"{COLOR.END}: {sub_content_item}"
+                    sub_content.append(sub_content_item)
+                    sub_complexity.append(sub_is_complex)
+            except RuntimeError:
+                sub_content.append(f"{COLOR.ERROR}Unknown{COLOR.END}")
 
-            methods = f"{SEPARATOR} ".join(
-                [a for a in dir(what) if not a.endswith("__") and callable(getattr(what, a))]
-            )
-            sub_content.append(f"class methods: {methods}")
+            try:
+                methods = f"{SEPARATOR} ".join(
+                    [
+                        a for a in dir(what)
+                        if not a.endswith("__") and callable(getattr(what, a))
+                    ]
+                )
+                sub_content.append(f"class methods: {methods}")
+            except ModuleNotFoundError:
+                sub_content.append(f"class methods: {COLOR.ERROR}Unknown{COLOR.END}")
+            except AttributeError:
+                sub_content.append(f"class methods: {COLOR.ERROR}Unknown{COLOR.END}")
 
         elif isinstance(what, dict):
             enter_char = f"{COLOR.DICT_KEY}{ENTER_DICT}{COLOR.END}"
             leave_char = f"{COLOR.DICT_KEY}{LEAVE_DICT}{COLOR.END}"
 
-            for key, element in what.items():
-                sub_is_complex, sub_content_item = dump(
-                    what=element,
-                    level=level + 1,
-                    max_deep_level=max_deep_level,
-                    colorise=colorise
-                )
-                sub_content_item = f"{COLOR.STR}\"{key}\"{COLOR.END}: {sub_content_item}"
-                sub_content.append(sub_content_item)
-                sub_complexity.append(sub_is_complex)
+            try:
+                for key, element in what.items():
+                    sub_is_complex, sub_content_item = dump(
+                        what=element,
+                        level=level + 1,
+                        max_deep_level=max_deep_level,
+                        colorise=colorise
+                    )
+                    sub_content_item = f"{COLOR.STR}\"{key}\"{COLOR.END}: {sub_content_item}"
+                    sub_content.append(sub_content_item)
+                    sub_complexity.append(sub_is_complex)
+            except RuntimeError:
+                sub_content.append(f"{COLOR.ERROR}Unknown{COLOR.END}")
 
         else:
             enter_char = ""
