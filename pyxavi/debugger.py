@@ -20,10 +20,17 @@ NON_BUILTIN_OBJECTS_MAX_DEPTH = 10
 
 
 def dd(what: any, export: bool = False, colorise: bool = True, max_depth: int = None):
-    """Function to print the inner of a variable
+    """Function to recursively print the value of a variable
 
     You know you're a php developer when the first thing you ask for
-    when learning a new language is 'Where's var_dump?????'
+    when learning a new language is "Where's the `var_dump`?"
+
+    :param any what: The variable to inspect
+    :param bool export: Should I return the inspection or print? Defaults to False
+    :param bool colorise: Should the inspection be colorised? Defaults to True
+    :param int max_depth: The maximum inspection depth allowed.
+        Defaults to 10 for non built-in objects and 200 for the rest.
+    :returns: A (possibly) pretty long string with the variable inspection
 
     :Authors:
         Xavier Arnaus <xavi@arnaus.net>
