@@ -16,7 +16,7 @@ DEFAULT_MAX_DEPTH = 200
 
 # Max depth only for non built-in objects, like user created classes,
 #   which ignores DEFAULT_MAX_DEPTH.
-NON_BUILTIN_OBJECTS_MAX_DEPTH = 5
+NON_BUILTIN_OBJECTS_MAX_DEPTH = 10
 
 
 def dd(what: any, export: bool = False, colorise: bool = True, max_depth: int = None):
