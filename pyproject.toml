@@ -1,8 +1,21 @@
 [tool.poetry]
 name = "pyxavi"
-version = "0.3.0"
+version = "0.3.1"
 description = "Set of utilities to assist on simple Python projects"
 authors = ["Xavier Arnaus <xavi@arnaus.net>"]
+readme = "README.md"
+license = "GPLv3"
+repository = "https://github.com/XaviArnaus/pyxavi"
+homepage = "https://github.com/XaviArnaus/pyxavi"
+include = [
+    "LICENSE",
+    "CHANGELOG.md"
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
