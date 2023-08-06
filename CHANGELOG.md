@@ -1,3 +1,7 @@
+# v0.3.1
+
+- Iterate over the `pyproject.toml` and the `README.md` to make them more appealing in pypi.org
+
 # v0.3.0
 
 - Rewrite the `debugger.dd`.
