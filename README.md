@@ -175,6 +175,6 @@ it's level is 10.
 
 
 # ToDo
-[] Documentation per module
-[] Iterate inline documentation
-[] Empty the [NEXT MAJOR](./NEXT_MAJOR.md) list
+[ ] Documentation per module
+[ ] Iterate inline documentation
+[ ] Empty the [NEXT MAJOR](./NEXT_MAJOR.md) list
