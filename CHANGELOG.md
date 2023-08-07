@@ -1,3 +1,7 @@
+# v0.3.2
+
+- Make non built-in objects inspection depth controlable in `dd` recurdive call
+
 # v0.3.1
 
 - Iterate over the `pyproject.toml` and the `README.md` to make them more appealing in pypi.org
