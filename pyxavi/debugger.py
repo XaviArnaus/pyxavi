@@ -153,7 +153,7 @@ def dump(
                     sub_is_complex, sub_content_item = dump(
                         what=element,
                         level=level + 1,
-                        max_deep_level=NON_BUILTIN_OBJECTS_MAX_DEPTH,
+                        max_deep_level=min(max_deep_level, NON_BUILTIN_OBJECTS_MAX_DEPTH),
                         colorise=colorise
                     )
                     sub_content_item = f"{COLOR.STR}\"{key}\"{COLOR.END}: {sub_content_item}"
