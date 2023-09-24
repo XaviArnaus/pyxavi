@@ -1,3 +1,7 @@
+# v0.3.3
+
+- Bump PyYaml to version 6.0.1 as 6.0 is broken
+
 # v0.3.2
 
 - Make non built-in objects inspection depth controlable in `dd` recurdive call
