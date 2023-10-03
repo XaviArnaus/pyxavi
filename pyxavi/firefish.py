@@ -1,3 +1,4 @@
+from .debugger import dd
 import requests
 
 class Firefish:
@@ -81,9 +82,6 @@ class Firefish:
                 file.write(self.client_name + "\n")
                 file.write(self.bearer_token + "\n")
 
-        
-        
-    
     def __post_call(self, endpoint: str, headers: dict = {}, json: str = None):
         response = requests.post(
             url = f"{self.api_base_url}/{endpoint}",
@@ -95,6 +93,8 @@ class Firefish:
             },
             json=json
         )
+
+        dd(response)
 
         if response.status_code == 200:
             return response.content
