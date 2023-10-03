@@ -6,8 +6,8 @@ class Firefish:
     api_base_url: str = None
     client_name = None
 
-    
-    def create_app(self, client_name: str, api_base_url: str, to_file: str):
+    @staticmethod
+    def create_app(client_name: str, api_base_url: str, to_file: str):
         '''
         Do we even need to register the app?
         Not really, but this approach help us to define the API url and have it stored in a file.
