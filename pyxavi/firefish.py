@@ -28,11 +28,16 @@ class Firefish:
             file.write(client_name + "\n")
 
 
-    def __init__(self, client_id: str = None, api_base_url: str = None, access_token: str = None):
+    def __init__(self,
+                 client_id: str = None,
+                 api_base_url: str = None,
+                 access_token: str = None,
+                 feature_set: str = None):
         '''
         If client_id comes we expect to find a file called like client_id which contains the api_base_url.
         If access_token comes we expect to find a file called like access_token which contains both api_base_url and the user token from login.
         If api_base_url comes we just take it.
+        We just ignore feature_set.
 
         This is just to emulate the 2 step init that we have with Mastodon.py
         '''
