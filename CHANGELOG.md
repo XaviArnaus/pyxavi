@@ -1,3 +1,7 @@
+# v0.4.0
+
+- Add `firefish` class as a wrapper for the Firefish API calls that I need
+
 # v0.3.3
 
 - Bump PyYaml to version 6.0.1 as 6.0 is broken
