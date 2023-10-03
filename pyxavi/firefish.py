@@ -1,4 +1,3 @@
-from .debugger import dd
 import requests
 
 class Firefish:
@@ -26,7 +25,7 @@ class Firefish:
         # Write both. Order is important.
         with open(to_file, 'w') as file:
             file.write(api_base_url + "\n")
-            file.write(client_name + "\n")
+            file.write(client_name)
 
 
     def __init__(self,
@@ -46,15 +45,15 @@ class Firefish:
         # So we received a client_id, this is actually a filename so read it and get the params.
         if client_id is not None:
             with open(client_id, 'r') as file:
-                self.api_base_url = file.readline()
-                self.client_name = file.readline()
+                self.api_base_url = file.readline().strip()
+                self.client_name = file.readline().strip()
 
         # So we received an access_token, this is actually a filename so read it and get the params.
         if access_token is not None:
             with open(access_token, 'r') as file:
-                self.api_base_url = file.readline()
-                self.client_name = file.readline()
-                self.bearer_token = file.readline()
+                self.api_base_url = file.readline().strip()
+                self.client_name = file.readline().strip()
+                self.bearer_token = file.readline().strip()
         
         if api_base_url is not None:
             self.api_base_url = api_base_url
@@ -80,9 +79,12 @@ class Firefish:
             with open(to_file, 'w') as file:
                 file.write(self.api_base_url + "\n")
                 file.write(self.client_name + "\n")
-                file.write(self.bearer_token + "\n")
+                file.write(self.bearer_token)
 
-    def __post_call(self, endpoint: str, headers: dict = {}, json: str = None):
+    def __post_call(self, endpoint: str, headers: dict = {}, json_data: str = None):
+        '''
+        This is the method that proxies (and builds) all API POST calls.
+        '''
         response = requests.post(
             url = f"{self.api_base_url}/{endpoint}",
             headers={
@@ -91,10 +93,8 @@ class Firefish:
                     'Authorization': 'Bearer ' + self.bearer_token,
                 }
             },
-            json=json
+            json=json_data
         )
-
-        dd(response)
 
         if response.status_code == 200:
             return response.content
@@ -156,7 +156,15 @@ class Firefish:
 
         # Do we control visibility?
         if visibility is not None:
-            json_data["visibility"] = visibility
+            # Translate the values from Mastodon to Firefish
+            firefish_values_by_mastodon = {
+                "public": "public",
+                #"": "home",
+                "private": "followers",
+                "direct": "specified",
+                "unlisted": "hidden"
+            }
+            json_data["visibility"] = firefish_values_by_mastodon[visibility]
         
         # Do we define the language?
         if language is not None:
@@ -169,5 +177,5 @@ class Firefish:
         # Make the call
         return self.__post_call(
             endpoint = ENDPOINT,
-            json = json_data
+            json_data = json_data
         )
