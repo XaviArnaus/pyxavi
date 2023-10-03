@@ -28,10 +28,11 @@ class Firefish:
             file.write(client_name + "\n")
 
 
-    def __init__(self, client_id: str = None, access_token: str = None):
+    def __init__(self, client_id: str = None, api_base_url: str = None, access_token: str = None):
         '''
         If client_id comes we expect to find a file called like client_id which contains the api_base_url.
         If access_token comes we expect to find a file called like access_token which contains both api_base_url and the user token from login.
+        If api_base_url comes we just take it.
 
         This is just to emulate the 2 step init that we have with Mastodon.py
         '''
@@ -43,11 +44,18 @@ class Firefish:
                 self.client_name = file.readline()
 
         # So we received an access_token, this is actually a filename so read it and get the params.
-        if client_id is not None:
-            with open(client_id, 'r') as file:
+        if access_token is not None:
+            with open(access_token, 'r') as file:
                 self.api_base_url = file.readline()
                 self.client_name = file.readline()
                 self.bearer_token = file.readline()
+        
+        if api_base_url is not None:
+            self.api_base_url = api_base_url
+        
+        # If we don't have a client_name, means that nothing came with. Error!
+        if self.client_name is None:
+            raise RuntimeError("Mandatory params not found. Did you specify client_id or access_token?")
 
 
     def log_in(self, username: str = None, password: str = None, to_file: str = None):
