@@ -64,7 +64,7 @@ class Firefish:
             self.api_base_url = api_base_url
         
         # If we don't have a client_name, means that nothing came with. Error!
-        if self.client_name is None:
+        if self.client_name is None and self.api_base_url is None:
             raise RuntimeError("Mandatory params not found. Did you specify client_id or access_token?")
 
 
