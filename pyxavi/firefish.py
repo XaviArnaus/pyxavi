@@ -1,5 +1,6 @@
 import requests
 
+
 class Firefish:
 
     bearer_token: str = None
@@ -32,12 +33,13 @@ class Firefish:
             file.write(api_base_url + "\n")
             file.write(client_name)
 
-
-    def __init__(self,
-                 client_id: str = None,
-                 api_base_url: str = None,
-                 access_token: str = None,
-                 feature_set: str = None):
+    def __init__(
+        self,
+        client_id: str = None,
+        api_base_url: str = None,
+        access_token: str = None,
+        feature_set: str = None
+    ):
         '''
         If client_id comes we expect to find a file called like client_id which contains the api_base_url.
         If access_token comes we expect to find a file called like access_token which contains both api_base_url and the user token from login.
@@ -59,14 +61,15 @@ class Firefish:
                 self.api_base_url = file.readline().strip()
                 self.client_name = file.readline().strip()
                 self.bearer_token = file.readline().strip()
-        
+
         if api_base_url is not None:
             self.api_base_url = api_base_url
-        
+
         # If we don't have a client_name, means that nothing came with. Error!
         if self.client_name is None and self.api_base_url is None:
-            raise RuntimeError("Mandatory params not found. Did you specify client_id or access_token?")
-
+            raise RuntimeError(
+                "Mandatory params not found. Did you specify client_id or access_token?"
+            )
 
     def log_in(self, username: str = None, password: str = None, to_file: str = None):
         '''
@@ -76,8 +79,10 @@ class Firefish:
         If the to_file param is filled, we want to save the authentication into a file.
         '''
         if password is None:
-            raise RuntimeError("I need a Bearer token set into the 'password' param. Generate it and give it to me!")
-        
+            raise RuntimeError(
+                "I need a Bearer token set into the 'password' param. Generate it and give it to me!"
+            )
+
         self.bearer_token = password
 
         if to_file is not None:
@@ -91,10 +96,9 @@ class Firefish:
         This is the method that proxies (and builds) all API POST calls.
         '''
         response = requests.post(
-            url = f"{self.api_base_url}/{endpoint}",
+            url=f"{self.api_base_url}/{endpoint}",
             headers={
-                **headers,
-                **{
+                **headers, **{
                     'Authorization': 'Bearer ' + self.bearer_token,
                 }
             },
@@ -104,21 +108,25 @@ class Firefish:
         if response.status_code == 200:
             return response.content
         else:
-            raise RuntimeError(f"API Request ERROR -> {response.status_code}: {response.reason}")
+            raise RuntimeError(
+                f"API Request ERROR -> {response.status_code}: {response.reason}"
+            )
 
-    def status_post(self, 
-                    status: str,
-                    in_reply_to_id=None,
-                    media_ids=None,
-                    sensitive=False,
-                    visibility=None,
-                    spoiler_text=None,
-                    language=None,
-                    idempotency_key=None,
-                    content_type=None,
-                    scheduled_at=None,
-                    poll=None,
-                    quote_id=None):
+    def status_post(
+        self,
+        status: str,
+        in_reply_to_id=None,
+        media_ids=None,
+        sensitive=False,
+        visibility=None,
+        spoiler_text=None,
+        language=None,
+        idempotency_key=None,
+        content_type=None,
+        scheduled_at=None,
+        poll=None,
+        quote_id=None
+    ):
         '''
         Post a status. Can optionally be in reply to another status and contain media.
 
@@ -166,24 +174,20 @@ class Firefish:
         if visibility is not None:
             # Translate the values from Mastodon to Firefish
             firefish_values_by_mastodon = {
-                "public": "public",
-                #"": "home",
+                "public": "public",  #"": "home",
                 "private": "followers",
                 "direct": "specified",
                 "unlisted": "hidden"
             }
             json_data["visibility"] = firefish_values_by_mastodon[visibility]
-        
+
         # Do we define the language?
         if language is not None:
             json_data["lang"] = language
-        
+
         # Is this a reply to another status?
         if in_reply_to_id is not None:
             json_data["replyId"] = in_reply_to_id
-        
+
         # Make the call
-        return self.__post_call(
-            endpoint = ENDPOINT,
-            json_data = json_data
-        )
+        return self.__post_call(endpoint=ENDPOINT, json_data=json_data)
