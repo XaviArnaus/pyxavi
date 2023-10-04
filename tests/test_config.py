@@ -43,7 +43,7 @@ def test_initialize_config_with_another_filename():
 
 @patch("os.path.exists", new=os_path_exists_false)
 def test_initialize_config_file_not_found_exception():
-    with TestCase.assertRaises("bundle_basic.config", RuntimeError):
+    with TestCase.assertRaises("pyxavi.config", RuntimeError):
         _ = Config()
 
 
