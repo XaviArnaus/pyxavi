@@ -75,6 +75,14 @@ download files discovering the mime types.
 A class that wraps the API to report to [Janitor](https://github.com/XaviArnaus/janitor), a
 separated GitHub repository project.
 
+## The `firefish` module
+
+A class that wraps the API for [Firefish](https://firefish.social/api-doc). It is meant to be 
+interchangeable with the [Mastodon.py](https://mastodonpy.readthedocs.io/en/latest/index.html) 
+wrapper library, so one could inject any of both.
+
+At this point of time it only covers posting a new status (creating a note in Firefish).
+
 
 # How to use it
 
@@ -124,7 +132,7 @@ from pyxavi.logger import Logger
 3. Now just add the following lines to instantiate the config and the logger using the config.
 ```python
 config = Config()
-logger = Logger(config).getLogger()
+logger = Logger(config).get_logger()
 ```
 This will give you a `config` object with the parameters in the config file, and a `logger`
 object ready to log events using the built-in interface.
@@ -143,7 +151,7 @@ from pyxavi.logger import Logger
 from pyxavi.debugger import dd
 
 config = Config()
-logger = Logger(config).getLogger()
+logger = Logger(config).get_logger()
 
 app_name = config.get("app.name", "Default app's name")
 logger.info(f"The config file says the app's name is {app_name}")

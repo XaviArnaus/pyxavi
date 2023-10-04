@@ -1,3 +1,7 @@
+# v0.4.1
+
+- Added missing documentation
+
 # v0.4.0
 
 - Add `firefish` class as a wrapper for the Firefish API calls that I need
