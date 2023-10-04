@@ -48,4 +48,13 @@ class Logger:
         self._logger = logging.getLogger(config.get("logger.name", "custom_logger"))
 
     def getLogger(self) -> logging:
+        import warnings
+        warnings.warn(
+            "From v0.5.0 this method will disappear. Use get_logger() instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return self._logger
+
+    def get_logger(self) -> logging:
         return self._logger

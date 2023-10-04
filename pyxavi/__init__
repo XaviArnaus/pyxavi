@@ -4,12 +4,15 @@ from .storage import Storage
 from .debugger import dd, traceback
 from .media import Media
 from .terminal_color import TerminalColor
+from .firefish import Firefish
 
 __all__ = [
     "Config",
     "Logger",
     "Storage",
-    "dd", "traceback"
+    "dd", 
+    "traceback",
     "Media",
-    "TerminalColor"
+    "TerminalColor",
+    "Firefish"
 ]
