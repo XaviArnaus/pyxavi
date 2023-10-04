@@ -1,6 +1,7 @@
 # v0.4.0
 
 - Add `firefish` class as a wrapper for the Firefish API calls that I need
+- Add a `logger.get_logger()` and mark `logger.getLogger()` as deprecated, to be removed in v0.5.0
 
 # v0.3.3
 

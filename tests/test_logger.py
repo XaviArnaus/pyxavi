@@ -27,7 +27,7 @@ def test_initialize_logger():
 
     config = Config()
 
-    new_instance = Logger(config).getLogger()
+    new_instance = Logger(config).get_logger()
 
     from_logging = logging.getLogger(CONFIG["logger.name"])
 
