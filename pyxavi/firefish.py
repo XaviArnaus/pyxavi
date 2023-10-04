@@ -150,6 +150,9 @@ class Firefish:
         '''
         ENDPOINT = "api/notes/create"
 
+        if status is None:
+            raise RuntimeError("Field 'status' is mandatory")
+
         # Text is mandatory
         json_data = {
             "text": status,

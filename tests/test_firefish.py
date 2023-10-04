@@ -151,3 +151,125 @@ def test_log_in_with_password():
         )
 
         assert instance.bearer_token == token
+
+@pytest.mark.parametrize(
+    argnames=('endpoint', 'headers', 'json_data', 'expected_status_code', 'expected_content', 'expected_reason'),
+    argvalues=[
+        ("/api/notes/create", {}, {"text": "test"}, 200, "OK", None),
+        ("/api/notes/create", {}, {"text": "test"}, 401, None, "Unauthortised")
+    ],
+)
+def test__post_call(endpoint, headers, json_data, expected_status_code, expected_content, expected_reason):
+    access_token_filename = "user.secret"
+    access_token_client_name = "Client"
+    access_token_api_base_url = "https://social.devnamic.com"
+    access_token_token = "abcdefg123456"
+    access_token_content = f"{access_token_api_base_url}\n{access_token_client_name}\n{access_token_token}"
+
+    with patch.object(builtins, "open", mock_open(read_data=access_token_content)):
+        instance = Firefish(access_token=access_token_filename)
+
+    class Response:
+        status_code: int
+        content: str
+        reason: str
+
+        def __init__(self,
+                     status_code: int,
+                     content: str = None,
+                     reason: str = None) -> None:
+            self.status_code = status_code
+            self.content = content
+            self.reason = reason
+
+    mocked_requests_post = Mock()
+    mocked_requests_post.return_value = Response(status_code=expected_status_code,
+                                                 content=expected_content,
+                                                 reason=expected_reason)
+    with patch.object(requests, "post", new=mocked_requests_post):
+        if expected_status_code == 200:
+            returned_content = instance._Firefish__post_call(endpoint=endpoint,
+                                                    headers=headers,
+                                                    json_data=json_data)
+            assert returned_content == expected_content
+        else:
+            with TestCase.assertRaises(instance, RuntimeError):
+                instance._Firefish__post_call(endpoint=endpoint,
+                                headers=headers,
+                                json_data=json_data)
+
+@pytest.mark.parametrize(
+    argnames=('status', 'in_reply_to_id', 'media_ids', 'sensitive', 'visibility', 'spoiler_text', 'language', 'idempotency_key', 'content_type', 'scheduled_at', 'poll', 'quote_id', 'expected_endpoint', 'expected_json'),
+    argvalues=[
+        (None, None, None, None, None, None, None, None, None, None, None, None, None, None),
+        ("test content", None, None, None, None, None, None, None, None, None, None, None, "api/notes/create", {"text": "test content"}),
+        ("test content", None, [123], None, None, None, None, None, None, None, None, None, "api/notes/create", {"text": "test content", "fileIds": [123]}),
+        ("test content", None, None, None, "public", None, None, None, None, None, None, None, "api/notes/create", {"text": "test content", "visibility": "public"}),
+        ("test content", None, None, None, "private", None, None, None, None, None, None, None, "api/notes/create", {"text": "test content", "visibility": "followers"}),
+        ("test content", None, None, None, "direct", None, None, None, None, None, None, None, "api/notes/create", {"text": "test content", "visibility": "specified"}),
+        ("test content", None, None, None, "unlisted", None, None, None, None, None, None, None, "api/notes/create", {"text": "test content", "visibility": "hidden"}),
+        ("test content", None, None, None, None, None, "ca", None, None, None, None, None, "api/notes/create", {"text": "test content", "lang": "ca"}),
+        ("test content", 1234, None, None, None, None, None, None, None, None, None, None, "api/notes/create", {"text": "test content", "replyId": 1234}),
+    ],
+)
+def test_status_post(status,
+                    in_reply_to_id,
+                    media_ids,
+                    sensitive,
+                    visibility,
+                    spoiler_text,
+                    language,
+                    idempotency_key,
+                    content_type,
+                    scheduled_at,
+                    poll,
+                    quote_id,
+                    expected_endpoint,
+                    expected_json):
+    access_token_filename = "user.secret"
+    access_token_client_name = "Client"
+    access_token_api_base_url = "https://social.devnamic.com"
+    access_token_token = "abcdefg123456"
+    access_token_content = f"{access_token_api_base_url}\n{access_token_client_name}\n{access_token_token}"
+
+    with patch.object(builtins, "open", mock_open(read_data=access_token_content)):
+        instance = Firefish(access_token=access_token_filename)
+
+    if status is None:
+        with TestCase.assertRaises(instance, RuntimeError):
+            instance.status_post(
+                status,
+                in_reply_to_id,
+                media_ids,
+                sensitive,
+                visibility,
+                spoiler_text,
+                language,
+                idempotency_key,
+                content_type,
+                scheduled_at,
+                poll,
+                quote_id
+            )
+    else:
+        mocked_post_call = Mock()
+        with patch.object(instance, "_Firefish__post_call", new=mocked_post_call):
+            _ = instance.status_post(
+                status,
+                in_reply_to_id,
+                media_ids,
+                sensitive,
+                visibility,
+                spoiler_text,
+                language,
+                idempotency_key,
+                content_type,
+                scheduled_at,
+                poll,
+                quote_id
+            )
+
+            mocked_post_call.assert_called_once_with(
+                endpoint = expected_endpoint,
+                json_data = expected_json
+            )
