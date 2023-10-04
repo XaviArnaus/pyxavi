@@ -18,6 +18,11 @@ class Firefish:
             - Write the api_base_url
         '''
 
+        if client_name is None or \
+            api_base_url is None or \
+            to_file is None:
+            raise RuntimeError("All params are mandatory")
+
         # Clean the given API base URL before keeping it in mem.
         if api_base_url[-1] == "/":
             api_base_url = api_base_url[:-1]
