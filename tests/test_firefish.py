@@ -4,7 +4,6 @@ from unittest import TestCase
 import pytest
 import builtins
 import requests
-import socket
 
 
 @pytest.mark.parametrize(
@@ -55,7 +54,7 @@ def test_init_with_client_id():
     client_id_filename = "client.secret"
     client_id_client_name = "Client"
     client_id_api_base_url = "https://social.devnamic.com"
-    client_id_content = f"{client_id_api_base_url}\n{client_id_client_name}"
+    client_id_content = "\n".join([client_id_api_base_url, client_id_client_name])
 
     mocked_open_file = MagicMock()
     with patch.object(builtins,
@@ -73,7 +72,7 @@ def test_init_with_client_id_and_api_base_url():
     client_id_client_name = "Client"
     client_id_api_base_url = "https://social.devnamic.com"
     instance_api_base_url = "https://talamanca.social"
-    client_id_content = f"{client_id_api_base_url}\n{client_id_client_name}"
+    client_id_content = "\n".join([client_id_api_base_url, client_id_client_name])
 
     mocked_open_file = MagicMock()
     with patch.object(builtins,
@@ -91,7 +90,9 @@ def test_init_with_access_token():
     access_token_client_name = "Client"
     access_token_api_base_url = "https://social.devnamic.com"
     access_token_token = "abcdefg123456"
-    access_token_content = f"{access_token_api_base_url}\n{access_token_client_name}\n{access_token_token}"
+    access_token_content = "\n".join(
+        [access_token_api_base_url, access_token_client_name, access_token_token]
+    )
 
     mocked_open_file = MagicMock()
     with patch.object(builtins,
@@ -111,7 +112,9 @@ def test_init_with_access_token_with_api_base_url():
     access_token_api_base_url = "https://social.devnamic.com"
     instance_api_base_url = "https://talamanca.social"
     access_token_token = "abcdefg123456"
-    access_token_content = f"{access_token_api_base_url}\n{access_token_client_name}\n{access_token_token}"
+    access_token_content = "\n".join(
+        [access_token_api_base_url, access_token_client_name, access_token_token]
+    )
 
     mocked_open_file = MagicMock()
     with patch.object(builtins,
@@ -131,7 +134,7 @@ def test_log_in_without_password():
     client_id_filename = "client.secret"
     client_id_client_name = "Client"
     client_id_api_base_url = "https://social.devnamic.com"
-    client_id_content = f"{client_id_api_base_url}\n{client_id_client_name}"
+    client_id_content = "\n".join([client_id_api_base_url, client_id_client_name])
 
     mocked_open_file = MagicMock()
     with patch.object(builtins,
@@ -146,7 +149,7 @@ def test_log_in_with_password():
     client_id_filename = "client.secret"
     client_id_client_name = "Client"
     client_id_api_base_url = "https://social.devnamic.com"
-    client_id_content = f"{client_id_api_base_url}\n{client_id_client_name}"
+    client_id_content = "\n".join([client_id_api_base_url, client_id_client_name])
     token = "abcdefg123456"
     access_token_filename = "user.secret"
     access_token_filename = "user.secret"
@@ -197,7 +200,9 @@ def test__post_call(
     access_token_client_name = "Client"
     access_token_api_base_url = "https://social.devnamic.com"
     access_token_token = "abcdefg123456"
-    access_token_content = f"{access_token_api_base_url}\n{access_token_client_name}\n{access_token_token}"
+    access_token_content = "\n".join(
+        [access_token_api_base_url, access_token_client_name, access_token_token]
+    )
 
     with patch.object(builtins, "open", mock_open(read_data=access_token_content)):
         instance = Firefish(access_token=access_token_filename)
@@ -406,7 +411,9 @@ def test_status_post(
     access_token_client_name = "Client"
     access_token_api_base_url = "https://social.devnamic.com"
     access_token_token = "abcdefg123456"
-    access_token_content = f"{access_token_api_base_url}\n{access_token_client_name}\n{access_token_token}"
+    access_token_content = "\n".join(
+        [access_token_api_base_url, access_token_client_name, access_token_token]
+    )
 
     with patch.object(builtins, "open", mock_open(read_data=access_token_content)):
         instance = Firefish(access_token=access_token_filename)

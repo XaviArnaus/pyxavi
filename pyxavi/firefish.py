@@ -11,7 +11,8 @@ class Firefish:
     def create_app(client_name: str, api_base_url: str, to_file: str):
         '''
         Do we even need to register the app?
-        Not really, but this approach help us to define the API url and have it stored in a file.
+        Not really, but this approach help us to define the API url and
+            have it stored in a file.
 
         So we emulate the behaviour in Mastodon.py:
             - Create / Overwrite a file.
@@ -20,8 +21,8 @@ class Firefish:
         '''
 
         if client_name is None or \
-            api_base_url is None or \
-            to_file is None:
+           api_base_url is None or \
+           to_file is None:
             raise RuntimeError("All params are mandatory")
 
         # Clean the given API base URL before keeping it in mem.
@@ -41,21 +42,25 @@ class Firefish:
         feature_set: str = None
     ):
         '''
-        If client_id comes we expect to find a file called like client_id which contains the api_base_url.
-        If access_token comes we expect to find a file called like access_token which contains both api_base_url and the user token from login.
+        If client_id comes we expect to find a file called like client_id
+            which contains the api_base_url.
+        If access_token comes we expect to find a file called like access_token
+            which contains both api_base_url and the user token from login.
         If api_base_url comes we just take it.
         We just ignore feature_set.
 
         This is just to emulate the 2 step init that we have with Mastodon.py
         '''
 
-        # So we received a client_id, this is actually a filename so read it and get the params.
+        # So we received a client_id,
+        # this is actually a filename so read it and get the params.
         if client_id is not None:
             with open(client_id, 'r') as file:
                 self.api_base_url = file.readline().strip()
                 self.client_name = file.readline().strip()
 
-        # So we received an access_token, this is actually a filename so read it and get the params.
+        # So we received an access_token,
+        # this is actually a filename so read it and get the params.
         if access_token is not None:
             with open(access_token, 'r') as file:
                 self.api_base_url = file.readline().strip()
@@ -74,13 +79,14 @@ class Firefish:
     def log_in(self, username: str = None, password: str = None, to_file: str = None):
         '''
         I only need a Bearer token for authentication. Let's use "password" to receive it.
-        If the method is called, I assume that the class instatiaton was using the client_id, 
+        If the method is called, I assume that the class instatiaton was using the client_id,
             so we should have already the client_id params in memory.
         If the to_file param is filled, we want to save the authentication into a file.
         '''
         if password is None:
             raise RuntimeError(
-                "I need a Bearer token set into the 'password' param. Generate it and give it to me!"
+                "I need a Bearer token set into the 'password' param." +
+                "Generate it and give it to me!"
             )
 
         self.bearer_token = password
@@ -128,31 +134,71 @@ class Firefish:
         quote_id=None
     ):
         '''
-        Post a status. Can optionally be in reply to another status and contain media.
+        Post a status. Can optionally be in reply to
+            another status and contain media.
 
-        media_ids should be a list. (If it’s not, the function will turn it into one.) It can contain up to four pieces of media (uploaded via media_post()). media_ids can also be the `media dicts`_ returned by media_post() - they are unpacked automatically.
+        media_ids should be a list. (If it’s not, the function
+            will turn it into one.) It can contain up to four
+            pieces of media (uploaded via media_post()).
+            media_ids can also be the `media dicts`_
+            returned by media_post() - they are unpacked
+            automatically.
 
-        [not implemented] The sensitive boolean decides whether or not media attached to the post should be marked as sensitive, which hides it by default on the Mastodon web front-end.
+        [to implement] The sensitive boolean decides whether
+            or not media attached to the post should be marked
+            as sensitive, which hides it by default on the
+            Mastodon web front-end.
 
-        The visibility parameter is a string value and accepts any of: ‘direct’ - post will be visible only to mentioned users ‘private’ - post will be visible only to followers ‘unlisted’ - post will be public but not appear on the public timeline ‘public’ - post will be public
+        The visibility parameter is a string value and
+            accepts any of: ‘direct’ - post will be visible
+            only to mentioned users ‘private’ - post will be
+            visible only to followers ‘unlisted’ - post will be
+            public but not appear on the public timeline
+            ‘public’ - post will be public
 
-        If not passed in, visibility defaults to match the current account’s default-privacy setting (starting with Mastodon version 1.6) or its locked setting - private if the account is locked, public otherwise (for Mastodon versions lower than 1.6).
+        If not passed in, visibility defaults to match the
+            current account’s default-privacy setting
+            (starting with Mastodon version 1.6) or its locked
+            setting - private if the account is locked,
+            public otherwise (for Mastodon versions lower than 1.6).
 
-        [not implemented] The spoiler_text parameter is a string to be shown as a warning before the text of the status. If no text is passed in, no warning will be displayed.
+        [to implement] The spoiler_text parameter is a string to be
+            shown as a warning before the text of the status.
+            If no text is passed in, no warning will be displayed.
 
-        Specify language to override automatic language detection. The parameter accepts all valid ISO 639-1 (2-letter) or for languages where that do not have one, 639-3 (three letter) language codes.
+        Specify language to override automatic language detection.
+            The parameter accepts all valid ISO 639-1 (2-letter)
+            or for languages where that do not have one,
+            639-3 (three letter) language codes.
 
-        [not implemented] You can set idempotency_key to a value to uniquely identify an attempt at posting a status. Even if you call this function more than once, if you call it with the same idempotency_key, only one status will be created.
+        [to implement] You can set idempotency_key to a value to
+            uniquely identify an attempt at posting a status.
+            Even if you call this function more than once,
+            if you call it with the same idempotency_key,
+            only one status will be created.
 
-        [not implemented] Pass a datetime as scheduled_at to schedule the toot for a specific time (the time must be at least 5 minutes into the future). If this is passed, status_post returns a scheduled status dict instead.
+        [to implement] Pass a datetime as scheduled_at to schedule
+            the toot for a specific time (the time must be
+            at least 5 minutes into the future). If this is passed,
+            status_post returns a scheduled status dict instead.
 
-        [not implemented] Pass poll to attach a poll to the status. An appropriate object can be constructed using make_poll() . Note that as of Mastodon version 2.8.2, you can only have either media or a poll attached, not both at the same time.
+        [to implement] Pass poll to attach a poll to the status.
+            An appropriate object can be constructed using make_poll().
+            Note that as of Mastodon version 2.8.2, you can only
+            have either media or a poll attached, not both at the same time.
 
-        [not implemented] Specific to “pleroma” feature set:: Specify content_type to set the content type of your post on Pleroma. It accepts ‘text/plain’ (default), ‘text/markdown’, ‘text/html’ and ‘text/bbcode’. This parameter is not supported on Mastodon servers, but will be safely ignored if set.
+        [to implement] Specific to “pleroma” feature set::
+            Specify content_type to set the content type of your
+            post on Pleroma. It accepts ‘text/plain’ (default),
+            ‘text/markdown’, ‘text/html’ and ‘text/bbcode’.
+            This parameter is not supported on Mastodon servers,
+            but will be safely ignored if set.
 
-        [not implemented] Specific to “fedibird” feature set:: The quote_id parameter is a non-standard extension that specifies the id of a quoted status.
+        [to implement] Specific to “fedibird” feature set::
+            The quote_id parameter is a non-standard extension
+            that specifies the id of a quoted status.
 
-        [not implemented] Returns a status dict with the new status.
+        [to implement] Returns a status dict with the new status.
 
         https://firefish.social/api-doc#operation/notes/create
         '''
@@ -174,7 +220,7 @@ class Firefish:
         if visibility is not None:
             # Translate the values from Mastodon to Firefish
             firefish_values_by_mastodon = {
-                "public": "public",  #"": "home",
+                "public": "public",  # "": "home",
                 "private": "followers",
                 "direct": "specified",
                 "unlisted": "hidden"
