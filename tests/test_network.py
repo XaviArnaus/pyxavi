@@ -1,9 +1,9 @@
 from pyxavi.network import Network, EXTERNAL_SERVICE_IPv4, EXTERNAL_SERVICE_IPv6
-from unittest.mock import Mock, patch, mock_open, call, MagicMock
-from unittest import TestCase
+from unittest.mock import Mock, patch, call
 import pytest
 import logging
 import requests
+
 
 @pytest.mark.parametrize(
     argnames=('address', 'expected_result'),
@@ -17,6 +17,7 @@ import requests
 def test_is_valid_ipv4(address, expected_result):
     assert Network.is_valid_ipv4(address=address) is expected_result
 
+
 @pytest.mark.parametrize(
     argnames=('address', 'expected_result'),
     argvalues=[
@@ -29,9 +30,10 @@ def test_is_valid_ipv4(address, expected_result):
 def test_is_valid_ipv6(address, expected_result):
     assert Network.is_valid_ipv6(address=address) is expected_result
 
+
 def test_get_external_ipv4_first_call_success_no_log():
     test_address = "1.1.1.1"
-    
+
     class Response:
         status_code: int
         text: str
@@ -41,27 +43,24 @@ def test_get_external_ipv4_first_call_success_no_log():
             self.status_code = status_code
             self.text = text
             self.reason = reason
-    
+
     mocked_requests_request = Mock()
-    mocked_requests_request.return_value = Response(
-        status_code=200, text=test_address
-    )
+    mocked_requests_request.return_value = Response(status_code=200, text=test_address)
     mocked_validator = Mock()
     mocked_validator.return_value = True
     with patch.object(requests, "get", new=mocked_requests_request):
         with patch.object(Network, "is_valid_ipv4", new=mocked_validator):
             address = Network.get_external_ipv4()
 
-            mocked_requests_request.assert_called_once_with(
-                EXTERNAL_SERVICE_IPv4["ipfy IPv4"]
-            )
+            mocked_requests_request.assert_called_once_with(EXTERNAL_SERVICE_IPv4["ipfy IPv4"])
 
             assert address == test_address
+
 
 def test_get_external_ipv4_first_call_success_with_log():
     test_address = "1.1.1.1"
     logger = logging.getLogger()
-    
+
     class Response:
         status_code: int
         text: str
@@ -71,11 +70,9 @@ def test_get_external_ipv4_first_call_success_with_log():
             self.status_code = status_code
             self.text = text
             self.reason = reason
-    
+
     mocked_requests_request = Mock()
-    mocked_requests_request.return_value = Response(
-        status_code=200, text=test_address
-    )
+    mocked_requests_request.return_value = Response(status_code=200, text=test_address)
     mocked_validator = Mock()
     mocked_validator.return_value = True
     mocked_logger_debug = Mock()
@@ -90,16 +87,17 @@ def test_get_external_ipv4_first_call_success_with_log():
 
                 mocked_logger_debug.assert_has_calls(
                     [
-                        call(f"Getting external IP from ipfy IPv4"),
+                        call("Getting external IP from ipfy IPv4"),
                         call(f"External IP: {test_address}")
                     ]
                 )
 
                 assert address == test_address
 
+
 def test_get_external_ipv4_second_call_success_no_log():
     test_address = "1.1.1.1"
-    
+
     class Response:
         status_code: int
         text: str
@@ -109,7 +107,7 @@ def test_get_external_ipv4_second_call_success_no_log():
             self.status_code = status_code
             self.text = text
             self.reason = reason
-    
+
     mocked_requests_request = Mock()
     mocked_requests_request.side_effect = [
         Response(status_code=429, reason="Too Many Requests"),
@@ -130,10 +128,11 @@ def test_get_external_ipv4_second_call_success_no_log():
 
             assert address == test_address
 
+
 def test_get_external_ipv4_second_call_success_with_log():
     test_address = "1.1.1.1"
     logger = logging.getLogger()
-    
+
     class Response:
         status_code: int
         text: str
@@ -143,7 +142,7 @@ def test_get_external_ipv4_second_call_success_with_log():
             self.status_code = status_code
             self.text = text
             self.reason = reason
-    
+
     mocked_requests_request = Mock()
     mocked_requests_request.side_effect = [
         Response(status_code=429, reason="Too Many Requests"),
@@ -168,8 +167,8 @@ def test_get_external_ipv4_second_call_success_with_log():
 
                     mocked_logger_debug.assert_has_calls(
                         [
-                            call(f"Getting external IP from ipfy IPv4"),
-                            call(f"Getting external IP from ident.me IPv4"),
+                            call("Getting external IP from ipfy IPv4"),
+                            call("Getting external IP from ident.me IPv4"),
                             call(f"External IP: {test_address}")
                         ]
                     )
@@ -181,9 +180,10 @@ def test_get_external_ipv4_second_call_success_with_log():
 
                     assert address == test_address
 
+
 def test_get_external_ipv6_first_call_success_no_log():
     test_address = "2001:db8:3333:4444:5555:6666:7777:8888"
-    
+
     class Response:
         status_code: int
         text: str
@@ -193,11 +193,9 @@ def test_get_external_ipv6_first_call_success_no_log():
             self.status_code = status_code
             self.text = text
             self.reason = reason
-    
+
     mocked_requests_request = Mock()
-    mocked_requests_request.return_value = Response(
-        status_code=200, text=test_address
-    )
+    mocked_requests_request.return_value = Response(status_code=200, text=test_address)
     mocked_validator = Mock()
     mocked_validator.return_value = True
     with patch.object(requests, "get", new=mocked_requests_request):
@@ -210,10 +208,11 @@ def test_get_external_ipv6_first_call_success_no_log():
 
             assert address == test_address
 
-def test_get_external_ipv4_first_call_success_with_log():
+
+def test_get_external_ipv6_second_call_success_with_log():
     test_address = "2001:db8:3333:4444:5555:6666:7777:8888"
     logger = logging.getLogger()
-    
+
     class Response:
         status_code: int
         text: str
@@ -223,11 +222,9 @@ def test_get_external_ipv4_first_call_success_with_log():
             self.status_code = status_code
             self.text = text
             self.reason = reason
-    
+
     mocked_requests_request = Mock()
-    mocked_requests_request.return_value = Response(
-        status_code=200, text=test_address
-    )
+    mocked_requests_request.return_value = Response(status_code=200, text=test_address)
     mocked_validator = Mock()
     mocked_validator.return_value = True
     mocked_logger_debug = Mock()
@@ -242,7 +239,7 @@ def test_get_external_ipv4_first_call_success_with_log():
 
                 mocked_logger_debug.assert_has_calls(
                     [
-                        call(f"Getting external IP from ident.me IPv6"),
+                        call("Getting external IP from ident.me IPv6"),
                         call(f"External IP: {test_address}")
                     ]
                 )
