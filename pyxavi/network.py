@@ -38,7 +38,7 @@ class Network:
     
     @staticmethod
     def _call(endpoint: str) -> str:
-        response = requests.request('GET', endpoint)
+        response = requests.get(endpoint)
         if response.status_code == 200:
             return response.text
         else:
