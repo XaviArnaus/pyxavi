@@ -83,6 +83,12 @@ wrapper library, so one could inject any of both.
 
 At this point of time it only covers posting a new status (creating a note in Firefish).
 
+## The `network` module
+
+A class to perform some networking actions. At this point:
+- Get the external IP addres for IPv4 and IPv6
+- Validate an IPv4 and IPv6 IP address
+
 
 # How to use it
 
