@@ -1,6 +1,6 @@
 # Changelog
 
-## [v0.5.1](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.5.0) - 2023-10-06
+## [v0.5.1](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.5.1) - 2023-10-06
 
 ### Changed
 
