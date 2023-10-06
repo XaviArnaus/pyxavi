@@ -69,7 +69,7 @@ class Network:
                 logger.error("The content from the external service is not a valid IPv4")
 
     @staticmethod
-    def get_external_ipv6(logger: logging = None) -> str | bool:
+    def get_external_ipv6(logger: logging = None) -> str:
         address = None
         for name, url in EXTERNAL_SERVICE_IPv6.items():
             try:
