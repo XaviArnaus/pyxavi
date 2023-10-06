@@ -47,7 +47,7 @@ class Network:
             )
 
     @staticmethod
-    def get_external_ipv4(logger: logging = None) -> str | bool:
+    def get_external_ipv4(logger: logging = None) -> str:
         address = None
         for name, url in EXTERNAL_SERVICE_IPv4.items():
             try:
