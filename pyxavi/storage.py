@@ -63,25 +63,32 @@ class Storage:
                 if force:
                     if dictionary is not None and dictionary is dict:
                         dictionary[pieces[0]] = {}
-                    else:
+                    elif self._content is not None:
                         self._content[pieces[0]] = {}
+                    else:
+                        self._content = {
+                            pieces[0]: {}
+                        }
                 else:
                     raise RuntimeError(
                         "Storage path [{}] unknown in [{}]".format(
                             param_name, dictionary if dictionary is not None else self._content
                         )
                     )
-
+            # pepe = "yes" if dictionary is not None and pieces[0] in dictionary else "no"
+            # print(f"{pieces[0]} in {dictionary} -> {pepe}")
             self.set(
                 ".".join(pieces[1:]),
                 value,
-                self._content[pieces[0]] if dictionary is None else dictionary[pieces[0]] if dictionary else dictionary,
+                dictionary[pieces[0]] if dictionary is not None and dictionary is dict and pieces[0] in dictionary else self._content[pieces[0]],
                 force = force
             )
         else:
-            if dictionary is not None:
+            if dictionary is not None and dictionary is dict:
+                print(dictionary)
                 dictionary[param_name] = value
             elif self._content is not None:
+                print(self._content)
                 self._content[param_name] = value
             else:
                 self._content = {param_name: value}
