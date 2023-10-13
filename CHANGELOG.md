@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.5.2](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.5.2) - 2023-10-13
+
+### Added
+
+- The ability for `Logger` to receive a `base_path` so that the path can be correctly set, beyond what is said in the config.
+
 ## [v0.5.1](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.5.1) - 2023-10-06
 
 ### Changed
