@@ -1,6 +1,7 @@
 from .config import Config
 import logging
 import sys
+import os
 
 
 class Logger:
@@ -21,17 +22,19 @@ class Logger:
 
     """
 
-    def __init__(self, config: Config) -> None:
+    def __init__(self, config: Config, base_path: str = None) -> None:
         log_format = (
             config.get(
                 "logger.format", "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s"
             )
         )
-        filepath = config.get("logger.filename", 'debug.log')
 
         handlers = []
         if config.get("logger.to_file", False):
-            handlers.append(logging.FileHandler(filepath, mode='a'))
+            filename = config.get("logger.filename", 'debug.log')
+            if base_path is not None:
+                filename = os.path.join(base_path, filename)
+            handlers.append(logging.FileHandler(filename, mode='a'))
         if config.get("logger.to_stdout", False):
             handlers.append(logging.StreamHandler(sys.stdout))
 
