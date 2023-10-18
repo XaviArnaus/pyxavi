@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.5.3](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.5.3) - 2023-10-18
+
+### Added
+
+- The ability for `Config` to merge config files into the current instance. This enables to use several config files under a single Config instance.
+
 ## [v0.5.2](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.5.2) - 2023-10-13
 
 ### Added
