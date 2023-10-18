@@ -20,7 +20,7 @@ class Config(Storage):
 
     def read_file(self) -> None:
         if os.path.exists(self._filename):
-            self._content = super()._load_file_contents()
+            self._content = super()._load_file_contents(self._filename)
         else:
             raise RuntimeError(f"Config file [{self._filename}] not found")
 
