@@ -1,6 +1,8 @@
-from unittest.mock import patch, mock_open
+from unittest.mock import Mock, patch, call, mock_open
 from pyxavi.config import Config
+from pyxavi.storage import Storage
 from unittest import TestCase
+import os
 
 CONFIG = {"foo": {"bar": "hola", "foo2": {"bar2": "adios"}}, "que": "tal"}
 
@@ -82,3 +84,56 @@ def test_witting_or_setting_is_not_allowed():
 
     with TestCase.assertRaises(config, RuntimeError):
         config.write_file()
+
+
+@patch("os.path.exists", new=os_path_exists_true)
+def test_merging_from_file_path_exists():
+    first_file_name = "first.yaml"
+    first_file_content = CONFIG
+    second_file_name = "second.yaml"
+    second_file_content = {"molt": "be"}
+
+    mocked_load_file_contents = Mock()
+    mocked_load_file_contents.side_effect = [first_file_content, second_file_content]
+    with patch.object(Storage, "_load_file_contents", new=mocked_load_file_contents):
+        config = Config(filename=first_file_name)
+        config.merge_from_file(filename=second_file_name)
+
+    mocked_load_file_contents.assert_has_calls([call(first_file_name), call(second_file_name)])
+
+    assert config.get("que") == "tal"
+    assert config.get("molt") == "be"
+
+
+@patch("os.path.exists", new=os_path_exists_true)
+def test_merging_from_file_path_exists_and_overwrites():
+    first_file_name = "first.yaml"
+    first_file_content = CONFIG
+    second_file_name = "second.yaml"
+    second_file_content = {"que": "passa"}
+
+    mocked_load_file_contents = Mock()
+    mocked_load_file_contents.side_effect = [first_file_content, second_file_content]
+    with patch.object(Storage, "_load_file_contents", new=mocked_load_file_contents):
+        config = Config(filename=first_file_name)
+        config.merge_from_file(filename=second_file_name)
+
+    mocked_load_file_contents.assert_has_calls([call(first_file_name), call(second_file_name)])
+
+    assert config.get("que") == "passa"
+
+
+def test_merging_from_file_path_not_exists():
+    first_file_name = "first.yaml"
+    first_file_content = CONFIG
+
+    mocked_load_file_contents = Mock()
+    mocked_load_file_contents.return_value = first_file_content
+    mocked_path_exists = Mock()
+    mocked_path_exists.side_effect = [True, False]
+    with patch.object(os.path, "exists", new=mocked_path_exists):
+        with patch.object(Storage, "_load_file_contents", new=mocked_load_file_contents):
+            config = Config(filename=first_file_name)
+
+        with TestCase.assertRaises(config, RuntimeError):
+            config.merge_from_file(filename="second.yaml")

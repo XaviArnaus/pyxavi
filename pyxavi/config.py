@@ -20,9 +20,15 @@ class Config(Storage):
 
     def read_file(self) -> None:
         if os.path.exists(self._filename):
-            super()._load_file_contents()
+            self._content = super()._load_file_contents(self._filename)
         else:
-            raise RuntimeError("Config file not found")
+            raise RuntimeError(f"Config file [{self._filename}] not found")
+
+    def merge_from_file(self, filename: str) -> None:
+        if os.path.exists(filename):
+            self._content = {**self._content, **super()._load_file_contents(filename)}
+        else:
+            raise RuntimeError(f"Config file [{filename}] not found")
 
     def write_file(self) -> None:
         raise RuntimeError("Config class does not allow writting")
