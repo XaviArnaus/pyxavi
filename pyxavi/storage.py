@@ -20,13 +20,13 @@ class Storage:
         self._content = {}
         self.read_file()
 
-    def _load_file_contents(self) -> None:
+    def _load_file_contents(self) -> dict:
         with open(self._filename, 'r') as stream:
-            self._content = yaml.safe_load(stream)
+            return yaml.safe_load(stream)
 
     def read_file(self) -> None:
         if os.path.exists(self._filename):
-            self._load_file_contents()
+            self._content = self._load_file_contents()
         else:
             Path(self._filename).touch()
 
