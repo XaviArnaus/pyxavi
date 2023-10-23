@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.5.4](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.5.4) - 2023-10-23
+
+### Added
+
+- The ability for `Config` to merge dicts into the current instance. This enables to enrich the configs on the fly
+
 ## [v0.5.3](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.5.3) - 2023-10-18
 
 ### Added

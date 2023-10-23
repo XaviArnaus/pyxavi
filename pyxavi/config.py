@@ -24,9 +24,14 @@ class Config(Storage):
         else:
             raise RuntimeError(f"Config file [{self._filename}] not found")
 
+    def merge_from_dict(self, parameters: dict) -> None:
+        return {**self._content, **parameters}
+
     def merge_from_file(self, filename: str) -> None:
         if os.path.exists(filename):
-            self._content = {**self._content, **super()._load_file_contents(filename)}
+            self._content = self.merge_from_dict(
+                parameters=super()._load_file_contents(filename)
+            )
         else:
             raise RuntimeError(f"Config file [{filename}] not found")
 
