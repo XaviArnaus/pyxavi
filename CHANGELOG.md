@@ -1,9 +1,15 @@
 # Changelog
 
-## [Unreleased](https://github.com/XaviArnaus/pyxavi/)
+## [v0.6.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.6.0) - 2023-10-27
 
-- Added a `storage.get_keys_in()`.
-- Added a `Url` class for operations over URLs. At this point, just a shorthand for URL cleaning.
+### Added
+
+- Added a `storage.get_keys_in()` ([#18](https://github.com/XaviArnaus/pyxavi/pull/18))
+- Added a `Url` class for operations over URLs. At this point, just a shorthand for URL cleaning
+
+### Changed
+
+- Fixed a Dependant bot spotted issue ([#20](https://github.com/XaviArnaus/pyxavi/pull/20))
 
 ## [v0.5.5](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.5.5) - 2023-10-23
 
