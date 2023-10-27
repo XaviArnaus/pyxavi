@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/XaviArnaus/pyxavi/)
 
 - Added a `storage.get_keys_in()`.
+- Added a `Url` class for operations over URLs. At this point, just a shorthand for URL cleaning.
 
 ## [v0.5.5](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.5.5) - 2023-10-23
 
