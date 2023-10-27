@@ -98,3 +98,17 @@ class Storage:
         param_name = sha256(param_name.encode()).hexdigest()
 
         self.set(param_name, value)
+
+    def get_keys_in(self, param_name: str = None) -> list:
+
+        if param_name is not None:
+            obj = self.get(param_name=param_name)
+        else:
+            obj = self._content
+
+        if isinstance(obj, dict):
+            return [key for key in obj.keys()]
+        if isinstance(obj, list) or isinstance(obj, tuple) or isinstance(obj, set):
+            return [key for key in range(len(obj))]
+        else:
+            return None

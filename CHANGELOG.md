@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased](https://github.com/XaviArnaus/pyxavi/)
+
+- Added a `storage.get_keys_in()`.
+
 ## [v0.5.5](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.5.5) - 2023-10-23
 
 ### Changed
