@@ -89,6 +89,11 @@ A class to perform some networking actions. At this point:
 - Get the external IP addres for IPv4 and IPv6
 - Validate an IPv4 and IPv6 IP address
 
+## The `url` module
+
+A class to perform some actions over URLs. At this point:
+- Clean the URL based on given parameters
+
 
 # How to use it
 
