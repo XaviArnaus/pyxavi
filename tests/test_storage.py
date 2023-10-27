@@ -1,6 +1,7 @@
 from unittest.mock import patch, mock_open
 from pyxavi.storage import Storage
 from unittest import TestCase
+import pytest
 
 FILE = {
     "foo": {
@@ -13,9 +14,32 @@ FILE = {
 }
 FILENAME = "filename.yaml"
 
+GET_KEYS_FILE = {
+    "aaa": {
+        "aaa1": "1",
+        "aaa2": "2",
+        "aaa3": "3",
+    },
+    "bbb": {
+        "bbb1": "1",
+        "bbb2": "2",
+        "bbb3": "3",
+    },
+    "ccc": {
+        "c_set": set([1, 2, 3]), "c_tuple": tuple([1, 2, 3]), "c_list": [1, 2, 3]
+    },
+    "ddd": {
+        "eee": [4, 5, 6]
+    }
+}
+
 
 def patched_yaml_safe_load(stream):
     return FILE
+
+
+def patched_get_keys_yaml_safe_load(stream):
+    return GET_KEYS_FILE
 
 
 def os_path_exists_true(path):
@@ -177,3 +201,21 @@ def test_set_hashed():
     instance.set_hashed(key, 45)
 
     assert instance.get_hashed(key) == 45
+
+
+@pytest.mark.parametrize(
+    argnames=('param_name', 'expected_result'),
+    argvalues=[
+        (None, ["aaa", "bbb", "ccc", "ddd"]), ("aaa", ["aaa1", "aaa2", "aaa3"]),
+        ("bbb", ["bbb1", "bbb2", "bbb3"]), ("ccc.c_set", [0, 1, 2]), ("ccc.c_tuple", [0, 1, 2]),
+        ("ccc.c_list", [0, 1, 2]), ("ddd.eee", [0, 1, 2])
+    ]
+)
+@patch("yaml.safe_load", new=patched_get_keys_yaml_safe_load)
+@patch("builtins.open", mock_open(read_data=""))
+@patch("os.path.exists", new=os_path_exists_true)
+def test_get_keys_in(param_name, expected_result):
+
+    instance = Storage(FILENAME)
+
+    assert instance.get_keys_in(param_name=param_name) == expected_result
