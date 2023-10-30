@@ -1,5 +1,6 @@
 PATH_SEPARATOR_CHAR = "."
 
+
 class Dictionary:
     """Class to handle simple dictionary-based storage
 
