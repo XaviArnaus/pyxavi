@@ -1,3 +1,5 @@
+PATH_SEPARATOR_CHAR = "."
+
 class Dictionary:
     """Class to handle simple dictionary-based storage
 
@@ -22,12 +24,10 @@ class Dictionary:
 
     """
 
-    PATH_SEPARATOR_CHAR = "."
-
     def __init__(self, content: dict = {}, path_separator_char=None) -> None:
         self._content = content
         self._separator = path_separator_char\
-            if path_separator_char is not None else self.PATH_SEPARATOR_CHAR
+            if path_separator_char is not None else PATH_SEPARATOR_CHAR
 
     def get(self, param_name: str = "", default_value: any = None) -> any:
         if param_name.find(self._separator) > 0:
