@@ -15,24 +15,29 @@ Suggestions are welcome :)
 
 This package contains a set of modules, divided by functionality.
 
-## The `storage` module
+
+## The `Dictionary` module
+
+A class to bring some extras to work with `dict` object files, like getter and setter, checks,
+and a way to trasverse the object with keys like `family.category.parameter1.subparameter2`
+
+
+## The `Storage` module
 
 A class to bring a basic load/write, get/set behaviour for key/value file based storage. Under
-the hood it uses YAML files so they're human readable.
-
-What makes it special is the ability to read and write hierarchical keys like
-`family.category.parameter1`
+the hood it uses YAML files so they're human readable and inherits from the `Dictionary` module
+to enable easy data manipulation.
 
 
-## The `config` module
+## The `Config` module
 
-A class for read-only config values inheriting from the `storage` module.
+A class for read-only config values inheriting from the `Storage` module.
 
 
-## The `logger` module
+## The `Logger` module
 
 A class that helps setting up a built-in logger based on the configuration in a file, handled
-by the `config` module.
+by the `Config` module.
 
 For example, a `config.yaml` with parameters to configure the logger would look like this:
 ```yaml
@@ -53,29 +58,29 @@ logger:
 ```
 
 
-## The `debugger` module
+## The `Debugger` module
 
 A function library with a *PHP's var_dump()*-like function and other debugging tools
 
 
-## The `terminal_color` module
+## The `TerminalColor` module
 
 A class with a basic set of terminal color codes, ready to assist on printing colorful
 terminal messages.
 
 
-## The `media` module
+## The `Media` module
 
 A class for operations with media files, at this point extracting media URLs from texts and
 download files discovering the mime types.
 
 
-## The `janitor` module
+## The `Janitor` module
 
 A class that wraps the API to report to [Janitor](https://github.com/XaviArnaus/janitor), a
 separated GitHub repository project.
 
-## The `firefish` module
+## The `Firefish` module
 
 A class that wraps the API for [Firefish](https://firefish.social/api-doc). It is meant to be 
 interchangeable with the [Mastodon.py](https://mastodonpy.readthedocs.io/en/latest/index.html) 
@@ -83,13 +88,13 @@ wrapper library, so one could inject any of both.
 
 At this point of time it only covers posting a new status (creating a note in Firefish).
 
-## The `network` module
+## The `Network` module
 
 A class to perform some networking actions. At this point:
 - Get the external IP addres for IPv4 and IPv6
 - Validate an IPv4 and IPv6 IP address
 
-## The `url` module
+## The `Url` module
 
 A class to perform some actions over URLs. At this point:
 - Clean the URL based on given parameters

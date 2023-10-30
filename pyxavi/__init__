@@ -1,3 +1,4 @@
+from .dictionary import Dictionary
 from .config import Config
 from .logger import Logger
 from .storage import Storage
@@ -8,6 +9,7 @@ from .firefish import Firefish
 from .url import Url
 
 __all__ = [
+    "Dictionary",
     "Config",
     "Logger",
     "Storage",
