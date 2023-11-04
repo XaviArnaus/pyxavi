@@ -1,6 +1,7 @@
 from pyxavi.dictionary import Dictionary
 from unittest import TestCase
 import pytest
+from pyxavi.debugger import dd
 
 TEST_VALUES = {"foo": {"bar": "hola", "foo2": {"bar2": "adeu"}}, "que": "tal", "void": None}
 
@@ -22,6 +23,19 @@ TEST_VALUES_GET_KEYS = {
         "eee": [4, 5, 6]
     }
 }
+
+# TEST_VALUES_LIST_PATHS = {
+#     "aaa": ["a1", "a2", "a3"],
+#     "bbb": {
+#         "b1": "bb1",
+#         "b2": ["bb2", {"bb2b1": "bb2bb1"}, "bb3"],
+#         "b3": "b3",
+#     }
+# }
+
+
+def initialize_list_paths() -> Dictionary:
+    return Dictionary(TEST_VALUES_LIST_PATHS)
 
 
 def initialize_get_keys() -> Dictionary:
@@ -255,3 +269,79 @@ def test_to_dict():
     instance = initialize()
 
     assert instance.to_dict() == TEST_VALUES
+
+
+TEST_VALUES_LIST_PATHS = {
+    "aaa": ["a1", "a2", "a3"],
+    "bbb": {
+        "b1": "bb1",
+        "b2": ["bb2", {"bb2b1": "bb2bb1"}, "bb3"],
+        "b3": "b3",
+    },
+    "ccc": [
+        {"c1": "val_c1"},
+        {"c2": "val_c2"},
+        {"c3": "val_c3"},
+    ],
+    "ddd": [
+        {"d1": {"dd1": "val_d1"}},
+        {"d1": {"dd1": "val_d2"}},
+        {"d1": {"dd1": "val_d3"}},
+    ]
+}
+
+@pytest.mark.parametrize(
+    argnames=('param_name', 'expected_result'),
+    argvalues=[
+        ("aaa", ["a1", "a2", "a3"]),
+        ("aaa.1", "a2"),
+        ("aaa.3", None),
+        ("bbb.b2.1.bb2b1", "bb2bb1"),
+        ("bbb.b2.5.bb2b1", None)
+    ]
+)
+def test_support_paths_with_lists_in_get(param_name, expected_result):
+
+    instance = initialize_list_paths()
+
+    result = instance.get(param_name=param_name)
+
+    if isinstance(result, list):
+        assert len(result) == len(expected_result)
+        for i in range(0,len(expected_result)):
+            result[i] == expected_result[i]
+    else:
+        assert result == expected_result
+
+
+@pytest.mark.parametrize(
+    argnames=('param_name', 'value', 'expected_result_parent'),
+    argvalues=[
+        ("aaa.2", "x", ["a1", "a2", "x"]),
+        ("aaa.4", "x", ["a1", "a2", "a3", None, "x"]),
+        ("aaa.5", "x", ["a1", "a2", "a3", None, None, "x"]),
+        ("bbb.b2.1.bb2b1", "x", {"bb2b1": "x"}),
+        ("bbb.b2.5.bb2b1", "x", False)
+    ]
+)
+def test_support_paths_with_lists_in_set(param_name, value, expected_result_parent):
+
+    instance = initialize_list_paths()
+    backup = instance._content
+    
+    if expected_result_parent is False:
+        with TestCase.assertRaises(instance, RuntimeError):
+            instance.set(param_name=param_name, value=value)
+    else:
+        instance.set(param_name=param_name, value=value)
+
+        result_parent = instance.get_parent(param_name=param_name)
+        
+        if isinstance(result_parent, list):
+            assert len(result_parent) == len(expected_result_parent)
+            for i in range(0,len(expected_result_parent)):
+                result_parent[i] == expected_result_parent[i]
+        else:
+            assert result_parent == expected_result_parent
+    
+    instance._content = backup
