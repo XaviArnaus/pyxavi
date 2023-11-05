@@ -207,22 +207,30 @@ class Dictionary:
             return False
 
     def initialise_recursive(self, param_name: str) -> None:
+        last_key = self._get_focused_key(param_name=param_name)
         pieces = param_name.split(self._separator)
         parent_path = ""
         # We start assuming that self._content is already {}
         for piece in pieces:
             path = f"{parent_path}{piece}"
+            dd(path)
+            dd(self.key_exists(path))
             if not self.key_exists(path):
                 parent = self.get_parent(path)
-                if not isinstance(parent, dict):
-                    # we can't create children on non-dict values,
+                if (isinstance(parent, dict) and not self._is_int(piece)) or\
+                    (isinstance(parent, list) and self._is_int(piece)):
+                    self.set(path, {})
+                else:
+                    # We can't create children on non-dict/non-list values,
                     #   and we won't overwrite current values
+                    # This only applies to keysthat are in the middle of the path
+                    #   as we're expected to go deep and we actually can't.
                     raise RuntimeError(
                         f"The key {parent_path[:-1]} " +
-                        "already exists as a non-dict. I won't overwrite."
+                        "already exists as a non-dict or non-list. " +
+                        "I won't overwrite."
                     )
-                else:
-                    self.set(path, {})
+                    
             parent_path = f"{path}{self._separator}"
 
     def get_keys_in(self, param_name: str = None) -> list:

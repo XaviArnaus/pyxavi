@@ -131,32 +131,26 @@ def test_delete(param_name, expected_result):
 
     instance = initialize()
 
-    if expected_result:
-        backup_value = instance.get(param_name=param_name)
-
     assert instance.delete(param_name=param_name) == expected_result
 
     assert instance.key_exists(param_name=param_name) is False
 
-    if expected_result:
-        instance.set(param_name=param_name, value=backup_value)
-
 
 @pytest.mark.parametrize(
-    argnames=('param_name', 'needs_cleaning', "is_exception"),
+    argnames=('param_name', "is_exception"),
     argvalues=[
-        ("foo", False, False),
-        ("foo.bar", False, False),
-        ("foo.bar5", True, False),
-        ("foo.foo2", False, False),
-        ("foo.foo2.bar2", False, False),
-        ("foo.foo2.bar4.nope", True, False),
-        ("foo.foo2.bar4.nope.nope2", True, False),
-        ("foo.foo2.bar2.nope", False, True),
-        ("food", True, False),
+        ("foo", False),
+        ("foo.bar", False),
+        ("foo.bar5", False),
+        ("foo.foo2", False),
+        ("foo.foo2.bar2", False),
+        ("foo.foo2.bar4.nope", False),
+        ("foo.foo2.bar4.nope.nope2", False),
+        ("foo.foo2.bar2.nope", True),
+        ("food", False),
     ]
 )
-def test_initialise_recursive(param_name, needs_cleaning, is_exception):
+def test_initialise_recursive(param_name, is_exception):
 
     instance = initialize()
 
@@ -167,10 +161,6 @@ def test_initialise_recursive(param_name, needs_cleaning, is_exception):
         instance.initialise_recursive(param_name=param_name)
 
         assert instance.key_exists(param_name=param_name) is True
-
-        if needs_cleaning:
-            instance.delete(param_name=param_name)
-            assert instance.key_exists(param_name=param_name) is False
 
 
 def test_get_first_level():
@@ -357,3 +347,35 @@ def test_support_paths_with_lists_in_delete(param_name, expected_result_parent, 
             result_parent[i] == expected_result_parent[i]
     else:
         assert result_parent == expected_result_parent
+
+
+@pytest.mark.parametrize(
+    argnames=('param_name', 'expected_result_parent', 'raise_exception'),
+    argvalues=[
+        ("aaa.2", ["a1", "a2", "a3"], False),
+        ("aaa.0", ["a1", "a2", "a3"], False),
+        ("aaa.5", ["a1", "a2", "a3", None, None, {}], False),
+        ("aaa.5.new", {"new": {}}, False),
+        ("bbb.b2.1.bb2b1", {"bb2b1": "bb2bb1"}, False),
+        ("bbb.b2.5.bb2b1", {"bb2b1": {}}, False),
+        ("bbb.b2.bbb2.nope", None, True),
+        ("bbb.1.nope", None, True),
+    ]
+)
+def test_support_paths_with_lists_in_initialise_recursive(param_name, expected_result_parent, raise_exception):
+
+    instance = initialize_list_paths()
+    
+    if raise_exception:
+        with TestCase.assertRaises(instance, RuntimeError):
+            instance.initialise_recursive(param_name=param_name)
+    else:
+        instance.initialise_recursive(param_name=param_name)
+
+        result_parent = instance.get_parent(param_name=param_name)
+        if isinstance(result_parent, list):
+            assert len(result_parent) == len(expected_result_parent)
+            for i in range(0,len(expected_result_parent)):
+                result_parent[i] == expected_result_parent[i]
+        else:
+            assert result_parent == expected_result_parent
