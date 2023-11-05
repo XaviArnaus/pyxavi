@@ -75,33 +75,6 @@ class Dictionary:
     def get_all(self) -> dict:
         return self._content
 
-    # def set(self, param_name: str, value: any = None, dictionary=None):
-    #     if param_name is None:
-    #         raise RuntimeError("Params must have a name")
-
-    #     if param_name.find(self._separator) > 0:
-    #         pieces = param_name.split(self._separator)
-    #         if (dictionary is None and pieces[0] not in self._content) or \
-    #                 (dictionary is not None and pieces[0] not in dictionary):
-    #             raise RuntimeError(
-    #                 "Storage path [{}] unknown in [{}]".format(
-    #                     param_name, dictionary if dictionary else self._content
-    #                 )
-    #             )
-
-    #         self.set(
-    #             self._separator.join(pieces[1:]),
-    #             value,
-    #             self._content[pieces[0]] if not dictionary else dictionary[pieces[0]]
-    #         )
-    #     else:
-    #         if dictionary is not None:
-    #             dictionary[param_name] = value
-    #         elif self._content is not None:
-    #             self._content[param_name] = value
-    #         else:
-    #             self._content = {param_name: value}
-
     def _is_out_of_range(self, index: int, list_to_check: list) -> bool:
         try:
             list_to_check[index]
@@ -196,10 +169,16 @@ class Dictionary:
         if parent_object is None:
             return False
 
-        if not isinstance(parent_object, dict):
-            return False
-
-        return True if key_to_search in parent_object else False
+        if isinstance(parent_object, list) and self._is_int(key_to_search):
+            if self._is_out_of_range(int(key_to_search), parent_object):
+                return False
+            else:
+                return True
+        
+        if isinstance(parent_object, dict):
+            return True if key_to_search in parent_object else False
+        
+        return False
 
     def _get_focused_key(self, param_name: str) -> str:
         return param_name.split(self._separator)[-1]\
@@ -218,6 +197,10 @@ class Dictionary:
         if self.key_exists(param_name=param_name):
             parent = self.get_parent(param_name=param_name)
             key_to_delete = self._get_focused_key(param_name=param_name)
+            
+            if isinstance(parent, list) and self._is_int(key_to_delete):
+                key_to_delete = int(key_to_delete)
+
             del parent[key_to_delete]
             return True
         else:

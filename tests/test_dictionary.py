@@ -1,10 +1,10 @@
 from pyxavi.dictionary import Dictionary
 from unittest import TestCase
 import pytest
+import copy
 from pyxavi.debugger import dd
 
 TEST_VALUES = {"foo": {"bar": "hola", "foo2": {"bar2": "adeu"}}, "que": "tal", "void": None}
-
 TEST_VALUES_GET_KEYS = {
     "aaa": {
         "aaa1": "1",
@@ -24,14 +24,41 @@ TEST_VALUES_GET_KEYS = {
     }
 }
 
-# TEST_VALUES_LIST_PATHS = {
-#     "aaa": ["a1", "a2", "a3"],
-#     "bbb": {
-#         "b1": "bb1",
-#         "b2": ["bb2", {"bb2b1": "bb2bb1"}, "bb3"],
-#         "b3": "b3",
-#     }
-# }
+TEST_VALUES_LIST_PATHS = {
+    "aaa": ["a1", "a2", "a3"],
+    "bbb": {
+        "b1": "bb1",
+        "b2": ["bb2", {"bb2b1": "bb2bb1"}, "bb3"],
+        "b3": "b3",
+    },
+    "ccc": [
+        {"c1": "val_c1"},
+        {"c2": "val_c2"},
+        {"c3": "val_c3"},
+    ],
+    "ddd": [
+        {"d1": {"dd1": "val_d1"}},
+        {"d1": {"dd1": "val_d2"}},
+        {"d1": {"dd1": "val_d3"}},
+    ]
+}
+
+@pytest.fixture(autouse=True)
+def setup_function():
+    
+    global TEST_VALUES
+    global TEST_VALUES_GET_KEYS
+    global TEST_VALUES_LIST_PATHS
+
+    backup_1 = copy.deepcopy(TEST_VALUES)
+    backup_2 = copy.deepcopy(TEST_VALUES_GET_KEYS)
+    backup_3 = copy.deepcopy(TEST_VALUES_LIST_PATHS)
+
+    yield
+
+    TEST_VALUES_LIST_PATHS = backup_3
+    TEST_VALUES_GET_KEYS = backup_2
+    TEST_VALUES = backup_1
 
 
 def initialize_list_paths() -> Dictionary:
@@ -173,9 +200,6 @@ def test_set_first_level_new_value():
 
     assert instance.get("test"), "value"
 
-    # restore the test value
-    instance.set("test", None)
-
 
 def test_set_first_level_old_value():
     instance = initialize()
@@ -185,9 +209,6 @@ def test_set_first_level_old_value():
     instance.set("que", "passa")
 
     assert instance.get("que"), "passa"
-
-    # restore the test value
-    instance.set("que", "tal")
 
 
 def test_set_second_level_new_value():
@@ -199,9 +220,6 @@ def test_set_second_level_new_value():
 
     assert instance.get("foo.bar3") == "value3"
 
-    # restore the test value
-    instance.set("foo.bar3", None)
-
 
 def test_set_second_level_old_value():
     instance = initialize()
@@ -211,9 +229,6 @@ def test_set_second_level_old_value():
     instance.set("foo.bar", "hey")
 
     assert instance.get("foo.bar"), "hey"
-
-    # restore the test value
-    instance.set("foo.bar3", "hola")
 
 
 def test_set_third_level_new_value():
@@ -225,9 +240,6 @@ def test_set_third_level_new_value():
 
     assert instance.get("foo.foo2.bar3") == "value3"
 
-    # restore the test value
-    instance.set("foo.foo2.bar3", None)
-
 
 def test_set_third_level_old_value():
     instance = initialize()
@@ -237,9 +249,6 @@ def test_set_third_level_old_value():
     instance.set("foo.foo2.bar2", "fins despres")
 
     assert instance.get("foo.foo2.bar2") == "fins despres"
-
-    # restore the test value
-    instance.set("foo.foo2.bar2", "adeu")
 
 
 def test_set_bad_key():
@@ -270,25 +279,6 @@ def test_to_dict():
 
     assert instance.to_dict() == TEST_VALUES
 
-
-TEST_VALUES_LIST_PATHS = {
-    "aaa": ["a1", "a2", "a3"],
-    "bbb": {
-        "b1": "bb1",
-        "b2": ["bb2", {"bb2b1": "bb2bb1"}, "bb3"],
-        "b3": "b3",
-    },
-    "ccc": [
-        {"c1": "val_c1"},
-        {"c2": "val_c2"},
-        {"c3": "val_c3"},
-    ],
-    "ddd": [
-        {"d1": {"dd1": "val_d1"}},
-        {"d1": {"dd1": "val_d2"}},
-        {"d1": {"dd1": "val_d3"}},
-    ]
-}
 
 @pytest.mark.parametrize(
     argnames=('param_name', 'expected_result'),
@@ -327,7 +317,6 @@ def test_support_paths_with_lists_in_get(param_name, expected_result):
 def test_support_paths_with_lists_in_set(param_name, value, expected_result_parent):
 
     instance = initialize_list_paths()
-    backup = instance._content
     
     if expected_result_parent is False:
         with TestCase.assertRaises(instance, RuntimeError):
@@ -343,5 +332,28 @@ def test_support_paths_with_lists_in_set(param_name, value, expected_result_pare
                 result_parent[i] == expected_result_parent[i]
         else:
             assert result_parent == expected_result_parent
+
+
+@pytest.mark.parametrize(
+    argnames=('param_name', 'expected_result_parent', 'expect_it_deletes'),
+    argvalues=[
+        ("aaa.2", ["a1", "a2"], True),
+        ("aaa.0", ["a2", "a3"], True),
+        ("aaa.5", ["a1", "a2", "a3"], False),
+        ("bbb.b2.1.bb2b1", {}, True),
+        ("bbb.b2.5.bb2b1", None, False)
+    ]
+)
+def test_support_paths_with_lists_in_delete(param_name, expected_result_parent, expect_it_deletes):
+
+    instance = initialize_list_paths()
     
-    instance._content = backup
+    assert instance.delete(param_name=param_name) == expect_it_deletes
+
+    result_parent = instance.get_parent(param_name=param_name)
+    if isinstance(result_parent, list):
+        assert len(result_parent) == len(expected_result_parent)
+        for i in range(0,len(expected_result_parent)):
+            result_parent[i] == expected_result_parent[i]
+    else:
+        assert result_parent == expected_result_parent
