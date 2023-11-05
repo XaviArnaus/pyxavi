@@ -21,12 +21,49 @@ This package contains a set of modules, divided by functionality.
 A class to bring some extras to work with `dict` object files, like getter and setter, checks,
 and a way to trasverse the object with keys like `family.category.parameter1.subparameter2`
 
+For example, consider the following snippet:
+
+```python
+from pyxavi.dictionary import Dictionary
+
+d = {
+  "a": 1,
+  "b": "B",
+  "c": [1, 2],
+  "d": {"d1": "D1", "d2": "D2"},
+  "e": [
+    {"e1": "E1"},
+    {"e2": {"e21": "E21"}}
+  ]
+}
+
+instance = Dictionary(d)
+
+assert instance.get("a") == 1
+assert instance.get("c.0") == 1
+assert instance.get("d.d1") == "D1"
+assert instance.get("e.1.e2.e21") == "E21"
+assert instance.get("d.d3", "default") == "default"
+
+assert instance.key_exists("f.f1.foo") is False
+instance.initialise_recursive("f.f1.foo")
+assert instance.key_exists("f.f1.foo") is True
+instance.set("f.f1.foo", "bar")
+assert instance.get_parent("f.f1.foo") == {"foo": "bar"}
+
+assert instance.get_keys_in("d") == ["d1", "d2"]
+assert instance.delete("d.d9") is False
+assert instance.delete("c.1") is True
+assert instance.get("c") == [1]
+
+```
+
 
 ## The `Storage` module
 
 A class to bring a basic load/write, get/set behaviour for key/value file based storage. Under
 the hood it uses YAML files so they're human readable and inherits from the `Dictionary` module
-to enable easy data manipulation.
+to apply the easy data manipulation into the loaded yaml files.
 
 
 ## The `Config` module

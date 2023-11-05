@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.7.1](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.7.1) - 2023-11-05
+
+### Added
+
+- `Dictionary` class now can go through lists ([#23](https://github.com/XaviArnaus/pyxavi/pull/23))
+
 ## [v0.7.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.7.0) - 2023-10-30
 
 ### Added

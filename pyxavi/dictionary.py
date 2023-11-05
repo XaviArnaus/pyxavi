@@ -30,16 +30,41 @@ class Dictionary:
         self._separator = path_separator_char\
             if path_separator_char is not None else PATH_SEPARATOR_CHAR
 
+    def _is_int(self, element: str) -> bool:
+        if element[0] in ('-', '+'):
+            return element[1:].isdecimal()
+        return element.isdecimal()
+
     def get(self, param_name: str = "", default_value: any = None) -> any:
         if param_name.find(self._separator) > 0:
+            # bring it local so we can play with it
             local_content = self._content
             for item in param_name.split(self._separator):
-                if item in local_content and local_content[item] is not None:
-                    local_content = local_content[item]
+
+                if self._is_int(item):
+                    # It's an int, so it's meant to be the key of a list
+                    item = int(item)
+
+                    if isinstance(local_content, list) and\
+                       item < len(local_content) and\
+                       local_content[item] is not None:
+                        # If exists and is not None we keep digging
+                        local_content = local_content[item]
+                    else:
+                        # Otherwise we just return the default value
+                        return default_value
                 else:
-                    return default_value
+                    if item in local_content and local_content[item] is not None:
+                        # If exists and is not None we keep digging
+                        local_content = local_content[item]
+                    else:
+                        # Otherwise we just return the default value
+                        return default_value
+
+            # When reaching the end of the path, we return the value at this point
             return local_content
 
+        # In the case of a single item param_name, get directly from the content.
         return self._content[param_name] \
             if self._content and param_name in self._content \
             else default_value
@@ -47,32 +72,87 @@ class Dictionary:
     def get_all(self) -> dict:
         return self._content
 
-    def set(self, param_name: str, value: any = None, dictionary=None):
-        if param_name is None:
-            raise RuntimeError("Params must have a name")
+    def _is_out_of_range(self, index: int, list_to_check: list) -> bool:
+        try:
+            list_to_check[index]
+            return False
+        except IndexError:
+            return True
+
+    def __recursive_set(self, param_name: str, value: any, dictionary: any = None) -> None:
 
         if param_name.find(self._separator) > 0:
             pieces = param_name.split(self._separator)
-            if (dictionary is None and pieces[0] not in self._content) or \
-                    (dictionary is not None and pieces[0] not in dictionary):
-                raise RuntimeError(
-                    "Storage path [{}] unknown in [{}]".format(
-                        param_name, dictionary if dictionary else self._content
-                    )
-                )
 
-            self.set(
-                self._separator.join(pieces[1:]),
-                value,
-                self._content[pieces[0]] if not dictionary else dictionary[pieces[0]]
-            )
-        else:
-            if dictionary is not None:
-                dictionary[param_name] = value
-            elif self._content is not None:
-                self._content[param_name] = value
+            if self._is_int(pieces[0]):
+                item = int(pieces[0])
+
+                # The dictionary argument must be a list. Complain otherwise.
+                if not isinstance(dictionary, list):
+                    raise ValueError(
+                        f"With the key [{param_name}] I expect the parent to be a list," +
+                        f" but its [{type(dictionary)}]"
+                    )
+
+                if item < len(dictionary) and dictionary[item] is not None:
+                    self.__recursive_set(
+                        param_name=self._separator.join(pieces[1:]),
+                        value=value,
+                        dictionary=dictionary[item]
+                    )
+                else:
+                    raise RuntimeError(
+                        f"Dictionary path [{item}] is out of bounds for [{dictionary}]"
+                    )
+            elif isinstance(dictionary, dict):
+                # The dictionary argument is a dict
+                if pieces[0] not in dictionary:
+                    raise RuntimeError(
+                        f"Dictionary key [{pieces[0]}] is unknown in [{dictionary}]"
+                    )
+
+                self.__recursive_set(
+                    param_name=self._separator.join(pieces[1:]),
+                    value=value,
+                    dictionary=dictionary[pieces[0]]
+                )
             else:
-                self._content = {param_name: value}
+                # The dictionary argument is anything but a list or a dict
+                raise RuntimeError(f"Dictionary path [{param_name}] unknown in [{dictionary}]")
+        else:
+            if self._is_int(param_name):
+                # It's an int, so it's meant to be the key of a list
+                param_name = int(param_name)
+
+                # The dictionary must be a list. Complain otherwise.
+                if not isinstance(dictionary, list):
+                    raise ValueError(
+                        f"With the key [{param_name}] I expect the parent to be a list," +
+                        f" but its [{type(dictionary)}]"
+                    )
+
+                if param_name < len(dictionary):
+                    # Normal set. Possibly an overwrite.
+                    dictionary[param_name] = value
+                else:
+                    # So it is an append or a set out of bounds
+                    #   Let's fill with None until the desired index
+                    for idx in range(0, param_name + 1):
+                        if not self._is_out_of_range(idx, dictionary):
+                            continue
+                        else:
+                            dictionary.append(value if idx == param_name else None)
+            else:
+                if dictionary is not None:
+                    dictionary[param_name] = value
+                else:
+                    dictionary = {param_name: value}
+
+    def set(self, param_name: str, value: any = None):
+        if param_name is None:
+            raise RuntimeError("Params must have a name")
+
+        self.__recursive_set(param_name=param_name, value=value, dictionary=self._content)
 
     def key_exists(self, param_name: str) -> bool:
         key_to_search = self._get_focused_key(param_name=param_name)
@@ -81,10 +161,16 @@ class Dictionary:
         if parent_object is None:
             return False
 
-        if not isinstance(parent_object, dict):
-            return False
+        if isinstance(parent_object, list) and self._is_int(key_to_search):
+            if self._is_out_of_range(int(key_to_search), parent_object):
+                return False
+            else:
+                return True
 
-        return True if key_to_search in parent_object else False
+        if isinstance(parent_object, dict):
+            return True if key_to_search in parent_object else False
+
+        return False
 
     def _get_focused_key(self, param_name: str) -> str:
         return param_name.split(self._separator)[-1]\
@@ -103,6 +189,10 @@ class Dictionary:
         if self.key_exists(param_name=param_name):
             parent = self.get_parent(param_name=param_name)
             key_to_delete = self._get_focused_key(param_name=param_name)
+
+            if isinstance(parent, list) and self._is_int(key_to_delete):
+                key_to_delete = int(key_to_delete)
+
             del parent[key_to_delete]
             return True
         else:
@@ -116,15 +206,19 @@ class Dictionary:
             path = f"{parent_path}{piece}"
             if not self.key_exists(path):
                 parent = self.get_parent(path)
-                if not isinstance(parent, dict):
-                    # we can't create children on non-dict values,
+                if (isinstance(parent, dict) and not self._is_int(piece)) or\
+                   (isinstance(parent, list) and self._is_int(piece)):
+                    self.set(path, {})
+                else:
+                    # We can't create children on non-dict/non-list values,
                     #   and we won't overwrite current values
+                    # This only applies to keysthat are in the middle of the path
+                    #   as we're expected to go deep and we actually can't.
                     raise RuntimeError(
                         f"The key {parent_path[:-1]} " +
-                        "already exists as a non-dict. I won't overwrite."
+                        "already exists as a non-dict or non-list. " + "I won't overwrite."
                     )
-                else:
-                    self.set(path, {})
+
             parent_path = f"{path}{self._separator}"
 
     def get_keys_in(self, param_name: str = None) -> list:
