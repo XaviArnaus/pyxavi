@@ -2,19 +2,21 @@ from pyxavi.dictionary import Dictionary
 from unittest import TestCase
 import pytest
 import copy
-from pyxavi.debugger import dd
 
 TEST_CASES = {
     "foo": {
-        "bar": "hola",
-        "foo2": {"bar2": "adeu"}
+        "bar": "hola", "foo2": {
+            "bar2": "adeu"
+        }
     },
     "que": "tal",
     "void": None,
     "aaa": ["a1", "a2", "a3"],
     "bbb": {
         "b1": "bb1",
-        "b2": ["bb2", {"bb2b1": "bb2bb1"}, "bb3"],
+        "b2": ["bb2", {
+            "bb2b1": "bb2bb1"
+        }, "bb3"],
         "b3": "b3",
     },
     "ccc": {
@@ -28,18 +30,17 @@ TEST_CASES = {
         "ddd3": "3",
     },
     "eee": {
-        "e_set": set([1, 2, 3]), 
-        "e_tuple": tuple([1, 2, 3]),
-        "e_list": [1, 2, 3]
+        "e_set": set([1, 2, 3]), "e_tuple": tuple([1, 2, 3]), "e_list": [1, 2, 3]
     },
     "fff": {
         "fff": [4, 5, 6]
     }
 }
 
+
 @pytest.fixture(autouse=True)
 def setup_function():
-    
+
     global TEST_CASES
 
     backup = copy.deepcopy(TEST_CASES)
@@ -57,6 +58,7 @@ def test_get_all():
     instance = initialize_instance()
 
     assert instance.get_all() == TEST_CASES
+
 
 @pytest.mark.parametrize(
     argnames=('param_name', 'expected_result'),
@@ -93,7 +95,7 @@ def test_get(param_name, expected_result):
 
     if isinstance(result, list):
         assert len(result) == len(expected_result)
-        for i in range(0,len(expected_result)):
+        for i in range(0, len(expected_result)):
             assert result[i] == expected_result[i]
     elif isinstance(result, dict):
         assert len(result) == len(expected_result)
@@ -108,17 +110,41 @@ def test_get(param_name, expected_result):
     argnames=('param_name', 'value', 'expected_result_parent'),
     argvalues=[
         # First level, new value (the merge here is to avoid writting all the object)
-        ("test", "value", {**TEST_CASES,**{"test":"value"}}),
+        ("test", "value", {
+            **TEST_CASES, **{
+                "test": "value"
+            }
+        }),
         # First level, old value (the merge here is to avoid writting all the object)
-        ("que", "passa", {**TEST_CASES,**{"que":"passa"}}),
+        ("que", "passa", {
+            **TEST_CASES, **{
+                "que": "passa"
+            }
+        }),
         # Second level, new value (the merge here is to avoid writting all the object)
-        ("foo.bar3", "value3", {**TEST_CASES["foo"],**{"bar3":"value3"}}),
+        ("foo.bar3", "value3", {
+            **TEST_CASES["foo"], **{
+                "bar3": "value3"
+            }
+        }),
         # Second level, old value (the merge here is to avoid writting all the object)
-        ("foo.bar", "hey", {**TEST_CASES["foo"],**{"bar":"hey"}}),
+        ("foo.bar", "hey", {
+            **TEST_CASES["foo"], **{
+                "bar": "hey"
+            }
+        }),
         # Third level, new value (the merge here is to avoid writting all the object)
-        ("foo.foo2.bar3", "value3", {**TEST_CASES["foo"]["foo2"],**{"bar3":"value3"}}),
+        ("foo.foo2.bar3", "value3", {
+            **TEST_CASES["foo"]["foo2"], **{
+                "bar3": "value3"
+            }
+        }),
         # Third level, old value (the merge here is to avoid writting all the object)
-        ("foo.foo2.bar2", "hey", {**TEST_CASES["foo"]["foo2"],**{"bar2":"hey"}}),
+        ("foo.foo2.bar2", "hey", {
+            **TEST_CASES["foo"]["foo2"], **{
+                "bar2": "hey"
+            }
+        }),
         # Third level, the key in the middle of the path does not exists. Must raise.
         ("foo.foo3.bar2", 99, False),
         # Second level, old value, it's the iteration of a list
@@ -130,7 +156,9 @@ def test_get(param_name, expected_result):
         # Second level, new value, it's the iteration of a list out of the range by 3 positions.
         ("aaa.5", "x", ["a1", "a2", "a3", None, None, "x"]),
         # Fourth level, a key in between is an iteration of a list that exists. Old value
-        ("bbb.b2.1.bb2b1", "x", {"bb2b1": "x"}),
+        ("bbb.b2.1.bb2b1", "x", {
+            "bb2b1": "x"
+        }),
         # Fourth level, a key in between is an iteration of a list that not exists. Must raise.
         ("bbb.b2.5.bb2b1", "x", False)
     ]
@@ -138,7 +166,7 @@ def test_get(param_name, expected_result):
 def test_set(param_name, value, expected_result_parent):
 
     instance = initialize_instance()
-    
+
     if expected_result_parent is False:
         with TestCase.assertRaises(instance, RuntimeError):
             instance.set(param_name=param_name, value=value)
@@ -146,10 +174,10 @@ def test_set(param_name, value, expected_result_parent):
         instance.set(param_name=param_name, value=value)
 
         result_parent = instance.get_parent(param_name=param_name)
-        
+
         if isinstance(result_parent, list):
             assert len(result_parent) == len(expected_result_parent)
-            for i in range(0,len(expected_result_parent)):
+            for i in range(0, len(expected_result_parent)):
                 assert result_parent[i] == expected_result_parent[i]
         elif isinstance(result_parent, dict):
             assert len(result_parent) == len(expected_result_parent)
@@ -163,15 +191,9 @@ def test_set(param_name, value, expected_result_parent):
 @pytest.mark.parametrize(
     argnames=('param_name', 'expected_result'),
     argvalues=[
-        ("foo", True),
-        ("foo.bar", True),
-        ("foo.bar5", False),
-        ("foo.foo2", True),
-        ("foo.foo2.bar2", True),
-        ("foo.foo2.bar2.nope", False),
-        ("foo.foo2.bar2.nope.nope2", False),
-        ("food", False),
-        ("void", True)
+        ("foo", True), ("foo.bar", True), ("foo.bar5", False), ("foo.foo2", True),
+        ("foo.foo2.bar2", True), ("foo.foo2.bar2.nope", False),
+        ("foo.foo2.bar2.nope.nope2", False), ("food", False), ("void", True)
     ]
 )
 def test_key_exists(param_name, expected_result):
@@ -282,7 +304,8 @@ def test_delete(param_name, expected_delete, expected_result_parent):
         ("bbb.b2.5.bb2b1", False),
         # Fourth level, the iteration of the lists would be overwritten by a dict. Complains
         ("bbb.b2.bbb2.nope", True),
-        # Third level, it's an iteration of a list, exists the item and would be overwritten. Complains
+        # Third level, it's an iteration of a list,
+        #   exists the item and would be overwritten. Complains
         ("bbb.1.nope", True),
     ]
 )
@@ -302,18 +325,11 @@ def test_initialise_recursive(param_name, is_exception):
 @pytest.mark.parametrize(
     argnames=('param_name', 'expected_result'),
     argvalues=[
-        (None, ["foo", "que", "void", "aaa", "bbb", "ccc", "ddd", "eee", "fff"]),
-        ("ccc", ["ccc1", "ccc2", "ccc3"]),
-        ("ddd", ["ddd1", "ddd2", "ddd3"]),
-        ("eee.e_set", [0, 1, 2]),
-        ("eee.e_tuple", [0, 1, 2]),
-        ("eee.e_list", [0, 1, 2]),
-        ("fff.fff", [0, 1, 2]),
-        ("aaa", [0, 1, 2]),
-        ("aaa.0", None),
-        ("aaa.5", None),
-        ("bbb.b2.1", ["bb2b1"]),
-        ("bbb.b2.5.bb2b1", None)
+        (None, ["foo", "que", "void", "aaa", "bbb", "ccc", "ddd", "eee",
+                "fff"]), ("ccc", ["ccc1", "ccc2", "ccc3"]), ("ddd", ["ddd1", "ddd2", "ddd3"]),
+        ("eee.e_set", [0, 1, 2]), ("eee.e_tuple", [0, 1, 2]), ("eee.e_list", [0, 1, 2]),
+        ("fff.fff", [0, 1, 2]), ("aaa", [0, 1, 2]), ("aaa.0", None), ("aaa.5", None),
+        ("bbb.b2.1", ["bb2b1"]), ("bbb.b2.5.bb2b1", None)
     ]
 )
 def test_get_keys_in(param_name, expected_result):
