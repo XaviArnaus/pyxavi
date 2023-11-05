@@ -17,78 +17,36 @@ TEST_CASES = {
         "b2": ["bb2", {"bb2b1": "bb2bb1"}, "bb3"],
         "b3": "b3",
     },
-}
-
-TEST_VALUES = {"foo": {"bar": "hola", "foo2": {"bar2": "adeu"}}, "que": "tal", "void": None}
-TEST_VALUES_GET_KEYS = {
-    "aaa": {
-        "aaa1": "1",
-        "aaa2": "2",
-        "aaa3": "3",
-    },
-    "bbb": {
-        "bbb1": "1",
-        "bbb2": "2",
-        "bbb3": "3",
-    },
     "ccc": {
-        "c_set": set([1, 2, 3]), "c_tuple": tuple([1, 2, 3]), "c_list": [1, 2, 3]
+        "ccc1": "1",
+        "ccc2": "2",
+        "ccc3": "3",
     },
     "ddd": {
-        "eee": [4, 5, 6]
-    }
-}
-
-TEST_VALUES_LIST_PATHS = {
-    "aaa": ["a1", "a2", "a3"],
-    "bbb": {
-        "b1": "bb1",
-        "b2": ["bb2", {"bb2b1": "bb2bb1"}, "bb3"],
-        "b3": "b3",
+        "ddd1": "1",
+        "ddd2": "2",
+        "ddd3": "3",
     },
-    "ccc": [
-        {"c1": "val_c1"},
-        {"c2": "val_c2"},
-        {"c3": "val_c3"},
-    ],
-    "ddd": [
-        {"d1": {"dd1": "val_d1"}},
-        {"d1": {"dd1": "val_d2"}},
-        {"d1": {"dd1": "val_d3"}},
-    ]
+    "eee": {
+        "e_set": set([1, 2, 3]), 
+        "e_tuple": tuple([1, 2, 3]),
+        "e_list": [1, 2, 3]
+    },
+    "fff": {
+        "fff": [4, 5, 6]
+    }
 }
 
 @pytest.fixture(autouse=True)
 def setup_function():
     
     global TEST_CASES
-    global TEST_VALUES
-    global TEST_VALUES_GET_KEYS
-    global TEST_VALUES_LIST_PATHS
 
     backup = copy.deepcopy(TEST_CASES)
-    backup_1 = copy.deepcopy(TEST_VALUES)
-    backup_2 = copy.deepcopy(TEST_VALUES_GET_KEYS)
-    backup_3 = copy.deepcopy(TEST_VALUES_LIST_PATHS)
 
     yield
 
-    TEST_VALUES_LIST_PATHS = backup_3
-    TEST_VALUES_GET_KEYS = backup_2
-    TEST_VALUES = backup_1
     TEST_CASES = backup
-
-
-def initialize_list_paths() -> Dictionary:
-    return Dictionary(TEST_VALUES_LIST_PATHS)
-
-
-def initialize_get_keys() -> Dictionary:
-    return Dictionary(TEST_VALUES_GET_KEYS)
-
-
-def initialize() -> Dictionary:
-    return Dictionary(TEST_VALUES)
 
 
 def initialize_instance() -> Dictionary:
@@ -205,14 +163,20 @@ def test_set(param_name, value, expected_result_parent):
 @pytest.mark.parametrize(
     argnames=('param_name', 'expected_result'),
     argvalues=[
-        ("foo", True), ("foo.bar", True), ("foo.bar5", False), ("foo.foo2", True),
-        ("foo.foo2.bar2", True), ("foo.foo2.bar2.nope", False),
-        ("foo.foo2.bar2.nope.nope2", False), ("food", False), ("void", True)
+        ("foo", True),
+        ("foo.bar", True),
+        ("foo.bar5", False),
+        ("foo.foo2", True),
+        ("foo.foo2.bar2", True),
+        ("foo.foo2.bar2.nope", False),
+        ("foo.foo2.bar2.nope.nope2", False),
+        ("food", False),
+        ("void", True)
     ]
 )
 def test_key_exists(param_name, expected_result):
 
-    instance = initialize()
+    instance = initialize_instance()
 
     assert instance.key_exists(param_name=param_name) == expected_result
 
@@ -220,19 +184,19 @@ def test_key_exists(param_name, expected_result):
 @pytest.mark.parametrize(
     argnames=('param_name', 'expected_result'),
     argvalues=[
-        ("foo", TEST_VALUES),
-        ("foo.bar", TEST_VALUES["foo"]),
-        ("foo.bar5", TEST_VALUES["foo"]),
-        ("foo.foo2", TEST_VALUES["foo"]),
-        ("foo.foo2.bar2", TEST_VALUES["foo"]["foo2"]),
-        ("foo.foo2.bar2.nope", TEST_VALUES["foo"]["foo2"]["bar2"]),
+        ("foo", TEST_CASES),
+        ("foo.bar", TEST_CASES["foo"]),
+        ("foo.bar5", TEST_CASES["foo"]),
+        ("foo.foo2", TEST_CASES["foo"]),
+        ("foo.foo2.bar2", TEST_CASES["foo"]["foo2"]),
+        ("foo.foo2.bar2.nope", TEST_CASES["foo"]["foo2"]["bar2"]),
         ("foo.foo2.bar2.nope.nope2", None),
-        ("food", TEST_VALUES),
+        ("food", TEST_CASES),
     ]
 )
 def test_get_parent(param_name, expected_result):
 
-    instance = initialize()
+    instance = initialize_instance()
 
     assert instance.get_parent(param_name=param_name) == expected_result
 
@@ -286,20 +250,45 @@ def test_delete(param_name, expected_delete, expected_result_parent):
 @pytest.mark.parametrize(
     argnames=('param_name', "is_exception"),
     argvalues=[
+        # First level, exists
         ("foo", False),
+        # Second level, exists
         ("foo.bar", False),
+        # Second level, doesn't exist
         ("foo.bar5", False),
+        # Second level, exists and it's a dict
         ("foo.foo2", False),
+        # Third level, exists
         ("foo.foo2.bar2", False),
+        # Fourth level, doesn't exist the item nor the parent
         ("foo.foo2.bar4.nope", False),
+        # Fifth level, doesn't exist the item nor the parent nor the grandparent
         ("foo.foo2.bar4.nope.nope2", False),
+        # Fourth level, doesn't exist the item but the parent is not a dict/list. Complains
         ("foo.foo2.bar2.nope", True),
+        # First level, doesn't exist
         ("food", False),
+        # Second level, it's the last iteration of a list, exists
+        ("aaa.2", False),
+        # Second level, it's the first iteration of a list, exists
+        ("aaa.0", False),
+        # Second level, it's an iteration of a list, doesn't exist
+        ("aaa.5", False),
+        # Second level, it's an iteration of a list, doesn't exist the item nor the parent
+        ("aaa.5.new", False),
+        # Fourth level, it's an iteration of a list, exists
+        ("bbb.b2.1.bb2b1", False),
+        # Fourth level, it's an iteration of a list, doesn't exist the item nor the parent
+        ("bbb.b2.5.bb2b1", False),
+        # Fourth level, the iteration of the lists would be overwritten by a dict. Complains
+        ("bbb.b2.bbb2.nope", True),
+        # Third level, it's an iteration of a list, exists the item and would be overwritten. Complains
+        ("bbb.1.nope", True),
     ]
 )
 def test_initialise_recursive(param_name, is_exception):
 
-    instance = initialize()
+    instance = initialize_instance()
 
     if is_exception:
         with TestCase.assertRaises(instance, RuntimeError):
@@ -313,60 +302,13 @@ def test_initialise_recursive(param_name, is_exception):
 @pytest.mark.parametrize(
     argnames=('param_name', 'expected_result'),
     argvalues=[
-        (None, ["aaa", "bbb", "ccc", "ddd"]), ("aaa", ["aaa1", "aaa2", "aaa3"]),
-        ("bbb", ["bbb1", "bbb2", "bbb3"]), ("ccc.c_set", [0, 1, 2]), ("ccc.c_tuple", [0, 1, 2]),
-        ("ccc.c_list", [0, 1, 2]), ("ddd.eee", [0, 1, 2])
-    ]
-)
-def test_get_keys_in(param_name, expected_result):
-
-    instance = initialize_get_keys()
-
-    assert instance.get_keys_in(param_name=param_name) == expected_result
-
-
-def test_to_dict():
-
-    instance = initialize()
-
-    assert instance.to_dict() == TEST_VALUES
-
-
-@pytest.mark.parametrize(
-    argnames=('param_name', 'expected_result_parent', 'raise_exception'),
-    argvalues=[
-        ("aaa.2", ["a1", "a2", "a3"], False),
-        ("aaa.0", ["a1", "a2", "a3"], False),
-        ("aaa.5", ["a1", "a2", "a3", None, None, {}], False),
-        ("aaa.5.new", {"new": {}}, False),
-        ("bbb.b2.1.bb2b1", {"bb2b1": "bb2bb1"}, False),
-        ("bbb.b2.5.bb2b1", {"bb2b1": {}}, False),
-        ("bbb.b2.bbb2.nope", None, True),
-        ("bbb.1.nope", None, True),
-    ]
-)
-def test_support_paths_with_lists_in_initialise_recursive(param_name, expected_result_parent, raise_exception):
-
-    instance = initialize_list_paths()
-    
-    if raise_exception:
-        with TestCase.assertRaises(instance, RuntimeError):
-            instance.initialise_recursive(param_name=param_name)
-    else:
-        instance.initialise_recursive(param_name=param_name)
-
-        result_parent = instance.get_parent(param_name=param_name)
-        if isinstance(result_parent, list):
-            assert len(result_parent) == len(expected_result_parent)
-            for i in range(0,len(expected_result_parent)):
-                result_parent[i] == expected_result_parent[i]
-        else:
-            assert result_parent == expected_result_parent
-
-
-@pytest.mark.parametrize(
-    argnames=('param_name', 'expected_result'),
-    argvalues=[
+        (None, ["foo", "que", "void", "aaa", "bbb", "ccc", "ddd", "eee", "fff"]),
+        ("ccc", ["ccc1", "ccc2", "ccc3"]),
+        ("ddd", ["ddd1", "ddd2", "ddd3"]),
+        ("eee.e_set", [0, 1, 2]),
+        ("eee.e_tuple", [0, 1, 2]),
+        ("eee.e_list", [0, 1, 2]),
+        ("fff.fff", [0, 1, 2]),
         ("aaa", [0, 1, 2]),
         ("aaa.0", None),
         ("aaa.5", None),
@@ -376,6 +318,13 @@ def test_support_paths_with_lists_in_initialise_recursive(param_name, expected_r
 )
 def test_get_keys_in(param_name, expected_result):
 
-    instance = initialize_list_paths()
+    instance = initialize_instance()
 
     assert instance.get_keys_in(param_name=param_name) == expected_result
+
+
+def test_to_dict():
+
+    instance = initialize_instance()
+
+    assert instance.to_dict() == TEST_CASES
