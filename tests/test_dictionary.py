@@ -4,6 +4,21 @@ import pytest
 import copy
 from pyxavi.debugger import dd
 
+TEST_CASES = {
+    "foo": {
+        "bar": "hola",
+        "foo2": {"bar2": "adeu"}
+    },
+    "que": "tal",
+    "void": None,
+    "aaa": ["a1", "a2", "a3"],
+    "bbb": {
+        "b1": "bb1",
+        "b2": ["bb2", {"bb2b1": "bb2bb1"}, "bb3"],
+        "b3": "b3",
+    },
+}
+
 TEST_VALUES = {"foo": {"bar": "hola", "foo2": {"bar2": "adeu"}}, "que": "tal", "void": None}
 TEST_VALUES_GET_KEYS = {
     "aaa": {
@@ -46,10 +61,12 @@ TEST_VALUES_LIST_PATHS = {
 @pytest.fixture(autouse=True)
 def setup_function():
     
+    global TEST_CASES
     global TEST_VALUES
     global TEST_VALUES_GET_KEYS
     global TEST_VALUES_LIST_PATHS
 
+    backup = copy.deepcopy(TEST_CASES)
     backup_1 = copy.deepcopy(TEST_VALUES)
     backup_2 = copy.deepcopy(TEST_VALUES_GET_KEYS)
     backup_3 = copy.deepcopy(TEST_VALUES_LIST_PATHS)
@@ -59,6 +76,7 @@ def setup_function():
     TEST_VALUES_LIST_PATHS = backup_3
     TEST_VALUES_GET_KEYS = backup_2
     TEST_VALUES = backup_1
+    TEST_CASES = backup
 
 
 def initialize_list_paths() -> Dictionary:
@@ -73,10 +91,115 @@ def initialize() -> Dictionary:
     return Dictionary(TEST_VALUES)
 
 
-def test_get_all():
-    instance = initialize()
+def initialize_instance() -> Dictionary:
+    return Dictionary(TEST_CASES)
 
-    assert instance.get_all() == TEST_VALUES
+
+def test_get_all():
+    instance = initialize_instance()
+
+    assert instance.get_all() == TEST_CASES
+
+@pytest.mark.parametrize(
+    argnames=('param_name', 'expected_result'),
+    argvalues=[
+        # First level
+        ("que", "tal"),
+        # Second level
+        ("foo.bar", "hola"),
+        # Third level
+        ("foo.foo2.bar2", "adeu"),
+        # First level, not exists
+        ("nope", None),
+        # Second level, not exists
+        ("foo.nope", None),
+        # Third level, not exists
+        ("foo.foo2.nope", None),
+        # First level, returns a list
+        ("aaa", ["a1", "a2", "a3"]),
+        # Second level, it's the iteration of the list
+        ("aaa.1", "a2"),
+        # Second level, not exists
+        ("aaa.3", None),
+        # 4th level, one key in the path is an iteration.
+        ("bbb.b2.1.bb2b1", "bb2bb1"),
+        # 4th level, one key in the path is an iteration, that does not exists
+        ("bbb.b2.5.bb2b1", None)
+    ]
+)
+def test_get(param_name, expected_result):
+
+    instance = initialize_instance()
+
+    result = instance.get(param_name=param_name)
+
+    if isinstance(result, list):
+        assert len(result) == len(expected_result)
+        for i in range(0,len(expected_result)):
+            assert result[i] == expected_result[i]
+    elif isinstance(result, dict):
+        assert len(result) == len(expected_result)
+        for key, value in expected_result.items():
+            assert key in result
+            assert value == result[key]
+    else:
+        assert result == expected_result
+
+
+@pytest.mark.parametrize(
+    argnames=('param_name', 'value', 'expected_result_parent'),
+    argvalues=[
+        # First level, new value (the merge here is to avoid writting all the object)
+        ("test", "value", {**TEST_CASES,**{"test":"value"}}),
+        # First level, old value (the merge here is to avoid writting all the object)
+        ("que", "passa", {**TEST_CASES,**{"que":"passa"}}),
+        # Second level, new value (the merge here is to avoid writting all the object)
+        ("foo.bar3", "value3", {**TEST_CASES["foo"],**{"bar3":"value3"}}),
+        # Second level, old value (the merge here is to avoid writting all the object)
+        ("foo.bar", "hey", {**TEST_CASES["foo"],**{"bar":"hey"}}),
+        # Third level, new value (the merge here is to avoid writting all the object)
+        ("foo.foo2.bar3", "value3", {**TEST_CASES["foo"]["foo2"],**{"bar3":"value3"}}),
+        # Third level, old value (the merge here is to avoid writting all the object)
+        ("foo.foo2.bar2", "hey", {**TEST_CASES["foo"]["foo2"],**{"bar2":"hey"}}),
+        # Third level, the key in the middle of the path does not exists. Must raise.
+        ("foo.foo3.bar2", 99, False),
+        # Second level, old value, it's the iteration of a list
+        ("aaa.2", "x", ["a1", "a2", "x"]),
+        # Second level, new value, it's the iteration of a list out of the range by 1 position.
+        ("aaa.3", "x", ["a1", "a2", "a3", "x"]),
+        # Second level, new value, it's the iteration of a list out of the range by 2 positions.
+        ("aaa.4", "x", ["a1", "a2", "a3", None, "x"]),
+        # Second level, new value, it's the iteration of a list out of the range by 3 positions.
+        ("aaa.5", "x", ["a1", "a2", "a3", None, None, "x"]),
+        # Fourth level, a key in between is an iteration of a list that exists. Old value
+        ("bbb.b2.1.bb2b1", "x", {"bb2b1": "x"}),
+        # Fourth level, a key in between is an iteration of a list that not exists. Must raise.
+        ("bbb.b2.5.bb2b1", "x", False)
+    ]
+)
+def test_set(param_name, value, expected_result_parent):
+
+    instance = initialize_instance()
+    
+    if expected_result_parent is False:
+        with TestCase.assertRaises(instance, RuntimeError):
+            instance.set(param_name=param_name, value=value)
+    else:
+        instance.set(param_name=param_name, value=value)
+
+        result_parent = instance.get_parent(param_name=param_name)
+        
+        if isinstance(result_parent, list):
+            assert len(result_parent) == len(expected_result_parent)
+            for i in range(0,len(expected_result_parent)):
+                assert result_parent[i] == expected_result_parent[i]
+        elif isinstance(result_parent, dict):
+            assert len(result_parent) == len(expected_result_parent)
+            for key, value in expected_result_parent.items():
+                assert key in result_parent
+                assert value == result_parent[key]
+        else:
+            assert result_parent == expected_result_parent
 
 
 @pytest.mark.parametrize(
@@ -115,25 +238,49 @@ def test_get_parent(param_name, expected_result):
 
 
 @pytest.mark.parametrize(
-    argnames=('param_name', 'expected_result'),
+    argnames=('param_name', 'expected_delete', 'expected_result_parent'),
     argvalues=[
-        ("foo", True),
-        ("foo.bar", True),
-        ("foo.bar5", False),
-        ("foo.foo2", True),
-        ("foo.foo2.bar2", True),
-        ("foo.foo2.bar2.nope", False),
-        ("foo.foo2.bar2.nope.nope2", False),
-        ("food", False),
+        # First level, exists
+        ("foo", True, None),
+        # Second level, exists
+        ("foo.bar", True, None),
+        # Second level, doesn't exist
+        ("foo.bar5", False, None),
+        # Second level, exists and it's a dict
+        ("foo.foo2", True, None),
+        # Third level, exists
+        ("foo.foo2.bar2", True, None),
+        # Fourth level, doesn't exist
+        ("foo.foo2.bar2.nope", False, None),
+        # Fifth level, doesn't exist one in between nor the item
+        ("foo.foo2.bar2.nope.nope2", False, None),
+        # First level, doesn't exist
+        ("food", False, None),
+        # Second level, it's the last iteration of a list, exists
+        ("aaa.2", True, ["a1", "a2"]),
+        # Second level, it's the first iteration of a list, exists
+        ("aaa.0", True, ["a2", "a3"]),
+        # Second level, it's an iteration of a list, doesn't exist
+        ("aaa.5", False, None),
+        # Fourth level, one key in between is an iteration of a list, exists
+        ("bbb.b2.1.bb2b1", True, {}),
+        # Fourth level, one key in between is an iteration of a list, doesn't exist
+        ("bbb.b2.5.bb2b1", False, None)
     ]
 )
-def test_delete(param_name, expected_result):
+def test_delete(param_name, expected_delete, expected_result_parent):
 
-    instance = initialize()
+    instance = initialize_instance()
 
-    assert instance.delete(param_name=param_name) == expected_result
+    assert instance.delete(param_name=param_name) == expected_delete
 
-    assert instance.key_exists(param_name=param_name) is False
+    if expected_result_parent is not None:
+        # One can't check if the item in the list is deleted by checking he key,
+        #   as the rest of the items move in front.
+        #   Deleting index 0 will not get rid of index 0, 1 becomes 0.
+        assert instance.get_parent(param_name=param_name) == expected_result_parent
+    else:
+        assert instance.key_exists(param_name=param_name) is False
 
 
 @pytest.mark.parametrize(
@@ -163,91 +310,6 @@ def test_initialise_recursive(param_name, is_exception):
         assert instance.key_exists(param_name=param_name) is True
 
 
-def test_get_first_level():
-    instance = initialize()
-
-    assert instance.get("que") == TEST_VALUES["que"]
-
-
-def test_get_second_level():
-    instance = initialize()
-
-    assert instance.get("foo.bar") == TEST_VALUES["foo"]["bar"]
-
-
-def test_get_third_level():
-    instance = initialize()
-
-    assert instance.get("foo.foo2.bar2") == TEST_VALUES["foo"]["foo2"]["bar2"]
-
-
-def test_set_first_level_new_value():
-    instance = initialize()
-
-    assert instance.get("test") is None
-
-    instance.set("test", "value")
-
-    assert instance.get("test"), "value"
-
-
-def test_set_first_level_old_value():
-    instance = initialize()
-
-    assert instance.get("que"), "tal"
-
-    instance.set("que", "passa")
-
-    assert instance.get("que"), "passa"
-
-
-def test_set_second_level_new_value():
-    instance = initialize()
-
-    assert instance.get("foo.bar3") is None
-
-    instance.set("foo.bar3", "value3")
-
-    assert instance.get("foo.bar3") == "value3"
-
-
-def test_set_second_level_old_value():
-    instance = initialize()
-
-    assert instance.get("foo.bar"), "hola"
-
-    instance.set("foo.bar", "hey")
-
-    assert instance.get("foo.bar"), "hey"
-
-
-def test_set_third_level_new_value():
-    instance = initialize()
-
-    assert instance.get("foo.foo2.bar3") is None
-
-    instance.set("foo.foo2.bar3", "value3")
-
-    assert instance.get("foo.foo2.bar3") == "value3"
-
-
-def test_set_third_level_old_value():
-    instance = initialize()
-
-    assert instance.get("foo.foo2.bar2") == "adeu"
-
-    instance.set("foo.foo2.bar2", "fins despres")
-
-    assert instance.get("foo.foo2.bar2") == "fins despres"
-
-
-def test_set_bad_key():
-    instance = initialize()
-
-    with TestCase.assertRaises(instance, RuntimeError):
-        instance.set("foo.foo3.bar2", 99)
-
-
 @pytest.mark.parametrize(
     argnames=('param_name', 'expected_result'),
     argvalues=[
@@ -268,85 +330,6 @@ def test_to_dict():
     instance = initialize()
 
     assert instance.to_dict() == TEST_VALUES
-
-
-@pytest.mark.parametrize(
-    argnames=('param_name', 'expected_result'),
-    argvalues=[
-        ("aaa", ["a1", "a2", "a3"]),
-        ("aaa.1", "a2"),
-        ("aaa.3", None),
-        ("bbb.b2.1.bb2b1", "bb2bb1"),
-        ("bbb.b2.5.bb2b1", None)
-    ]
-)
-def test_support_paths_with_lists_in_get(param_name, expected_result):
-
-    instance = initialize_list_paths()
-
-    result = instance.get(param_name=param_name)
-
-    if isinstance(result, list):
-        assert len(result) == len(expected_result)
-        for i in range(0,len(expected_result)):
-            result[i] == expected_result[i]
-    else:
-        assert result == expected_result
-
-
-@pytest.mark.parametrize(
-    argnames=('param_name', 'value', 'expected_result_parent'),
-    argvalues=[
-        ("aaa.2", "x", ["a1", "a2", "x"]),
-        ("aaa.4", "x", ["a1", "a2", "a3", None, "x"]),
-        ("aaa.5", "x", ["a1", "a2", "a3", None, None, "x"]),
-        ("bbb.b2.1.bb2b1", "x", {"bb2b1": "x"}),
-        ("bbb.b2.5.bb2b1", "x", False)
-    ]
-)
-def test_support_paths_with_lists_in_set(param_name, value, expected_result_parent):
-
-    instance = initialize_list_paths()
-    
-    if expected_result_parent is False:
-        with TestCase.assertRaises(instance, RuntimeError):
-            instance.set(param_name=param_name, value=value)
-    else:
-        instance.set(param_name=param_name, value=value)
-
-        result_parent = instance.get_parent(param_name=param_name)
-        
-        if isinstance(result_parent, list):
-            assert len(result_parent) == len(expected_result_parent)
-            for i in range(0,len(expected_result_parent)):
-                result_parent[i] == expected_result_parent[i]
-        else:
-            assert result_parent == expected_result_parent
-
-
-@pytest.mark.parametrize(
-    argnames=('param_name', 'expected_result_parent', 'expect_it_deletes'),
-    argvalues=[
-        ("aaa.2", ["a1", "a2"], True),
-        ("aaa.0", ["a2", "a3"], True),
-        ("aaa.5", ["a1", "a2", "a3"], False),
-        ("bbb.b2.1.bb2b1", {}, True),
-        ("bbb.b2.5.bb2b1", None, False)
-    ]
-)
-def test_support_paths_with_lists_in_delete(param_name, expected_result_parent, expect_it_deletes):
-
-    instance = initialize_list_paths()
-    
-    assert instance.delete(param_name=param_name) == expect_it_deletes
-
-    result_parent = instance.get_parent(param_name=param_name)
-    if isinstance(result_parent, list):
-        assert len(result_parent) == len(expected_result_parent)
-        for i in range(0,len(expected_result_parent)):
-            result_parent[i] == expected_result_parent[i]
-    else:
-        assert result_parent == expected_result_parent
 
 
 @pytest.mark.parametrize(

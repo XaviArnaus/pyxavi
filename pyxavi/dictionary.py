@@ -1,5 +1,3 @@
-from pyxavi.debugger import dd
-
 PATH_SEPARATOR_CHAR = "."
 
 
@@ -207,14 +205,11 @@ class Dictionary:
             return False
 
     def initialise_recursive(self, param_name: str) -> None:
-        last_key = self._get_focused_key(param_name=param_name)
         pieces = param_name.split(self._separator)
         parent_path = ""
         # We start assuming that self._content is already {}
         for piece in pieces:
             path = f"{parent_path}{piece}"
-            dd(path)
-            dd(self.key_exists(path))
             if not self.key_exists(path):
                 parent = self.get_parent(path)
                 if (isinstance(parent, dict) and not self._is_int(piece)) or\
