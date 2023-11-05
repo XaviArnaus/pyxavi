@@ -379,3 +379,20 @@ def test_support_paths_with_lists_in_initialise_recursive(param_name, expected_r
                 result_parent[i] == expected_result_parent[i]
         else:
             assert result_parent == expected_result_parent
+
+
+@pytest.mark.parametrize(
+    argnames=('param_name', 'expected_result'),
+    argvalues=[
+        ("aaa", [0, 1, 2]),
+        ("aaa.0", None),
+        ("aaa.5", None),
+        ("bbb.b2.1", ["bb2b1"]),
+        ("bbb.b2.5.bb2b1", None)
+    ]
+)
+def test_get_keys_in(param_name, expected_result):
+
+    instance = initialize_list_paths()
+
+    assert instance.get_keys_in(param_name=param_name) == expected_result
