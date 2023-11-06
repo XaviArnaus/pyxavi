@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.7.2](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.7.2) - 2023-11-06
+
+### Added
+
+- `Dictionary` class now can perform merges ([#24](https://github.com/XaviArnaus/pyxavi/pull/24))
+
 ## [v0.7.1](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.7.1) - 2023-11-05
 
 ### Added
