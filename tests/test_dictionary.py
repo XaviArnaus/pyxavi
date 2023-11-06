@@ -50,6 +50,20 @@ def setup_function():
     TEST_CASES = backup
 
 
+def _compare_results(execution_result: dict, expected_result: dict) -> None:
+    if isinstance(execution_result, list):
+        assert len(execution_result) == len(expected_result)
+        for i in range(0, len(expected_result)):
+            assert execution_result[i] == expected_result[i]
+    elif isinstance(execution_result, dict):
+        assert len(execution_result) == len(expected_result)
+        for key, value in expected_result.items():
+            assert key in execution_result
+            assert value == execution_result[key]
+    else:
+        assert execution_result == expected_result
+
+
 def initialize_instance() -> Dictionary:
     return Dictionary(TEST_CASES)
 
@@ -93,17 +107,7 @@ def test_get(param_name, expected_result):
 
     result = instance.get(param_name=param_name)
 
-    if isinstance(result, list):
-        assert len(result) == len(expected_result)
-        for i in range(0, len(expected_result)):
-            assert result[i] == expected_result[i]
-    elif isinstance(result, dict):
-        assert len(result) == len(expected_result)
-        for key, value in expected_result.items():
-            assert key in result
-            assert value == result[key]
-    else:
-        assert result == expected_result
+    _compare_results(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -175,17 +179,7 @@ def test_set(param_name, value, expected_result_parent):
 
         result_parent = instance.get_parent(param_name=param_name)
 
-        if isinstance(result_parent, list):
-            assert len(result_parent) == len(expected_result_parent)
-            for i in range(0, len(expected_result_parent)):
-                assert result_parent[i] == expected_result_parent[i]
-        elif isinstance(result_parent, dict):
-            assert len(result_parent) == len(expected_result_parent)
-            for key, value in expected_result_parent.items():
-                assert key in result_parent
-                assert value == result_parent[key]
-        else:
-            assert result_parent == expected_result_parent
+        _compare_results(result_parent, expected_result_parent)
 
 
 @pytest.mark.parametrize(
