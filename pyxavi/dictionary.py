@@ -46,7 +46,7 @@ class Dictionary:
 
         Accepts wildcards for the list indexes.
         """
-        if self._needs_resolving(param_name=param_name):
+        if Dictionary.needs_resolving(param_name=param_name):
             return self._get_horizontally(param_name=param_name, default_value=default_value)
 
         if param_name.find(self._separator) > 0:
@@ -187,7 +187,7 @@ class Dictionary:
         if param_name is None:
             raise RuntimeError("Params must have a name")
 
-        if self._needs_resolving(param_name=param_name):
+        if Dictionary.needs_resolving(param_name=param_name):
             return self._set_horizontally(param_name=param_name, value=value)
 
         self.__recursive_set(param_name=param_name, value=value, dictionary=self._content)
@@ -225,7 +225,7 @@ class Dictionary:
 
         Accepts wildcards for the list indexes.
         """
-        if self._needs_resolving(param_name=param_name):
+        if Dictionary.needs_resolving(param_name=param_name):
             return self._get_parent_horizontally(param_name=param_name)
 
         if param_name.find(self._separator) > 0:
@@ -323,7 +323,8 @@ class Dictionary:
             else:
                 self.set(param_name=param_name, value=origin.get_all())
 
-    def _needs_resolving(self, param_name: str) -> bool:
+    @staticmethod
+    def needs_resolving(param_name: str) -> bool:
         """Checks if the param_name path indicates horizontal resoliving"""
         return True if param_name.find(LIST_HORIZONTAL_RESOLVING_CHAR) > -1 else False
 
@@ -335,7 +336,7 @@ class Dictionary:
         Non matching paths are ignored.
         """
         # do we actually need to do anything?
-        if not self._needs_resolving(param_name):
+        if not Dictionary.needs_resolving(param_name):
             return [param_name]
 
         # Initialise what we'll return
@@ -369,7 +370,7 @@ class Dictionary:
             if portions_path:
                 path = f"{path}{PATH_SEPARATOR_CHAR}{portions_path}"
 
-            if self._needs_resolving(path):
+            if Dictionary.needs_resolving(path):
                 # We still have more "#", go deeper.
                 returning_stack = returning_stack + self.resolve_wildcards(param_name=path)
             else:
