@@ -36,19 +36,47 @@ TEST_CASES = {
         "fff": [4, 5, 6]
     },
     "ggg": [
-        {"g1": "G1a", "g2": "G2a", "g3": "G3a"},
-        {"g1": "G1b", "g2": "G2b", "g3": "G3b"},
-        {"g1": "G1c", "g2": "G2c", "g3": "G3c"},
+        {
+            "g1": "G1a", "g2": "G2a", "g3": "G3a"
+        },
+        {
+            "g1": "G1b", "g2": "G2b", "g3": "G3b"
+        },
+        {
+            "g1": "G1c", "g2": "G2c", "g3": "G3c"
+        },
     ],
     "hhh": [
-        {"h1": "H1a", "h2": "H2a", "h3": [{"hh3": "HH3a"}]},
-        {"h1": "H1b", "h2": "H2b", "h3": [{"hh3": "HH3b"}]},
-        {"h1": "H1c", "h2": "H2c", "h3": [{"hh3": "HH3c"}]},
+        {
+            "h1": "H1a", "h2": "H2a", "h3": [{
+                "hh3": "HH3a"
+            }]
+        },
+        {
+            "h1": "H1b", "h2": "H2b", "h3": [{
+                "hh3": "HH3b"
+            }]
+        },
+        {
+            "h1": "H1c", "h2": "H2c", "h3": [{
+                "hh3": "HH3c"
+            }]
+        },
     ],
     "iii": [
-        {"i1": "I1a", "i2": "I2a", "i3": [{"ii3": "II3a"}]},
-        {"i1": "I1b", "i2": "I2b", "i3": ["ii3"]},
-        {"i1": "I1c", "i2": "I2c", "i3": [{"ii4": "II4c"}]},
+        {
+            "i1": "I1a", "i2": "I2a", "i3": [{
+                "ii3": "II3a"
+            }]
+        },
+        {
+            "i1": "I1b", "i2": "I2b", "i3": ["ii3"]
+        },
+        {
+            "i1": "I1c", "i2": "I2c", "i3": [{
+                "ii4": "II4c"
+            }]
+        },
     ]
 }
 
@@ -195,15 +223,35 @@ def test_get(param_name, expected_result):
         # Wildcard in the second level, which is a very plane list
         ("aaa.#", "x", [["x", "x", "x"], ["x", "x", "x"], ["x", "x", "x"]]),
         # Wildcard in the second level, which is a list of dicts
-        ("ggg.#.g1", "x", [{"g1": "x", "g2": "G2a", "g3": "G3a"}, {"g1": "x", "g2": "G2b", "g3": "G3b"}, {"g1": "x", "g2": "G2c", "g3": "G3c"}]),
+        (
+            "ggg.#.g1",
+            "x",
+            [
+                {
+                    "g1": "x", "g2": "G2a", "g3": "G3a"
+                }, {
+                    "g1": "x", "g2": "G2b", "g3": "G3b"
+                }, {
+                    "g1": "x", "g2": "G2c", "g3": "G3c"
+                }
+            ]
+        ),
         # Wildcards in the second and fourth level, which are a lists of dicts
-        ("hhh.#.h3.#.hh3", "x", [{"hh3": "x"}, {"hh3": "x"}, {"hh3": "x"}]),
+        ("hhh.#.h3.#.hh3", "x", [{
+            "hh3": "x"
+        }, {
+            "hh3": "x"
+        }, {
+            "hh3": "x"
+        }]),
         # Wildcards in the second and fourth level,
         #   which first is a list of dicts and second does not exists
         ("hhh.#.h1.#.hh3", "x", []),
         # Wildcards in the second and fourth level
         #   which first is a list of dicts and second is diverse, matching only one
-        ("iii.#.i3.#.ii3", "x", [{"ii3": "x"}]),
+        ("iii.#.i3.#.ii3", "x", [{
+            "ii3": "x"
+        }]),
     ]
 )
 def test_set(param_name, value, expected_result_parent):
@@ -456,8 +504,22 @@ def test_initialise_recursive(param_name, is_exception):
 @pytest.mark.parametrize(
     argnames=('param_name', 'expected_result'),
     argvalues=[
-        (None, ["foo", "que", "void", "aaa", "bbb", "ccc", "ddd", "eee",
-                "fff"]), ("ccc", ["ccc1", "ccc2", "ccc3"]), ("ddd", ["ddd1", "ddd2", "ddd3"]),
+        (
+            None, [
+                "foo",
+                "que",
+                "void",
+                "aaa",
+                "bbb",
+                "ccc",
+                "ddd",
+                "eee",
+                "fff",
+                "ggg",
+                "hhh",
+                "iii"
+            ]
+        ), ("ccc", ["ccc1", "ccc2", "ccc3"]), ("ddd", ["ddd1", "ddd2", "ddd3"]),
         ("eee.e_set", [0, 1, 2]), ("eee.e_tuple", [0, 1, 2]), ("eee.e_list", [0, 1, 2]),
         ("fff.fff", [0, 1, 2]), ("aaa", [0, 1, 2]), ("aaa.0", None), ("aaa.5", None),
         ("bbb.b2.1", ["bb2b1"]), ("bbb.b2.5.bb2b1", None)
@@ -488,7 +550,7 @@ def test_to_dict():
         ("aaa.2.bbb", False),
     ]
 )
-def test_get_keys_in(param_name, expected_result):
+def test_needs_resolving(param_name, expected_result):
 
     instance = initialize_instance()
 
