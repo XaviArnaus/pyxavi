@@ -182,7 +182,10 @@ class Dictionary:
         self.__recursive_set(param_name=param_name, value=value, dictionary=self._content)
 
     def key_exists(self, param_name: str) -> bool:
-        """Checks if the given param_name path exists, including the indexes inside the list ranges"""
+        """
+        Checks if the given param_name path exists,
+        including the indexes inside the list ranges
+        """
         key_to_search = self._get_focused_key(param_name=param_name)
         parent_object = self.get_parent(param_name)
 
@@ -274,10 +277,30 @@ class Dictionary:
     def to_dict(self) -> dict:
         """Shortcut to get_all()"""
         return self.get_all()
-    
 
-    # @staticmethod
-    # def merge(origin: Dictionary, destination_path: str = None) -> None:
-    #     """
-    #     Takes 
-    #     """
+    def merge(self, origin: Dictionary, param_name: str = None) -> None:
+        """
+        Takes a given Dictionary object and merges it into the current object
+            as the given param_name (or at root if None given)
+
+        If the given param_name already exists in the current object,
+            - It will be merged if it's a dict
+            - It will be added if it's a list
+            - It will be overwritten otherwise
+
+        Raises a RuntimeError if any of the keys in the param_name does not exist
+        """
+        if param_name is None:
+            self._content = {**self._content, **origin.get_all()}
+        else:
+            if not self.key_exists(param_name=param_name):
+                raise RuntimeError(f"Dictionary path [{param_name}] unknown")
+
+            current_value = self.get(param_name=param_name, default_value={})
+            if isinstance(current_value, dict):
+                self.set(param_name=param_name, value={**current_value, **origin.get_all()})
+            elif isinstance(current_value, list):
+                current_value.append(origin.get_all())
+                self.set(param_name=param_name, value=current_value)
+            else:
+                self.set(param_name=param_name, value=origin.get_all())

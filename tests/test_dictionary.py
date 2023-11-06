@@ -56,7 +56,7 @@ def _compare_results(execution_result: dict, expected_result: dict) -> None:
         for i in range(0, len(expected_result)):
             assert execution_result[i] == expected_result[i]
     elif isinstance(execution_result, dict):
-        assert len(execution_result) == len(expected_result)
+        assert len(expected_result) == len(execution_result)
         for key, value in expected_result.items():
             assert key in execution_result
             assert value == execution_result[key]
@@ -180,6 +180,104 @@ def test_set(param_name, value, expected_result_parent):
         result_parent = instance.get_parent(param_name=param_name)
 
         _compare_results(result_parent, expected_result_parent)
+
+
+@pytest.mark.parametrize(
+    argnames=('param_name', 'origin', 'expected_result_parent'),
+    argvalues=[
+        # First level, new value (the merge here is to avoid writting all the object)
+        (None, {
+            "test": "value"
+        }, {
+            **TEST_CASES, **{
+                "test": "value"
+            }
+        }),
+        # First level, old value (the merge here is to avoid writting all the object)
+        (None, {
+            "que": "passa"
+        }, {
+            **TEST_CASES, **{
+                "que": "passa"
+            }
+        }),
+        # Second level, new value (the merge here is to avoid writting all the object)
+        ("foo", {
+            "bar3": "value3"
+        }, {
+            **TEST_CASES["foo"], **{
+                "bar3": "value3"
+            }
+        }),
+        # Second level, old value (the merge here is to avoid writting all the object)
+        ("foo", {
+            "bar": "hey"
+        }, {
+            **TEST_CASES["foo"], **{
+                "bar": "hey"
+            }
+        }),
+        # Third level, new value (the merge here is to avoid writting all the object)
+        ("foo.foo2", {
+            "bar3": "value3"
+        }, {
+            **TEST_CASES["foo"]["foo2"], **{
+                "bar3": "value3"
+            }
+        }),
+        # Third level, old value (the merge here is to avoid writting all the object)
+        ("foo.foo2", {
+            "bar2": "hey"
+        }, {
+            **TEST_CASES["foo"]["foo2"], **{
+                "bar2": "hey"
+            }
+        }),
+        # Third level, the key in the middle of the path does not exists. Must raise.
+        ("foo.foo3", {
+            "bar2": 99
+        }, False),
+        # Bringing a string value into an existing list of strings
+        ("aaa", "a4", ["a1", "a2", "a3", "a4"]),
+        # Bringing a dict value into an existing list of strings
+        ("aaa", {
+            "aa": "AA"
+        }, ["a1", "a2", "a3", {
+            "aa": "AA"
+        }]),
+        # Overwriting a string iteration of a list with a dict
+        ("aaa.1", {
+            "aa": "AA"
+        }, {
+            "aa": "AA"
+        }),
+        # Second level, it's a new index in a list,
+        #   then out of the range by 1 position. Complains
+        ("aaa.3", "x", False),
+        # Fourth level, a key in between is an iteration of a list that exists. Old value
+        ("bbb.b2.1.bb2b1", "x", "x"),
+        # Fourth level, a key in between is an iteration of a list that not exists. Must raise.
+        ("bbb.b2.5.bb2b1", "x", False)
+    ]
+)
+def test_merge(param_name, origin, expected_result_parent):
+
+    instance = initialize_instance()
+
+    origin = Dictionary(origin)
+
+    if expected_result_parent is False:
+        with TestCase.assertRaises(instance, RuntimeError):
+            instance.merge(origin=origin, param_name=param_name)
+    else:
+        instance.merge(origin=origin, param_name=param_name)
+
+        if param_name is None:
+            result = instance._content
+        else:
+            result = instance.get(param_name=param_name)
+
+        _compare_results(result, expected_result_parent)
 
 
 @pytest.mark.parametrize(
