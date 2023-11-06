@@ -552,9 +552,7 @@ def test_to_dict():
 )
 def test_needs_resolving(param_name, expected_result):
 
-    instance = initialize_instance()
-
-    assert instance._needs_resolving(param_name=param_name) == expected_result
+    assert Dictionary.needs_resolving(param_name=param_name) == expected_result
 
 
 @pytest.mark.parametrize(
