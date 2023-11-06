@@ -34,7 +34,22 @@ TEST_CASES = {
     },
     "fff": {
         "fff": [4, 5, 6]
-    }
+    },
+    "ggg": [
+        {"g1": "G1a", "g2": "G2a", "g3": "G3a"},
+        {"g1": "G1b", "g2": "G2b", "g3": "G3b"},
+        {"g1": "G1c", "g2": "G2c", "g3": "G3c"},
+    ],
+    "hhh": [
+        {"h1": "H1a", "h2": "H2a", "h3": [{"hh3": "HH3a"}]},
+        {"h1": "H1b", "h2": "H2b", "h3": [{"hh3": "HH3b"}]},
+        {"h1": "H1c", "h2": "H2c", "h3": [{"hh3": "HH3c"}]},
+    ],
+    "iii": [
+        {"i1": "I1a", "i2": "I2a", "i3": [{"ii3": "II3a"}]},
+        {"i1": "I1b", "i2": "I2b", "i3": ["ii3"]},
+        {"i1": "I1c", "i2": "I2c", "i3": [{"ii4": "II4c"}]},
+    ]
 }
 
 
@@ -98,7 +113,19 @@ def test_get_all():
         # 4th level, one key in the path is an iteration.
         ("bbb.b2.1.bb2b1", "bb2bb1"),
         # 4th level, one key in the path is an iteration, that does not exists
-        ("bbb.b2.5.bb2b1", None)
+        ("bbb.b2.5.bb2b1", None),
+        # Wildcard in the second level, which is a very plane list
+        ("aaa.#", ["a1", "a2", "a3"]),
+        # Wildcard in the second level, which is a list of dicts
+        ("ggg.#.g1", ["G1a", "G1b", "G1c"]),
+        # Wildcards in the second and fourth level, which are a lists of dicts
+        ("hhh.#.h3.#.hh3", ["HH3a", "HH3b", "HH3c"]),
+        # Wildcards in the second and fourth level,
+        #   which first is a list of dicts and second does not exists
+        ("hhh.#.h1.#.hh3", []),
+        # Wildcards in the second and fourth level
+        #   which first is a list of dicts and second is diverse, matching only one
+        ("iii.#.i3.#.ii3", ["II3a"]),
     ]
 )
 def test_get(param_name, expected_result):
@@ -164,7 +191,19 @@ def test_get(param_name, expected_result):
             "bb2b1": "x"
         }),
         # Fourth level, a key in between is an iteration of a list that not exists. Must raise.
-        ("bbb.b2.5.bb2b1", "x", False)
+        ("bbb.b2.5.bb2b1", "x", False),
+        # Wildcard in the second level, which is a very plane list
+        ("aaa.#", "x", [["x", "x", "x"], ["x", "x", "x"], ["x", "x", "x"]]),
+        # Wildcard in the second level, which is a list of dicts
+        ("ggg.#.g1", "x", [{"g1": "x", "g2": "G2a", "g3": "G3a"}, {"g1": "x", "g2": "G2b", "g3": "G3b"}, {"g1": "x", "g2": "G2c", "g3": "G3c"}]),
+        # Wildcards in the second and fourth level, which are a lists of dicts
+        ("hhh.#.h3.#.hh3", "x", [{"hh3": "x"}, {"hh3": "x"}, {"hh3": "x"}]),
+        # Wildcards in the second and fourth level,
+        #   which first is a list of dicts and second does not exists
+        ("hhh.#.h1.#.hh3", "x", []),
+        # Wildcards in the second and fourth level
+        #   which first is a list of dicts and second is diverse, matching only one
+        ("iii.#.i3.#.ii3", "x", [{"ii3": "x"}]),
     ]
 )
 def test_set(param_name, value, expected_result_parent):
@@ -436,3 +475,39 @@ def test_to_dict():
     instance = initialize_instance()
 
     assert instance.to_dict() == TEST_CASES
+
+
+@pytest.mark.parametrize(
+    argnames=('param_name', 'expected_result'),
+    argvalues=[
+        ("aaa.bbb.#.ccc", True),
+        ("aaa.#.bbb.#.ccc", True),
+        ("aaa.#", True),
+        ("#.aaa", True),
+        ("aaa", False),
+        ("aaa.2.bbb", False),
+    ]
+)
+def test_get_keys_in(param_name, expected_result):
+
+    instance = initialize_instance()
+
+    assert instance._needs_resolving(param_name=param_name) == expected_result
+
+
+@pytest.mark.parametrize(
+    argnames=('param_name', 'expected_result'),
+    argvalues=[
+        ("aaa", ["aaa"]),
+        ("aaa.#", ["aaa.0", "aaa.1", "aaa.2"]),
+        ("ggg.#.g1", ["ggg.0.g1", "ggg.1.g1", "ggg.2.g1"]),
+        ("hhh.#.h3.#.hh3", ["hhh.0.h3.0.hh3", "hhh.1.h3.0.hh3", "hhh.2.h3.0.hh3"]),
+        ("hhh.#.h1.#.hh3", []),
+        ("iii.#.i3.#.ii3", ['iii.0.i3.0.ii3']),
+    ]
+)
+def test_resolve_wildcards(param_name, expected_result):
+
+    instance = initialize_instance()
+
+    assert instance.resolve_wildcards(param_name=param_name) == expected_result
