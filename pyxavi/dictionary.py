@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 PATH_SEPARATOR_CHAR = "."
+LIST_HORIZONTAL_RESOLVING_CHAR = "#"
 
 
 class Dictionary:
@@ -42,7 +43,12 @@ class Dictionary:
         """
         Returns the value found in the given param_name path,
         otherwise default_value is returned
+
+        Accepts wildcards for the list indexes.
         """
+        if self._needs_resolving(param_name=param_name):
+            return self._get_horizontally(param_name=param_name, default_value=default_value)
+
         if param_name.find(self._separator) > 0:
             # bring it local so we can play with it
             local_content = self._content
@@ -163,7 +169,7 @@ class Dictionary:
                 else:
                     dictionary = {param_name: value}
 
-    def set(self, param_name: str, value: any = None):
+    def set(self, param_name: str, value: any = None) -> None:
         """
         Sets the given value into the given param_name path.
 
@@ -175,9 +181,14 @@ class Dictionary:
         Raises a RuntimeError if any of the keys in the param_name does not exist
         Raises a ValueError if a key from the param_name is an index but the parent is
             not a list.
+
+        Accepts wildcards for the list indexes.
         """
         if param_name is None:
             raise RuntimeError("Params must have a name")
+
+        if self._needs_resolving(param_name=param_name):
+            return self._set_horizontally(param_name=param_name, value=value)
 
         self.__recursive_set(param_name=param_name, value=value, dictionary=self._content)
 
@@ -209,7 +220,14 @@ class Dictionary:
             if param_name.find(self._separator) > 0 else param_name
 
     def get_parent(self, param_name: str) -> dict:
-        """Returns the parent object of the given param_name path"""
+        """
+        Returns the parent object of the given param_name path
+
+        Accepts wildcards for the list indexes.
+        """
+        if self._needs_resolving(param_name=param_name):
+            return self._get_parent_horizontally(param_name=param_name)
+
         if param_name.find(self._separator) > 0:
             pieces = param_name.split(self._separator)
             parent_key = self._separator.join(pieces[:-1])
@@ -304,3 +322,103 @@ class Dictionary:
                 self.set(param_name=param_name, value=current_value)
             else:
                 self.set(param_name=param_name, value=origin.get_all())
+
+    def _needs_resolving(self, param_name: str) -> bool:
+        """Checks if the param_name path indicates horizontal resoliving"""
+        return True if param_name.find(LIST_HORIZONTAL_RESOLVING_CHAR) > -1 else False
+
+    def resolve_wildcards(self, param_name: str = "") -> list:
+        """
+        Resolves param_name paths with '#' wildcards
+
+        Returns a list of all resolved paths.
+        Non matching paths are ignored.
+        """
+        # do we actually need to do anything?
+        if not self._needs_resolving(param_name):
+            return [param_name]
+
+        # Initialise what we'll return
+        returning_stack = []
+
+        # Get the portions between the '#' and clean them (to avoid starting or ending with ".")
+        portions = param_name.split(LIST_HORIZONTAL_RESOLVING_CHAR)
+        portions = [
+            portion.removeprefix(PATH_SEPARATOR_CHAR).removesuffix(PATH_SEPARATOR_CHAR)
+            for portion in portions
+        ]
+
+        # Now just strip and return the first one
+        portion = portions.pop(0)
+        keys_in_portion = self.get_keys_in(portion)
+
+        # Now check the keys in portion.
+        #   If none here, simply the param_name is wrong
+        if keys_in_portion is None:
+            return []
+
+        # And walk through all iterations in that list.
+        #   Because it MUST be a list
+        for key in keys_in_portion:
+            path = f"{portion}{PATH_SEPARATOR_CHAR}{key}"
+
+            portions_path = f"{PATH_SEPARATOR_CHAR}"
+            portions_path = f"{portions_path}{LIST_HORIZONTAL_RESOLVING_CHAR}"
+            portions_path = f"{portions_path}{PATH_SEPARATOR_CHAR}"
+            portions_path = portions_path.join(portions)
+            if portions_path:
+                path = f"{path}{PATH_SEPARATOR_CHAR}{portions_path}"
+
+            if self._needs_resolving(path):
+                # We still have more "#", go deeper.
+                returning_stack = returning_stack + self.resolve_wildcards(param_name=path)
+            else:
+                # No more "#"
+                if self.key_exists(path):
+                    # just return the value of the whole path only if the key exists
+                    returning_stack.append(path)
+
+        # And finally we return all paths that we resolved in this iteration.
+        return returning_stack
+
+    def _get_horizontally(self, param_name: str = "", default_value: any = None) -> list:
+        """
+        Gets the values of all the possible paths
+            horizontally across the defined lists iterations
+
+        It will ignore non-existing or not matching param_name path portions.
+        """
+        all_param_names = self.resolve_wildcards(param_name=param_name)
+
+        returning_stack = []
+        for path in all_param_names:
+            returning_stack.append(self.get(param_name=path, default_value=default_value))
+
+        return returning_stack
+
+    def _set_horizontally(self, param_name: str, value: any = None):
+        """
+        Sets the values of all the possible paths
+            horizontally across the defined lists iterations
+
+        It will ignore non-existing or not matching param_name path portions.
+        """
+        all_param_names = self.resolve_wildcards(param_name=param_name)
+
+        for path in all_param_names:
+            self.set(param_name=path, value=value)
+
+    def _get_parent_horizontally(self, param_name: str = "", default_value: any = None) -> list:
+        """
+        Gets the values of all the possible paths
+            horizontally across the defined lists iterations
+
+        It will ignore non-existing or not matching param_name path portions.
+        """
+        all_param_names = self.resolve_wildcards(param_name=param_name)
+
+        returning_stack = []
+        for path in all_param_names:
+            returning_stack.append(self.get_parent(param_name=path))
+
+        return returning_stack
