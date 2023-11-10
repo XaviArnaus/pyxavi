@@ -66,6 +66,11 @@ the hood it uses YAML files so they're human readable and inherits from the `Dic
 to apply the easy data manipulation into the loaded yaml files.
 
 
+## The `Queue` module
+
+A class to manage fifo queue style lists relying in the `Storage` module.
+
+
 ## The `Config` module
 
 A class for read-only config values inheriting from the `Storage` module.
