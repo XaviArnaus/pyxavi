@@ -4,7 +4,7 @@
 
 ### Added
 
-- New `Queue` module
+- New `Queue` module ([#29](https://github.com/XaviArnaus/pyxavi/pull/29))
 
 ## [v0.7.6](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.7.6) - 2023-11-10
 
