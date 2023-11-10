@@ -250,10 +250,11 @@ def test__post_call(
         'poll',
         'quote_id',
         'expected_endpoint',
-        'expected_json'
+        'expected_json',
+        'expected_id'
     ),
     argvalues=[
-        (None, None, None, None, None, None, None, None, None, None, None, None, None, None),
+        (None, None, None, None, None, None, None, None, None, None, None, None, None, None, None),
         (
             "test content",
             None,
@@ -269,7 +270,8 @@ def test__post_call(
             None,
             "api/notes/create", {
                 "text": "test content"
-            }
+            },
+            123
         ),
         (
             "test content",
@@ -285,7 +287,8 @@ def test__post_call(
             None,
             "api/notes/create", {
                 "text": "test content", "fileIds": [123]
-            }
+            },
+            123
         ),
         (
             "test content",
@@ -302,7 +305,8 @@ def test__post_call(
             None,
             "api/notes/create", {
                 "text": "test content", "visibility": "public"
-            }
+            },
+            123
         ),
         (
             "test content",
@@ -319,7 +323,8 @@ def test__post_call(
             None,
             "api/notes/create", {
                 "text": "test content", "visibility": "followers"
-            }
+            },
+            123
         ),
         (
             "test content",
@@ -336,7 +341,8 @@ def test__post_call(
             None,
             "api/notes/create", {
                 "text": "test content", "visibility": "specified"
-            }
+            },
+            123
         ),
         (
             "test content",
@@ -353,7 +359,8 @@ def test__post_call(
             None,
             "api/notes/create", {
                 "text": "test content", "visibility": "hidden"
-            }
+            },
+            123
         ),
         (
             "test content",
@@ -370,7 +377,8 @@ def test__post_call(
             None,
             "api/notes/create", {
                 "text": "test content", "lang": "ca"
-            }
+            },
+            123
         ),
         (
             "test content",
@@ -387,7 +395,8 @@ def test__post_call(
             None,
             "api/notes/create", {
                 "text": "test content", "replyId": 1234
-            }
+            },
+            123
         ),
     ],
 )
@@ -405,7 +414,8 @@ def test_status_post(
     poll,
     quote_id,
     expected_endpoint,
-    expected_json
+    expected_json,
+    expected_id
 ):
 
     access_token_filename = "user.secret"
@@ -437,8 +447,9 @@ def test_status_post(
             )
     else:
         mocked_post_call = Mock()
+        mocked_post_call.return_value = json.dumps({"id": expected_id})
         with patch.object(instance, "_Firefish__post_call", new=mocked_post_call):
-            _ = instance.status_post(
+            result = instance.status_post(
                 status,
                 in_reply_to_id,
                 media_ids,
@@ -456,6 +467,8 @@ def test_status_post(
             mocked_post_call.assert_called_once_with(
                 endpoint=expected_endpoint, json_data=expected_json
             )
+
+            assert result["id"] == expected_id
 
 @pytest.mark.parametrize(
     argnames=(

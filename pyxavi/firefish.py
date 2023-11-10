@@ -243,8 +243,10 @@ class Firefish:
             json_data["replyId"] = in_reply_to_id
 
         # Make the call
-        return self.__post_call(endpoint=ENDPOINT, json_data=json_data)
+        result = self.__post_call(endpoint=ENDPOINT, json_data=json_data)
     
+        # Prepare the result and return
+        return json.loads(result)
 
     def media_post(
         self,
