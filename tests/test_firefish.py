@@ -4,6 +4,7 @@ from unittest import TestCase
 import pytest
 import builtins
 import requests
+import json
 
 
 @pytest.mark.parametrize(
@@ -455,3 +456,96 @@ def test_status_post(
             mocked_post_call.assert_called_once_with(
                 endpoint=expected_endpoint, json_data=expected_json
             )
+
+@pytest.mark.parametrize(
+    argnames=(
+        'media_file',
+        'mime_type',
+        'description',
+        'focus',
+        'file_name',
+        'thumbnail',
+        'thumbnail_mime_type',
+        'synchronous',
+        'expected_endpoint',
+        'expected_json',
+        'expected_id'
+    ),
+    argvalues=[
+        (None, None, None, None, None, None, None, None, None, None, None),
+        ("this/is/my/media.jpg", None, None, None, None, None, None, None, "api/drive/files/create", {"name": "media.jpg"}, 123),
+        ("this/is/my/media.jpg", None, "this is alt text", None, None, None, None, None, "api/drive/files/create", {"name": "media.jpg", "comment": "this is alt text"}, 123),
+        (b"\x02\x87\x14\xbb\xca\x10\x83\xff\xd9", None, None, None, None, None, None, None, "api/drive/files/create", {}, 123),
+        (b"\x02\x87\x14\xbb\xca\x10\x83\xff\xd9", None, None, None, "media.jpg", None, None, None, "api/drive/files/create", {"name": "media.jpg"}, 123),
+    ],
+)
+def test_media_post(
+    media_file,
+    mime_type,
+    description,
+    focus,
+    file_name,
+    thumbnail,
+    thumbnail_mime_type,
+    synchronous,
+    expected_endpoint,
+    expected_json,
+    expected_id
+):
+
+    access_token_filename = "user.secret"
+    access_token_client_name = "Client"
+    access_token_api_base_url = "https://social.devnamic.com"
+    access_token_token = "abcdefg123456"
+    access_token_content = "\n".join(
+        [access_token_api_base_url, access_token_client_name, access_token_token]
+    )
+    mocked_content_file = b"\x02\x87\x14\xbb\xca\x10\x83\xff\xd9"
+
+    with patch.object(builtins, "open", mock_open(read_data=access_token_content)):
+        instance = Firefish(access_token=access_token_filename)
+
+    if media_file is None:
+        with TestCase.assertRaises(instance, RuntimeError):
+            instance.media_post(
+                media_file,
+                mime_type,
+                description,
+                focus,
+                file_name,
+                thumbnail,
+                thumbnail_mime_type,
+                synchronous
+            )
+    else:
+        mocked_post_call = Mock()
+        mocked_post_call.return_value = json.dumps({"id": expected_id})
+        with patch.object(instance, "_Firefish__post_call", new=mocked_post_call):
+            if isinstance(media_file, str):
+                with patch.object(builtins, "open", mock_open(read_data=mocked_content_file)):
+                    result = instance.media_post(
+                        media_file,
+                        mime_type,
+                        description,
+                        focus,
+                        file_name,
+                        thumbnail,
+                        thumbnail_mime_type,
+                        synchronous
+                    )
+            else:
+                result = instance.media_post(
+                        media_file,
+                        mime_type,
+                        description,
+                        focus,
+                        file_name,
+                        thumbnail,
+                        thumbnail_mime_type,
+                        synchronous
+                    )
+
+            mocked_post_call.assert_called_once_with(
+                endpoint=expected_endpoint, json_data=expected_json, files={"file": mocked_content_file}
+            )
+            assert result["id"] == expected_id
