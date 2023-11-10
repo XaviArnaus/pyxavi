@@ -1,5 +1,15 @@
 # Changelog
 
+## [v0.7.5](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.7.5) - 2023-11-10
+
+### Added
+
+- `Firefish` wrapper class now is able to post media ([#27](https://github.com/XaviArnaus/pyxavi/pull/27))
+
+### Changed
+
+- `Firefish.status_post` wrapper method now returns a dict with the response ([#27](https://github.com/XaviArnaus/pyxavi/pull/27))
+
 ## [v0.7.4](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.7.4) - 2023-11-06
 
 ### Changed

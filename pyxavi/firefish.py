@@ -1,4 +1,8 @@
 import requests
+import os
+import json
+
+from pyxavi.debugger import dd
 
 
 class Firefish:
@@ -97,7 +101,14 @@ class Firefish:
                 file.write(self.client_name + "\n")
                 file.write(self.bearer_token)
 
-    def __post_call(self, endpoint: str, headers: dict = {}, json_data: str = None):
+    def __post_call(
+        self,
+        endpoint: str,
+        headers: dict = {},
+        json_data: str = None,
+        data: str = None,
+        files: dict = None
+    ):
         '''
         This is the method that proxies (and builds) all API POST calls.
         '''
@@ -108,12 +119,15 @@ class Firefish:
                     'Authorization': 'Bearer ' + self.bearer_token,
                 }
             },
-            json=json_data
+            json=json_data,
+            data=data,
+            files=files
         )
 
         if response.status_code == 200:
             return response.content
         else:
+            dd(response)
             raise RuntimeError(
                 f"API Request ERROR -> {response.status_code}: {response.reason}"
             )
@@ -236,4 +250,110 @@ class Firefish:
             json_data["replyId"] = in_reply_to_id
 
         # Make the call
-        return self.__post_call(endpoint=ENDPOINT, json_data=json_data)
+        result = self.__post_call(endpoint=ENDPOINT, json_data=json_data)
+
+        # Prepare the result and return
+        return json.loads(result)
+
+    def media_post(
+        self,
+        media_file,
+        mime_type=None,
+        description=None,
+        focus=None,
+        file_name=None,
+        thumbnail=None,
+        thumbnail_mime_type=None,
+        synchronous=False
+    ):
+        """
+        Post an image, video or audio file.
+
+        media_file is the binary content. Can either be data as binary
+            or a file name as string.
+
+        [to implement] mime_type is the Mime Type of the media_file.
+            If data is passed directly, the mime type has to be specified
+            manually, otherwise, it is determined from the file name.
+
+        [to implement] focus should be a tuple of floats between -1 and 1,
+            giving the x and y coordinates of the images focus point for cropping
+            (with the origin being the images center).
+
+        [to implement] Throws a MastodonIllegalArgumentError if the mime type of the
+            passed data or file can not be determined properly.
+
+        file_name can be specified to upload a file with the given name, which
+            is ignored by Mastodon, but some other Fediverse server software
+            will display it. If no name is specified, a random name will be
+            generated. The filename of a file specified in media_file will be
+            ignored.
+
+        [to implement] Starting with Mastodon 3.2.0, thumbnail can be specified in the
+            same way as media_file to upload a custom thumbnail image for audio
+            and video files.
+
+        Returns a media dict. This contains the id that can be used in status_post
+            to attach the media file to a toot.
+
+        https://firefish.social/api-doc#operation/drive/files/create
+        """
+
+        ENDPOINT = "api/drive/files/create"
+
+        if media_file is None:
+            raise RuntimeError("Field 'media_file' is mandatory")
+
+        # The content of the file is mandatory, but goes set in the files section.
+        json_data = {}
+
+        if isinstance(media_file, str):
+            content = None
+            # So we have the filename, we need to open the file in binary mode
+            with open(media_file, 'rb') as file:
+                content = file.read()
+
+            json_data["name"] = os.path.basename(media_file)
+            media_file = content
+
+        elif not isinstance(media_file, bytes):
+            raise RuntimeError("Field 'media_file' does not seem to be a string of bytes")
+
+        # Do we have a file_name?
+        # Still, it seems to be ignored in the firefish side.
+        if file_name is not None:
+            json_data["name"] = file_name
+
+        # Do we have a description?
+        if description is not None:
+            json_data["comment"] = description
+
+        # Make the call
+        result = self.__post_call(
+            endpoint=ENDPOINT, json_data=json_data, files={"file": media_file}
+        )
+
+        # (dict[16]){
+        #   "id": (str[16])"9luwyawuhi3hf43i",
+        #   "createdAt": (str[24])"2023-11-09T15:33:59.358Z",
+        #   "name": (str[4])"file",
+        #   "type": (str[10])"image/jpeg",
+        #   "md5": (str[32])"9dd5f75501ee4d795610470d76ef702c",
+        #   "size": (int)53746,
+        #   "isSensitive": (bool)False,
+        #   "blurhash": (str[102])"yeL4ytof-;t7%Mxut7D%ofRjWBRjj[WB~qj[M{j[WBWBWBD" +
+        #         "%oft7oft7WBt7RjRjfPayM{j[jtxuayj[oft7ofayRjj[ayayayayay",
+        #   "properties": (dict[2]){"width": (int)800, "height": (int)533},
+        #   "url": (str[85])"https://cdn.devnamic.com/social.devnamic.com/" +
+        #         "d86fb425-d090-4699-9ed4-a10f540e64e4.jpg",
+        #   "thumbnailUrl": (str[96])"https://cdn.devnamic.com/social.devnamic.com/" +
+        #         "thumbnail-c7088923-7051-4dc0-8620-079bf59d04f1.webp",
+        #   "comment": (NoneType)None,
+        #   "folderId": (NoneType)None,
+        #   "folder": (NoneType)None,
+        #   "userId": (NoneType)None,
+        #   "user": (NoneType)None
+        # }
+
+        # Prepare the result and return
+        return json.loads(result)
