@@ -34,8 +34,11 @@ class Storage(Dictionary):
     def read_file(self) -> None:
         if os.path.exists(self._filename):
             self._content = self._load_file_contents(self._filename)
+            if self._content is None:
+                self._content = {}
         else:
             Path(self._filename).touch()
+            self._content = {}
 
     def write_file(self) -> None:
         with open(self._filename, 'w+') as stream:
