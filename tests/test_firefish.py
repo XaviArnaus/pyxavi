@@ -254,7 +254,23 @@ def test__post_call(
         'expected_id'
     ),
     argvalues=[
-        (None, None, None, None, None, None, None, None, None, None, None, None, None, None, None),
+        (
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None
+        ),
         (
             "test content",
             None,
@@ -470,6 +486,7 @@ def test_status_post(
 
             assert result["id"] == expected_id
 
+
 @pytest.mark.parametrize(
     argnames=(
         'media_file',
@@ -486,10 +503,60 @@ def test_status_post(
     ),
     argvalues=[
         (None, None, None, None, None, None, None, None, None, None, None),
-        ("this/is/my/media.jpg", None, None, None, None, None, None, None, "api/drive/files/create", {"name": "media.jpg"}, 123),
-        ("this/is/my/media.jpg", None, "this is alt text", None, None, None, None, None, "api/drive/files/create", {"name": "media.jpg", "comment": "this is alt text"}, 123),
-        (b"\x02\x87\x14\xbb\xca\x10\x83\xff\xd9", None, None, None, None, None, None, None, "api/drive/files/create", {}, 123),
-        (b"\x02\x87\x14\xbb\xca\x10\x83\xff\xd9", None, None, None, "media.jpg", None, None, None, "api/drive/files/create", {"name": "media.jpg"}, 123),
+        (
+            "this/is/my/media.jpg",
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            "api/drive/files/create", {
+                "name": "media.jpg"
+            },
+            123
+        ),
+        (
+            "this/is/my/media.jpg",
+            None,
+            "this is alt text",
+            None,
+            None,
+            None,
+            None,
+            None,
+            "api/drive/files/create", {
+                "name": "media.jpg", "comment": "this is alt text"
+            },
+            123
+        ),
+        (
+            b"\x02\x87\x14\xbb\xca\x10\x83\xff\xd9",
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            "api/drive/files/create", {},
+            123
+        ),
+        (
+            b"\x02\x87\x14\xbb\xca\x10\x83\xff\xd9",
+            None,
+            None,
+            None,
+            "media.jpg",
+            None,
+            None,
+            None,
+            "api/drive/files/create", {
+                "name": "media.jpg"
+            },
+            123
+        ),
     ],
 )
 def test_media_post(
@@ -548,17 +615,19 @@ def test_media_post(
                     )
             else:
                 result = instance.media_post(
-                        media_file,
-                        mime_type,
-                        description,
-                        focus,
-                        file_name,
-                        thumbnail,
-                        thumbnail_mime_type,
-                        synchronous
-                    )
+                    media_file,
+                    mime_type,
+                    description,
+                    focus,
+                    file_name,
+                    thumbnail,
+                    thumbnail_mime_type,
+                    synchronous
+                )
 
             mocked_post_call.assert_called_once_with(
-                endpoint=expected_endpoint, json_data=expected_json, files={"file": mocked_content_file}
+                endpoint=expected_endpoint,
+                json_data=expected_json,
+                files={"file": mocked_content_file}
             )
             assert result["id"] == expected_id
