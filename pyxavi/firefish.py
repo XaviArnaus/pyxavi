@@ -2,8 +2,6 @@ import requests
 import os
 import json
 
-from pyxavi.debugger import dd
-
 
 class Firefish:
 
@@ -127,7 +125,6 @@ class Firefish:
         if response.status_code == 200:
             return response.content
         else:
-            dd(response)
             raise RuntimeError(
                 f"API Request ERROR -> {response.status_code}: {response.reason}"
             )
