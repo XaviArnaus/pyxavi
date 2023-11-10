@@ -6,20 +6,22 @@ from typing import Protocol
 import logging
 import os
 
+
 class QueueItemProtocol(Protocol):
 
     def to_dict(self) -> dict:
         """Convert the object into a dict"""
-    
+
     @staticmethod
     def from_dict(dictionary: dict) -> QueueItemProtocol:
         """Instantiates this class from a given dictionary"""
-    
+
     def sort_value(self, param: any = None) -> any:
         """Returns a value that will be used to sort the collection of self items"""
-    
+
     def unique_value(self, param: any = None) -> any:
         """Returns a value that will be used to deduplicate the collection of self items"""
+
 
 class SimpleQueueItem(QueueItemProtocol):
 
@@ -28,17 +30,17 @@ class SimpleQueueItem(QueueItemProtocol):
     def __init__(self, item: dict) -> None:
         self.item = item
         super().__init__()
-    
+
     def to_dict(self) -> dict:
         return self.item
-    
+
     @staticmethod
     def from_dict(dictionary: dict) -> QueueItemProtocol:
         return SimpleQueueItem(item=dictionary)
-    
+
     def sort_value(self, param: any = None) -> any:
         return self.item[param] if param in self.item else None
-    
+
     def unique_value(self, param: any = None) -> any:
         return self.item[param] if param in self.item else None
 
@@ -55,7 +57,7 @@ class Queue:
         if base_path is not None:
             self.__storage_file = os.path.join(base_path, self.__storage_file)
         self.load()
-    
+
     def load(self) -> int:
         self._queue_manager = Storage(filename=self.__storage_file)
         self._queue = list(
@@ -75,8 +77,8 @@ class Queue:
         uniques_queue = []
         output_queue = []
         [
-            output_queue.append(x) and uniques_queue.append(x.unique_value(param=param)) \
-                for x in self._queue if x.unique_value(param=param) not in uniques_queue
+            output_queue.append(x) and uniques_queue.append(x.unique_value(param=param))
+            for x in self._queue if x.unique_value(param=param) not in uniques_queue
         ]
         self._queue = output_queue
 
@@ -98,7 +100,7 @@ class Queue:
 
     def clean(self) -> None:
         self._queue = []
-    
+
     def length(self) -> int:
         return len(self._queue)
 

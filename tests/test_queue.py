@@ -150,16 +150,11 @@ def test_save(datetime_1, datetime_2, datetime_3, queue_item_1, queue_item_2, qu
         "queue",
         [
             {
-                "text": "one",
-                "date": datetime_1
-            },
-            {
-                "text": "two",
-                "date": datetime_2
-            },
-            {
-                "text": "three",
-                "date": datetime_3
+                "text": "one", "date": datetime_1
+            }, {
+                "text": "two", "date": datetime_2
+            }, {
+                "text": "three", "date": datetime_3
             }
         ]
     )
