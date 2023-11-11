@@ -247,6 +247,7 @@ def test_unpop(queue_item_1, queue_item_2, queue_item_3):
     assert stack[1] == queue_item_1
     assert stack[2] == queue_item_2
 
+
 def test_first(queue_item_1, queue_item_2, queue_item_3):
     queue = get_instance()
     queue.append(queue_item_1)
@@ -259,6 +260,7 @@ def test_first(queue_item_1, queue_item_2, queue_item_3):
 
     assert queue_item, queue_item_1
     assert len(queue.get_all()), 3
+
 
 def test_last(queue_item_1, queue_item_2, queue_item_3):
     queue = get_instance()
