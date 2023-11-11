@@ -249,8 +249,85 @@ class Firefish:
         # Make the call
         result = self.__post_call(endpoint=ENDPOINT, json_data=json_data)
 
+        # (dict[1]){
+        #     "createdNote": (dict[17]){
+        #         "id": (str[16])"9lxgx1y4qk9qi1vv",
+        #         "createdAt": (str[24])"2023-11-11T10:28:25.756Z",
+        #         "userId": (str[16])"9kdeh1m4mvk02stu",
+        #         "user": (dict[14]){
+        #         "id": (str[16])"9kdeh1m4mvk02stu",
+        #         "name": (str[4])"Test",
+        #         "username": (str[4])"test",
+        #         "host": (NoneType)None,
+        #         "avatarUrl": (str[96])"https://cdn.devnamic.com/social." +
+        #           "devnamic.com/thumbnail-ed661faa-591c-4204-9356-9884c56a735a.webp",
+        #         "avatarBlurhash": (str[102])"yJH-e*t606WYoJkCR-03WVIUWB-" +
+        #           "ijsjs0qWX~2jrxvoeI]=;oLt7j@EmbIRPIvazNIa}WAWW-3xVjZxYj" +
+        #           "[WrfPS6Itayayj[sljsR+",
+        #         "avatarColor": (NoneType)None,
+        #         "isBot": (bool)True,
+        #         "isLocked": (bool)False,
+        #         "isIndexable": (bool)True,
+        #         "speakAsCat": (bool)True,
+        #         "emojis": (list[0])[],
+        #         "onlineStatus": (str[7])"offline",
+        #         "driveCapacityOverrideMb": (NoneType)None
+        #         },
+        #         "text": (str[407])"Lorem ipsum dolor sit amet, consectetur" +
+        #           " adipiscing elit. Nunc ac congue turpis, eu facilisis " +
+        #           "lacus. Sed augue felis, posuere vitae ex in, luctus " +
+        #           "lacinia erat. Nulla quis tempor nibh, sed placerat erat." +
+        #           " Sed ac diam a orci dictum convallis nec a ex. Vestibulum" +
+        #           " a metus in lorem malesuada finibus sit amet ut nisi. " +
+        #           "Etiam vel arcu in metus gravida mattis. In ipsum felis," +
+        #           " molestie sollicitudin feugiat se
+
+        #     (1/3)",
+        #         "cw": (NoneType)None,
+        #         "visibility": (str[6])"public",
+        #         "renoteCount": (int)0,
+        #         "repliesCount": (int)0,
+        #         "reactions": (dict[0]){},
+        #         "reactionEmojis": (list[0])[],
+        #         "emojis": (list[0])[],
+        #         "fileIds": (list[1])[(str[16])"9lxgx1dteouqeio9"],
+        #         "files": (list[1])[
+        #         (dict[16]){
+        #             "id": (str[16])"9lxgx1dteouqeio9",
+        #             "createdAt": (str[24])"2023-11-11T10:28:25.025Z",
+        #             "name": (str[4])"file",
+        #             "type": (str[10])"image/jpeg",
+        #             "md5": (str[32])"6fdd2bebd3bebfc45e1d8a1a50b9ea9c",
+        #             "size": (int)88674,
+        #             "isSensitive": (bool)False,
+        #             "blurhash": (str[102])"ytMQ*KWB%Mof%Mt7xu~qWBs:ayays;" +
+        #               "RjD%ofj]j[j[WBofkCj[WBazoLoLbH-:aya}f6WVbHaxNGj[ofa" +
+        #               "{oLjZa}ayoLWBfka}WVj[",
+        #             "properties": (dict[2]){"width": (int)598, "height": (int)771},
+        #             "url": (str[85])"https://cdn.devnamic.com/social.devnamic" +
+        #               ".com/74cefbcd-ec3b-44bb-a529-7862e8a6892c.jpg",
+        #             "thumbnailUrl": (str[96])"https://cdn.devnamic.com/social." +
+        #               "devnamic.com/thumbnail-91b86dee-2d03-43a1-b421-f9653e54" +
+        #               "f879.webp",
+        #             "comment": (NoneType)None,
+        #             "folderId": (NoneType)None,
+        #             "folder": (NoneType)None,
+        #             "userId": (NoneType)None,
+        #             "user": (NoneType)None
+        #         }
+        #         ],
+        #         "replyId": (NoneType)None,
+        #         "renoteId": (NoneType)None,
+        #         "lang": (str[2])"la"
+        #     }
+        # }
+
         # Prepare the result and return
-        return json.loads(result)
+        result = json.loads(result)
+        if "createdNote" in result:
+            return result["createdNote"]
+        else:
+            return result
 
     def media_post(
         self,

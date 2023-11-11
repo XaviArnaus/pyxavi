@@ -6,6 +6,10 @@
 
 - New `Queue` module ([#29](https://github.com/XaviArnaus/pyxavi/pull/29))
 
+### Changed
+
+- `Firefish.status_post` returns now a proper dict, with the ID in the first level ([#30](https://github.com/XaviArnaus/pyxavi/pull/30))
+
 ## [v0.7.6](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.7.6) - 2023-11-10
 
 ### Fixed
