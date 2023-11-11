@@ -222,10 +222,7 @@ def test_pop(queue_item_1, queue_item_2, queue_item_3):
 
     assert len(queue.get_all()), 3
 
-    mocked_get_dry_run = Mock()
-    mocked_get_dry_run.return_value = False
-    with patch.object(Config, "get", new=mocked_get_dry_run):
-        queue_item = queue.pop()
+    queue_item = queue.pop()
 
     assert queue_item, queue_item_1
     assert len(queue.get_all()), 2
@@ -249,3 +246,29 @@ def test_unpop(queue_item_1, queue_item_2, queue_item_3):
     assert stack[0] == queue_item_3
     assert stack[1] == queue_item_1
     assert stack[2] == queue_item_2
+
+def test_first(queue_item_1, queue_item_2, queue_item_3):
+    queue = get_instance()
+    queue.append(queue_item_1)
+    queue.append(queue_item_2)
+    queue.append(queue_item_3)
+
+    assert len(queue.get_all()), 3
+
+    queue_item = queue.first()
+
+    assert queue_item, queue_item_1
+    assert len(queue.get_all()), 3
+
+def test_last(queue_item_1, queue_item_2, queue_item_3):
+    queue = get_instance()
+    queue.append(queue_item_1)
+    queue.append(queue_item_2)
+    queue.append(queue_item_3)
+
+    assert len(queue.get_all()), 3
+
+    queue_item = queue.last()
+
+    assert queue_item, queue_item_3
+    assert len(queue.get_all()), 3
