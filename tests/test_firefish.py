@@ -463,7 +463,7 @@ def test_status_post(
             )
     else:
         mocked_post_call = Mock()
-        mocked_post_call.return_value = json.dumps({"id": expected_id})
+        mocked_post_call.return_value = json.dumps({"createdNote": {"id": expected_id}})
         with patch.object(instance, "_Firefish__post_call", new=mocked_post_call):
             result = instance.status_post(
                 status,
