@@ -1,7 +1,6 @@
 import requests
 import os
 import json
-from pyxavi.debugger import dd
 
 
 class Firefish:
