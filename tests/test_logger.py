@@ -18,7 +18,7 @@ def patched_config_init(self):
 
 
 def patched_config_get(self, param: str, default) -> str:
-    return CONFIG[param]
+    return CONFIG[param] if param in CONFIG else default
 
 
 @patch("pyxavi.config.Config.__init__", new=patched_config_init)
