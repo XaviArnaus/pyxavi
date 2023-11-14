@@ -571,3 +571,39 @@ def test_resolve_wildcards(param_name, expected_result):
     instance = initialize_instance()
 
     assert instance.resolve_wildcards(param_name=param_name) == expected_result
+
+
+@pytest.mark.parametrize(
+    argnames=('param_name', 'expected_result'),
+    argvalues=[
+        ("aaa", "aaa"),
+        ("aaa.#", "#"),
+        ("ggg.#.g1", "g1"),
+        ("hhh.#.h3.#.hh3", "hh3"),
+        ("hhh.#.h1.#.hh3", "hh3"),
+        ("iii.#.i3.#.ii3", "ii3"),
+    ]
+)
+def test_last_key(param_name, expected_result):
+
+    instance = initialize_instance()
+
+    assert instance.get_last_key(param_name=param_name) == expected_result
+
+
+@pytest.mark.parametrize(
+    argnames=('param_name', 'expected_result'),
+    argvalues=[
+        ("aaa", None),
+        ("aaa.#", "aaa"),
+        ("ggg.#.g1", "ggg.#"),
+        ("hhh.#.h3.#.hh3", "hhh.#.h3.#"),
+        ("hhh.#.h1.#.hh3", "hhh.#.h1.#"),
+        ("iii.#.i3.#.ii3", "iii.#.i3.#"),
+    ]
+)
+def test_get_parent_path(param_name, expected_result):
+
+    instance = initialize_instance()
+
+    assert instance.get_parent_path(param_name=param_name) == expected_result
