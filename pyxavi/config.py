@@ -1,4 +1,4 @@
-from .storage import Storage
+from pyxavi.storage import Storage
 import os
 
 CONFIG_FILENAME = "config.yaml"

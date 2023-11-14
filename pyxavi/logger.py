@@ -1,4 +1,4 @@
-from .config import Config
+from pyxavi.config import Config
 from logging.handlers import TimedRotatingFileHandler
 import logging
 import sys
