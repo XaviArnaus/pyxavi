@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased](https://github.com/XaviArnaus/pyxavi/)
+
+### Added
+
+- New `get_parent_path` and `get_last_key` methods in `Dictionary` module ([#33](https://github.com/XaviArnaus/pyxavi/pull/33))
+
 ## [v0.7.7](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.7.7) - 2023-11-11
 
 ### Added

@@ -197,7 +197,7 @@ class Dictionary:
         Checks if the given param_name path exists,
         including the indexes inside the list ranges
         """
-        key_to_search = self._get_focused_key(param_name=param_name)
+        key_to_search = self.get_last_key(param_name=param_name)
         parent_object = self.get_parent(param_name)
 
         if parent_object is None:
@@ -214,10 +214,15 @@ class Dictionary:
 
         return False
 
-    def _get_focused_key(self, param_name: str) -> str:
+    def get_last_key(self, param_name: str) -> str:
         """Returns the last key of the param_name"""
         return param_name.split(self._separator)[-1]\
             if param_name.find(self._separator) > 0 else param_name
+
+    def get_parent_path(self, param_name: str) -> str:
+        """Returns the all the path without the last key of the param_name"""
+        return self._separator.join(param_name.split(self._separator)[:-1])\
+            if param_name.find(self._separator) > 0 else None
 
     def get_parent(self, param_name: str) -> dict:
         """
@@ -239,7 +244,7 @@ class Dictionary:
         """Deletes the given param_name path key"""
         if self.key_exists(param_name=param_name):
             parent = self.get_parent(param_name=param_name)
-            key_to_delete = self._get_focused_key(param_name=param_name)
+            key_to_delete = self.get_last_key(param_name=param_name)
 
             if isinstance(parent, list) and self._is_int(key_to_delete):
                 key_to_delete = int(key_to_delete)
