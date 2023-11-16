@@ -39,6 +39,39 @@ def test_message_type_valid_or_raise(value, expected_type, expected_exception):
         assert instanciated_type, expected_type
 
 
+def test_get_instance_mastodon_client_credentials_not_exists_no_logger():
+    CONFIG_MASTODON_CONN_PARAMS["instance_type"] = "mastodon"
+    mocked_path_exists = Mock()
+    mocked_path_exists.side_effect = [False, True]
+    mocked_mastodon_init = Mock()
+    mocked_mastodon_init.return_value = None
+    mocked_mastodon_init.__class__ = Mastodon
+    mocked_helper_create_app = Mock()
+    with patch.object(os.path, "exists", new=mocked_path_exists):
+        with patch.object(Mastodon, "__init__", new=mocked_mastodon_init):
+            with patch.object(MastodonHelper, "create_app", new=mocked_helper_create_app):
+                conn_params = MastodonConnectionParams.from_dict(CONFIG_MASTODON_CONN_PARAMS)
+                instance = MastodonHelper.get_instance(
+                    connection_params=conn_params
+                )
+
+    mocked_path_exists.assert_has_calls([
+        call(CONFIG_MASTODON_CONN_PARAMS["credentials"]["client_file"]),
+        call(CONFIG_MASTODON_CONN_PARAMS["credentials"]["user_file"]),
+    ])
+    mocked_helper_create_app.assert_called_once_with(
+        instance_type=CONFIG_MASTODON_CONN_PARAMS["instance_type"],
+        client_name=CONFIG_MASTODON_CONN_PARAMS["app_name"],
+        api_base_url=CONFIG_MASTODON_CONN_PARAMS["api_base_url"],
+        to_file=CONFIG_MASTODON_CONN_PARAMS["credentials"]["client_file"]
+    )
+    mocked_mastodon_init.assert_called_once_with(
+        access_token=CONFIG_MASTODON_CONN_PARAMS["credentials"]["user_file"],
+        feature_set="mainline"
+    )
+    assert isinstance(instance, Mastodon)
+
+
 def test_get_instance_mastodon_user_credentials_exists_no_logger():
     CONFIG_MASTODON_CONN_PARAMS["instance_type"] = "mastodon"
     mocked_path_exists = Mock()
@@ -54,8 +87,8 @@ def test_get_instance_mastodon_user_credentials_exists_no_logger():
             )
 
     mocked_path_exists.assert_has_calls([
-        call( CONFIG_MASTODON_CONN_PARAMS["credentials"]["client_file"]),
-        call( CONFIG_MASTODON_CONN_PARAMS["credentials"]["user_file"]),
+        call(CONFIG_MASTODON_CONN_PARAMS["credentials"]["client_file"]),
+        call(CONFIG_MASTODON_CONN_PARAMS["credentials"]["user_file"]),
     ])
     mocked_mastodon_init.assert_called_once_with(
         access_token=CONFIG_MASTODON_CONN_PARAMS["credentials"]["user_file"],
