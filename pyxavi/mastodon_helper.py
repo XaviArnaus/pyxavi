@@ -1,8 +1,8 @@
 from __future__ import annotations
-from pyxavi.config import Config
 from pyxavi.firefish import Firefish
 from mastodon import Mastodon
 from datetime import datetime
+from logging import Logger
 import logging
 import os
 
@@ -21,18 +21,28 @@ class MastodonHelper:
 
     @staticmethod
     def get_instance(
-        config: Config,
         connection_params: MastodonConnectionParams,
+        logger: Logger = None,
         base_path: str = None
     ) -> Mastodon:
-        logger = logging.getLogger(config.get("logger.name"))
-
+        if logger is None:
+            logger = logging.getLogger()
+        
         instance_type = MastodonHelper.valid_or_raise(connection_params.instance_type)
         user_file = connection_params.credentials.user_file
         client_file = connection_params.credentials.client_file
         if base_path is not None:
             user_file = os.path.join(base_path, user_file)
             client_file = os.path.join(base_path, client_file)
+        
+        if not os.path.exists(client_file):
+            logger.debug("The Client file does not exist. Creating the app.")
+            MastodonHelper.create_app(
+                instance_type=connection_params.instance_type,
+                client_name=connection_params.app_name,
+                api_base_url=connection_params.api_base_url,
+                to_file=client_file
+            )
 
         # All actions are done under a Mastodon API instance
         logger.debug("Starting new Mastodon API instance")

@@ -128,7 +128,9 @@ A class that wraps the API for [Firefish](https://firefish.social/api-doc). It i
 interchangeable with the [Mastodon.py](https://mastodonpy.readthedocs.io/en/latest/index.html) 
 wrapper library, so one could inject any of both.
 
-At this point of time it only covers posting a new status (creating a note in Firefish).
+At this point of time it only covers:
+- Posting a new status (creating a note in Firefish).
+- Posting new media (create a drive/media in Firefish)
 
 ## The `Network` module
 
@@ -140,6 +142,49 @@ A class to perform some networking actions. At this point:
 
 A class to perform some actions over URLs. At this point:
 - Clean the URL based on given parameters
+
+## The `MastodonHelper` module
+
+A class that abstracts the instantiation of the Mastodon-like API wrapper. At this point it
+supports the original *Mastodon.py* wrapper that at its time supports Mastodon, Pleroma and Akkoma,
+and Firefish through the `Firefish` module above (which support is limited).
+
+The class is meant to receive an object `MastodonConnectionParams` that is responsible of bringing
+the parameters that facilitate the connection to the Mastodon wrappers and define some specifics
+regarding the server connecting to, like maximum length and visibility.
+
+Also includes a `StatusPost` that is meant to encapsulate everything that is needed to represent
+a Status to be posted. Internally it makes use of `StatusPostVisibility` and `StatusPostContentType`
+that are also referenced from the `MastodonConnectionParams`.
+
+The benefit of using this set of tools is to encapsulate and abstract what is needed to initiate
+a connection to the Mastodon-like API and post a status, including the authorisation, making it 
+really simple to include into a given app. One can even instantiate different wrappers to publish
+into different servers at the same time.
+
+```python
+connection_params = MastodonConnectionParams.from_dict({
+  "app_name": "SuperApp",
+  "instance_type": "mastodon",
+  "api_base_url": "https://mastodon.social",
+  "credentials": {
+    "user_file": "user.secret",
+    "client_file": "client.secret",
+    "user": {
+        "email": "bot@my-fancy.site",
+        "password": "SuperSecureP4ss",
+    }
+  }
+})
+
+mastodon_instance =  MastodonHelper.get_instance(
+  connection_params=connection_params
+)
+
+mastodon_instance.status_post(
+  status="I am a text"
+)
+```
 
 
 # How to use it
@@ -243,4 +288,4 @@ it's level is 10.
 # ToDo
 - [ ] Documentation per module
 - [ ] Iterate inline documentation
-- [ ] Empty the [NEXT MAJOR](./NEXT_MAJOR.md) list
+- [x] Empty the [NEXT MAJOR](./NEXT_MAJOR.md) list
