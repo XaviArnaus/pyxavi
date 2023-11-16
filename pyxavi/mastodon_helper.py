@@ -27,14 +27,14 @@ class MastodonHelper:
     ) -> Mastodon:
         if logger is None:
             logger = logging.getLogger()
-        
+
         instance_type = MastodonHelper.valid_or_raise(connection_params.instance_type)
         user_file = connection_params.credentials.user_file
         client_file = connection_params.credentials.client_file
         if base_path is not None:
             user_file = os.path.join(base_path, user_file)
             client_file = os.path.join(base_path, client_file)
-        
+
         if not os.path.exists(client_file):
             logger.debug("The Client file does not exist. Creating the app.")
             MastodonHelper.create_app(
