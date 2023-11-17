@@ -32,7 +32,7 @@ CONFIG = {
                 "when": "midnight",
                 "backup_count": 10,
                 "utc": False,
-                "at_time": (1,0,0)
+                "at_time": (1, 0, 0)
             }
         },
         "stdout": {
@@ -70,7 +70,7 @@ def test_initialize_logger_old_config():
     mock_logging_basic_config = Mock()
     with patch.object(logging, "basicConfig", new=mock_logging_basic_config):
         _ = Logger(config)
-    
+
     # Asserts are related to the content received from the file,
     #   here they are mocked to what comes from the dict above
     call_arguments = mock_logging_basic_config.mock_calls[0][2]
@@ -78,6 +78,7 @@ def test_initialize_logger_old_config():
     assert call_arguments["format"] == CONFIG_OLD["logger"]["format"]
     assert len(call_arguments["handlers"]) == 1
     assert isinstance(call_arguments["handlers"][0], logging.StreamHandler)
+
 
 @patch.object(Config, "read_file", new=patch_config_old_read_file)
 def test_logger_old_only_stdout():
@@ -93,7 +94,6 @@ def test_logger_old_only_stdout():
     call_arguments = mock_logging_basic_config.mock_calls[0][2]
     assert len(call_arguments["handlers"]) == 1
     assert isinstance(call_arguments["handlers"][0], logging.StreamHandler)
-
 
 
 @patch.object(Config, "read_file", new=patch_config_old_read_file)
@@ -116,9 +116,7 @@ def test_logger_old_only_file_default_no_rotate():
     assert len(call_arguments["handlers"]) == 1
     assert isinstance(call_arguments["handlers"][0], logging.FileHandler)
     mock_file_handler_init.assert_called_once_with(
-        filename=CONFIG_OLD["logger"]["filename"],
-        mode="a",
-        encoding="UTF-8"
+        filename=CONFIG_OLD["logger"]["filename"], mode="a", encoding="UTF-8"
     )
 
 
@@ -143,10 +141,9 @@ def test_logger_old_both_stdout_and_file_default_no_rotate():
     assert isinstance(call_arguments["handlers"][0], logging.FileHandler)
     assert isinstance(call_arguments["handlers"][1], logging.StreamHandler)
     mock_file_handler_init.assert_called_once_with(
-        filename=CONFIG_OLD["logger"]["filename"],
-        mode="a",
-        encoding="UTF-8"
+        filename=CONFIG_OLD["logger"]["filename"], mode="a", encoding="UTF-8"
     )
+
 
 @patch.object(Config, "read_file", new=patch_config_read_file)
 def test_initialize_logger():
@@ -156,7 +153,7 @@ def test_initialize_logger():
     mock_logging_basic_config = Mock()
     with patch.object(logging, "basicConfig", new=mock_logging_basic_config):
         _ = Logger(config)
-    
+
     # Asserts are related to the content received from the file,
     #   here they are mocked to what comes from the dict above
     call_arguments = mock_logging_basic_config.mock_calls[0][2]
@@ -164,6 +161,7 @@ def test_initialize_logger():
     assert call_arguments["format"] == CONFIG["logger"]["format"]
     assert len(call_arguments["handlers"]) == 1
     assert isinstance(call_arguments["handlers"][0], logging.StreamHandler)
+
 
 @patch.object(Config, "read_file", new=patch_config_read_file)
 def test_logger_only_stdout():
@@ -179,7 +177,6 @@ def test_logger_only_stdout():
     call_arguments = mock_logging_basic_config.mock_calls[0][2]
     assert len(call_arguments["handlers"]) == 1
     assert isinstance(call_arguments["handlers"][0], logging.StreamHandler)
-
 
 
 @patch.object(Config, "read_file", new=patch_config_read_file)
@@ -233,6 +230,7 @@ def test_logger_both_stdout_and_file_default_no_rotate():
         mode="a",
         encoding=CONFIG["logger"]["file"]["encoding"]
     )
+
 
 @patch.object(Config, "read_file", new=patch_config_read_file)
 def test_logger_file_default_with_rotate():

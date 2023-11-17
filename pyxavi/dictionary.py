@@ -333,16 +333,17 @@ class Dictionary:
                 self.set(param_name=param_name, value=current_value)
             else:
                 self.set(param_name=param_name, value=origin.get_all())
-    
+
     @staticmethod
     def _merge_simple_recursive(base_dict: dict, over_dict: dict) -> dict:
         for key, value in over_dict.items():
-            if key in base_dict and isinstance(base_dict[key], dict) and isinstance(value, dict):
+            if key in base_dict and isinstance(base_dict[key], dict) and isinstance(value,
+                                                                                    dict):
                 base_dict[key] = Dictionary._merge_simple_recursive(base_dict[key], value)
             else:
                 base_dict[key] = value
         return base_dict
-    
+
     @staticmethod
     def _merge_complex_recursive(base_dict: dict, over_dict: dict) -> dict:
         merged_dict = {}
@@ -351,7 +352,9 @@ class Dictionary:
                 if isinstance(base_dict[key], list) and isinstance(over_dict[key], list):
                     merged_dict[key] = base_dict[key] + over_dict[key]
                 elif isinstance(base_dict[key], dict) and isinstance(over_dict[key], dict):
-                    merged_dict[key] = Dictionary._merge_simple_recursive(copy.deepcopy(base_dict[key]), over_dict[key])
+                    merged_dict[key] = Dictionary._merge_simple_recursive(
+                        copy.deepcopy(base_dict[key]), over_dict[key]
+                    )
                 else:
                     merged_dict[key] = over_dict[key]
             elif key in base_dict:
@@ -359,10 +362,10 @@ class Dictionary:
             else:
                 merged_dict[key] = copy.deepcopy(over_dict[key])
         return merged_dict
-    
+
     def remove_none(self) -> None:
         self._content = self._remove_none_recursive(self._content)
-    
+
     def _remove_none_recursive(self, _dict: dict) -> dict:
         """Delete None values recursively from all of the dictionaries, tuples, lists, sets"""
         if isinstance(_dict, dict):
@@ -373,10 +376,11 @@ class Dictionary:
                     del _dict[key]
 
         elif isinstance(_dict, (list, set, tuple)):
-            _dict = type(_dict)(self._remove_none_recursive(item) for item in _dict if item is not None)
+            _dict = type(_dict)(
+                self._remove_none_recursive(item) for item in _dict if item is not None
+            )
 
         return _dict
-
 
     @staticmethod
     def needs_resolving(param_name: str) -> bool:

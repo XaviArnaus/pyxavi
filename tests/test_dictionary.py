@@ -613,14 +613,38 @@ def test_get_parent_path(param_name, expected_result):
     argnames=('dictionary', 'expected_result'),
     argvalues=[
         ({}, {}),
-        ({"a": None}, {}),
-        ({"a": "A"}, {"a": "A"}),
-        ({"a": "A", "b": None}, {"a": "A"}),
-        ({"a": "A", "b": {"c": None}}, {"a": "A", "b": {}}),
-        ({"a": "A", "b": {"c": None, "d": "D"}}, {"a": "A", "b": {"d": "D"}}),
+        ({
+            "a": None
+        }, {}),
+        ({
+            "a": "A"
+        }, {
+            "a": "A"
+        }),
+        ({
+            "a": "A", "b": None
+        }, {
+            "a": "A"
+        }),
+        ({
+            "a": "A", "b": {
+                "c": None
+            }
+        }, {
+            "a": "A", "b": {}
+        }),
+        ({
+            "a": "A", "b": {
+                "c": None, "d": "D"
+            }
+        }, {
+            "a": "A", "b": {
+                "d": "D"
+            }
+        }),
     ]
 )
-def test_get_parent_path(dictionary, expected_result):
+def test_remove_none(dictionary, expected_result):
 
     instance = Dictionary(dictionary)
 
@@ -628,41 +652,47 @@ def test_get_parent_path(dictionary, expected_result):
 
     assert instance.get_all() == expected_result
 
+
 def test_merge_complex():
-    base = Dictionary({
-        "logger": {
-            "name": "custom_logger",
-            "loglevel": 20,
-            "format": "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s",
-            "file": {
-                "active": False,
-                "filename": "debug.log",
-                "encoding": "UTF-8",
-                "rotate": {
+    base = Dictionary(
+        {
+            "logger": {
+                "name": "custom_logger",
+                "loglevel": 20,
+                "format": "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s",
+                "file": {
                     "active": False,
-                    "when": "midnight",
-                    "backup_count": 10,
-                    "utc": False,
-                    "at_time": (1, 0, 0)
+                    "filename": "debug.log",
+                    "encoding": "UTF-8",
+                    "rotate": {
+                        "active": False,
+                        "when": "midnight",
+                        "backup_count": 10,
+                        "utc": False,
+                        "at_time": (1, 0, 0)
+                    }
+                },
+                "stdout": {
+                    "active": False
                 }
-            },
-            "stdout": {"active": False}
-        }
-    })
-    over = Dictionary({
-        "logger": {
-            "name": "logger_test",
-            "loglevel": 45,
-            "format": "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s",
-            "file": {
-                "active": True,
-                "filename": "test.log"
-            },
-            "stdout": {
-                "active": False
             }
         }
-    })
+    )
+    over = Dictionary(
+        {
+            "logger": {
+                "name": "logger_test",
+                "loglevel": 45,
+                "format": "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s",
+                "file": {
+                    "active": True, "filename": "test.log"
+                },
+                "stdout": {
+                    "active": False
+                }
+            }
+        }
+    )
 
     expected = {
         "logger": {
@@ -681,7 +711,9 @@ def test_merge_complex():
                     "at_time": (1, 0, 0)
                 }
             },
-            "stdout": {"active": False}
+            "stdout": {
+                "active": False
+            }
         }
     }
 
