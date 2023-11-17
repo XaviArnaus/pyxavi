@@ -607,3 +607,23 @@ def test_get_parent_path(param_name, expected_result):
     instance = initialize_instance()
 
     assert instance.get_parent_path(param_name=param_name) == expected_result
+
+
+@pytest.mark.parametrize(
+    argnames=('dictionary', 'expected_result'),
+    argvalues=[
+        ({}, {}),
+        ({"a": None}, {}),
+        ({"a": "A"}, {"a": "A"}),
+        ({"a": "A", "b": None}, {"a": "A"}),
+        ({"a": "A", "b": {"c": None}}, {"a": "A", "b": {}}),
+        ({"a": "A", "b": {"c": None, "d": "D"}}, {"a": "A", "b": {"d": "D"}}),
+    ]
+)
+def test_get_parent_path(dictionary, expected_result):
+
+    instance = Dictionary(dictionary)
+
+    instance.remove_none()
+
+    assert instance.get_all() == expected_result
