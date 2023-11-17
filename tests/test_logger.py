@@ -7,20 +7,37 @@ import logging
 import copy
 import pytest
 
-CONFIG = {
+CONFIG_OLD = {
     "logger": {
         "format": "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s",
         "filename": "test.log",
         "to_file": False,
         "to_stdout": True,
         "loglevel": 45,
+        "name": "logger_test"
+    }
+}
+
+CONFIG = {
+    "logger": {
+        "format": "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s",
+        "loglevel": 45,
         "name": "logger_test",
-        "rotate_files": False,
-        "when_rotate": "midnight",
-        "backup_count": 10,
-        "encoding": "UTF-8",
-        "utc": False,
-        "at_time": (1,0,0)
+        "file": {
+            "active": False,
+            "filename": "test.log",
+            "encoding": "UTF-8",
+            "rotate": {
+                "active": False,
+                "when": "midnight",
+                "backup_count": 10,
+                "utc": False,
+                "at_time": (1,0,0)
+            }
+        },
+        "stdout": {
+            "active": True
+        }
     }
 }
 
@@ -40,6 +57,96 @@ def setup_function():
 def patch_config_read_file(self):
     self._content = CONFIG
 
+
+def patch_config_old_read_file(self):
+    self._content = CONFIG_OLD
+
+
+@patch.object(Config, "read_file", new=patch_config_old_read_file)
+def test_initialize_logger_old_config():
+
+    config = Config()
+
+    mock_logging_basic_config = Mock()
+    with patch.object(logging, "basicConfig", new=mock_logging_basic_config):
+        _ = Logger(config)
+    
+    # Asserts are related to the content received from the file,
+    #   here they are mocked to what comes from the dict above
+    call_arguments = mock_logging_basic_config.mock_calls[0][2]
+    assert call_arguments["level"] == CONFIG_OLD["logger"]["loglevel"]
+    assert call_arguments["format"] == CONFIG_OLD["logger"]["format"]
+    assert len(call_arguments["handlers"]) == 1
+    assert isinstance(call_arguments["handlers"][0], logging.StreamHandler)
+
+@patch.object(Config, "read_file", new=patch_config_old_read_file)
+def test_logger_old_only_stdout():
+
+    CONFIG_OLD["logger"]["to_stdout"] = True
+    CONFIG_OLD["logger"]["to_file"] = False
+    config = Config()
+
+    mock_logging_basic_config = Mock()
+    with patch.object(logging, "basicConfig", new=mock_logging_basic_config):
+        _ = Logger(config)
+
+    call_arguments = mock_logging_basic_config.mock_calls[0][2]
+    assert len(call_arguments["handlers"]) == 1
+    assert isinstance(call_arguments["handlers"][0], logging.StreamHandler)
+
+
+
+@patch.object(Config, "read_file", new=patch_config_old_read_file)
+def test_logger_old_only_file_default_no_rotate():
+
+    CONFIG_OLD["logger"]["to_stdout"] = False
+    CONFIG_OLD["logger"]["to_file"] = True
+    config = Config()
+
+    mock_logging_basic_config = Mock()
+    mock_file_handler = Mock()
+    mock_file_handler.__class__ = logging.FileHandler
+    mock_file_handler_init = Mock()
+    mock_file_handler_init.return_value = None
+    with patch.object(logging, "basicConfig", new=mock_logging_basic_config):
+        with patch.object(logging.FileHandler, "__init__", new=mock_file_handler_init):
+            _ = Logger(config)
+
+    call_arguments = mock_logging_basic_config.mock_calls[0][2]
+    assert len(call_arguments["handlers"]) == 1
+    assert isinstance(call_arguments["handlers"][0], logging.FileHandler)
+    mock_file_handler_init.assert_called_once_with(
+        filename=CONFIG_OLD["logger"]["filename"],
+        mode="a",
+        encoding="UTF-8"
+    )
+
+
+@patch.object(Config, "read_file", new=patch_config_old_read_file)
+def test_logger_old_both_stdout_and_file_default_no_rotate():
+
+    CONFIG_OLD["logger"]["to_stdout"] = True
+    CONFIG_OLD["logger"]["to_file"] = True
+    config = Config()
+
+    mock_logging_basic_config = Mock()
+    mock_file_handler = Mock()
+    mock_file_handler.__class__ = logging.FileHandler
+    mock_file_handler_init = Mock()
+    mock_file_handler_init.return_value = None
+    with patch.object(logging, "basicConfig", new=mock_logging_basic_config):
+        with patch.object(logging.FileHandler, "__init__", new=mock_file_handler_init):
+            _ = Logger(config)
+
+    call_arguments = mock_logging_basic_config.mock_calls[0][2]
+    assert len(call_arguments["handlers"]) == 2
+    assert isinstance(call_arguments["handlers"][0], logging.FileHandler)
+    assert isinstance(call_arguments["handlers"][1], logging.StreamHandler)
+    mock_file_handler_init.assert_called_once_with(
+        filename=CONFIG_OLD["logger"]["filename"],
+        mode="a",
+        encoding="UTF-8"
+    )
 
 @patch.object(Config, "read_file", new=patch_config_read_file)
 def test_initialize_logger():
@@ -61,8 +168,8 @@ def test_initialize_logger():
 @patch.object(Config, "read_file", new=patch_config_read_file)
 def test_logger_only_stdout():
 
-    CONFIG["logger"]["to_stdout"] = True
-    CONFIG["logger"]["to_file"] = False
+    CONFIG["logger"]["stdout"]["active"] = True
+    CONFIG["logger"]["file"]["active"] = False
     config = Config()
 
     mock_logging_basic_config = Mock()
@@ -78,8 +185,8 @@ def test_logger_only_stdout():
 @patch.object(Config, "read_file", new=patch_config_read_file)
 def test_logger_only_file_default_no_rotate():
 
-    CONFIG["logger"]["to_stdout"] = False
-    CONFIG["logger"]["to_file"] = True
+    CONFIG["logger"]["stdout"]["active"] = False
+    CONFIG["logger"]["file"]["active"] = True
     config = Config()
 
     mock_logging_basic_config = Mock()
@@ -95,17 +202,17 @@ def test_logger_only_file_default_no_rotate():
     assert len(call_arguments["handlers"]) == 1
     assert isinstance(call_arguments["handlers"][0], logging.FileHandler)
     mock_file_handler_init.assert_called_once_with(
-        filename=CONFIG["logger"]["filename"],
+        filename=CONFIG["logger"]["file"]["filename"],
         mode="a",
-        encoding=CONFIG["logger"]["encoding"]
+        encoding=CONFIG["logger"]["file"]["encoding"]
     )
 
 
 @patch.object(Config, "read_file", new=patch_config_read_file)
 def test_logger_both_stdout_and_file_default_no_rotate():
 
-    CONFIG["logger"]["to_stdout"] = True
-    CONFIG["logger"]["to_file"] = True
+    CONFIG["logger"]["stdout"]["active"] = True
+    CONFIG["logger"]["file"]["active"] = True
     config = Config()
 
     mock_logging_basic_config = Mock()
@@ -122,18 +229,17 @@ def test_logger_both_stdout_and_file_default_no_rotate():
     assert isinstance(call_arguments["handlers"][0], logging.FileHandler)
     assert isinstance(call_arguments["handlers"][1], logging.StreamHandler)
     mock_file_handler_init.assert_called_once_with(
-        filename=CONFIG["logger"]["filename"],
+        filename=CONFIG["logger"]["file"]["filename"],
         mode="a",
-        encoding=CONFIG["logger"]["encoding"]
+        encoding=CONFIG["logger"]["file"]["encoding"]
     )
-
 
 @patch.object(Config, "read_file", new=patch_config_read_file)
 def test_logger_file_default_with_rotate():
 
-    CONFIG["logger"]["to_stdout"] = False
-    CONFIG["logger"]["to_file"] = True
-    CONFIG["logger"]["rotate_files"] = True
+    CONFIG["logger"]["stdout"]["active"] = False
+    CONFIG["logger"]["file"]["active"] = True
+    CONFIG["logger"]["file"]["rotate"]["active"] = True
     config = Config()
 
     mock_logging_basic_config = Mock()
@@ -149,22 +255,22 @@ def test_logger_file_default_with_rotate():
     assert len(call_arguments["handlers"]) == 1
     assert isinstance(call_arguments["handlers"][0], TimedRotatingFileHandler)
     mock_file_handler_init.assert_called_once_with(
-        filename=CONFIG["logger"]["filename"],
-        when=CONFIG["logger"]["when_rotate"],
-        backupCount=CONFIG["logger"]["backup_count"],
-        encoding=CONFIG["logger"]["encoding"],
+        filename=CONFIG["logger"]["file"]["filename"],
+        when=CONFIG["logger"]["file"]["rotate"]["when"],
+        backupCount=CONFIG["logger"]["file"]["rotate"]["backup_count"],
+        encoding=CONFIG["logger"]["file"]["encoding"],
         utc=False,
-        atTime=time(*CONFIG["logger"]["at_time"]),
+        atTime=time(*CONFIG["logger"]["file"]["rotate"]["at_time"]),
     )
 
 
 @patch.object(Config, "read_file", new=patch_config_read_file)
 def test_logger_file_default_with_rotate_UTC():
 
-    CONFIG["logger"]["to_stdout"] = False
-    CONFIG["logger"]["to_file"] = True
-    CONFIG["logger"]["rotate_files"] = True
-    CONFIG["logger"]["utc"] = True
+    CONFIG["logger"]["stdout"]["active"] = False
+    CONFIG["logger"]["file"]["active"] = True
+    CONFIG["logger"]["file"]["rotate"]["active"] = True
+    CONFIG["logger"]["file"]["rotate"]["utc"] = True
     config = Config()
 
     mock_logging_basic_config = Mock()
@@ -180,22 +286,22 @@ def test_logger_file_default_with_rotate_UTC():
     assert len(call_arguments["handlers"]) == 1
     assert isinstance(call_arguments["handlers"][0], TimedRotatingFileHandler)
     mock_file_handler_init.assert_called_once_with(
-        filename=CONFIG["logger"]["filename"],
-        when=CONFIG["logger"]["when_rotate"],
-        backupCount=CONFIG["logger"]["backup_count"],
-        encoding=CONFIG["logger"]["encoding"],
+        filename=CONFIG["logger"]["file"]["filename"],
+        when=CONFIG["logger"]["file"]["rotate"]["when"],
+        backupCount=CONFIG["logger"]["file"]["rotate"]["backup_count"],
+        encoding=CONFIG["logger"]["file"]["encoding"],
         utc=True,
-        atTime=time(*CONFIG["logger"]["at_time"]),
+        atTime=time(*CONFIG["logger"]["file"]["rotate"]["at_time"]),
     )
 
 
 @patch.object(Config, "read_file", new=patch_config_read_file)
 def test_logger_file_default_with_rotate_every_hour():
 
-    CONFIG["logger"]["to_stdout"] = False
-    CONFIG["logger"]["to_file"] = True
-    CONFIG["logger"]["rotate_files"] = True
-    CONFIG["logger"]["when_rotate"] = "H"
+    CONFIG["logger"]["stdout"]["active"] = False
+    CONFIG["logger"]["file"]["active"] = True
+    CONFIG["logger"]["file"]["rotate"]["active"] = True
+    CONFIG["logger"]["file"]["rotate"]["when"] = "H"
     config = Config()
 
     mock_logging_basic_config = Mock()
@@ -211,10 +317,10 @@ def test_logger_file_default_with_rotate_every_hour():
     assert len(call_arguments["handlers"]) == 1
     assert isinstance(call_arguments["handlers"][0], TimedRotatingFileHandler)
     mock_file_handler_init.assert_called_once_with(
-        filename=CONFIG["logger"]["filename"],
+        filename=CONFIG["logger"]["file"]["filename"],
         when="H",
-        backupCount=CONFIG["logger"]["backup_count"],
-        encoding=CONFIG["logger"]["encoding"],
+        backupCount=CONFIG["logger"]["file"]["rotate"]["backup_count"],
+        encoding=CONFIG["logger"]["file"]["encoding"],
         utc=False,
-        atTime=time(*CONFIG["logger"]["at_time"]),
+        atTime=time(*CONFIG["logger"]["file"]["rotate"]["at_time"]),
     )

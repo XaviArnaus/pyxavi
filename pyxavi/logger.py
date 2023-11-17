@@ -6,6 +6,7 @@ from logging import Logger as OriginalLogger
 import logging
 import sys
 import os
+from pyxavi.debugger import dd
 
 
 class Logger:
@@ -106,37 +107,42 @@ class Logger:
         #
         old_config_values = self._load_old_config_without_defaults(config=config)
         new_config_values = self._load_new_config_without_defaults(config=config)
-        intersected = {
-            "name": new_config_values.get("logger.name", old_config_values.get("logger.name")),
-            "loglevel": new_config_values.get("logger.loglevel", old_config_values.get("logger.loglevel")),
-            "format": new_config_values.get("logger.format", old_config_values.get("logger.format")),
-            # File logging
-            "file": {
-                "active": new_config_values.get("logger.file.active", old_config_values.get("logger.to_file")),
-                "filename": new_config_values.get("logger.file.filename", old_config_values.get("logger.filename")),
-                "encoding": new_config_values.get("logger.file.encoding"),
-                "rotate": {
-                    "active": new_config_values.get("logger.file.rotate.active"),
-                    "when": new_config_values.get("logger.file.rotate.when"),
-                    "backup_count": new_config_values.get("logger.file.rotate.backup_count"),
-                    "utc": new_config_values.get("logger.file.rotate.utc"),
-                    "at_time": new_config_values.get("logger.file.rotate.at_time")
+        intersected = Dictionary({
+            "logger": {
+                "name": new_config_values.get("logger.name", old_config_values.get("logger.name")),
+                "loglevel": new_config_values.get("logger.loglevel", old_config_values.get("logger.loglevel")),
+                "format": new_config_values.get("logger.format", old_config_values.get("logger.format")),
+                # File logging
+                "file": {
+                    "active": new_config_values.get("logger.file.active", old_config_values.get("logger.file.active")),
+                    "filename": new_config_values.get("logger.file.filename", old_config_values.get("logger.file.filename")),
+                    "encoding": new_config_values.get("logger.file.encoding"),
+                    "rotate": {
+                        "active": new_config_values.get("logger.file.rotate.active"),
+                        "when": new_config_values.get("logger.file.rotate.when"),
+                        "backup_count": new_config_values.get("logger.file.rotate.backup_count"),
+                        "utc": new_config_values.get("logger.file.rotate.utc"),
+                        "at_time": new_config_values.get("logger.file.rotate.at_time")
+                    },
                 },
-            },
-            # Standard output logging
-            "stdout": {
-                "active": new_config_values.get("logger.stdout.active", old_config_values.get("logger.to_stdout"))
+                # Standard output logging
+                "stdout": {
+                    "active": new_config_values.get("logger.stdout.active", old_config_values.get("logger.stdout.active"))
+                }
             }
-        }
+        })
+        intersected.remove_none()
+        if intersected.get_keys_in("logger.file.rotate") == []:
+            intersected.delete("logger.file.rotate")
         defaults = Dictionary({"logger": self.DEFAULTS})
-        defaults.merge(Dictionary(intersected))
+        defaults.merge(intersected)
 
         # And now the proper work:
         filename = defaults.get("logger.file.filename")
         if self._base_path is not None:
             defaults.set("logger.file.filename", os.path.join(self._base_path, filename))
         defaults.set("logger.file.rotate.at_time", time(*defaults.get("logger.file.rotate.at_time")))
-        self._logger_config = defaults
+        self._logger_config = Dictionary(defaults.get("logger"))
         
         #
         # Uncoment the following code once the deprecation is expired and the old support code above is gone
@@ -180,18 +186,20 @@ class Logger:
 
         # What we do here is to build a main dict where we ensure we always have a value.
         return Dictionary({
-            # Common parameters
-            "name": config.get("logger.name"),
-            "loglevel": config.get("logger.loglevel"),
-            "format": config.get("logger.format"),
-            # File logging
-            "file": {
-                "active": config.get("logger.to_file"),
-                "filename": filename
-            },
-            # Standard output logging
-            "stdout": {
-                "active": config.get("logger.to_stdout")
+            "logger": {
+                # Common parameters
+                "name": config.get("logger.name"),
+                "loglevel": config.get("logger.loglevel"),
+                "format": config.get("logger.format"),
+                # File logging
+                "file": {
+                    "active": config.get("logger.to_file"),
+                    "filename": filename
+                },
+                # Standard output logging
+                "stdout": {
+                    "active": config.get("logger.to_stdout")
+                }
             }
         })
     
@@ -204,26 +212,28 @@ class Logger:
 
         # What we do here is to build a main dict where we ensure we always have a value.
         return Dictionary({
-            # Common parameters
-            "name": config.get("logger.name"),
-            "loglevel": config.get("logger.loglevel"),
-            "format": config.get("logger.format"),
-            # File logging
-            "file": {
-                "active": config.get("logger.file.active"),
-                "filename": filename,
-                "encoding": config.get("logger.file.encoding"),
-                "rotate": {
-                    "active": config.get("logger.file.rotate.active"),
-                    "when": config.get("logger.file.rotate.when"),
-                    "backup_count": config.get("logger.file.rotate.backup_count"),
-                    "utc": config.get("logger.file.rotate.utc"),
-                    "at_time": time(*config.get("logger.file.rotate.at_time"))
+            "logger": {
+                # Common parameters
+                "name": config.get("logger.name"),
+                "loglevel": config.get("logger.loglevel"),
+                "format": config.get("logger.format"),
+                # File logging
+                "file": {
+                    "active": config.get("logger.file.active"),
+                    "filename": filename,
+                    "encoding": config.get("logger.file.encoding"),
+                    "rotate": {
+                        "active": config.get("logger.file.rotate.active"),
+                        "when": config.get("logger.file.rotate.when"),
+                        "backup_count": config.get("logger.file.rotate.backup_count"),
+                        "utc": config.get("logger.file.rotate.utc"),
+                        "at_time": config.get("logger.file.rotate.at_time")
+                    },
                 },
-            },
-            # Standard output logging
-            "stdout": {
-                "active": config.get("logger.stdout.active")
+                # Standard output logging
+                "stdout": {
+                    "active": config.get("logger.stdout.active")
+                }
             }
         })
     
