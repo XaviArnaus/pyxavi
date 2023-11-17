@@ -1,4 +1,5 @@
 from __future__ import annotations
+import copy
 
 PATH_SEPARATOR_CHAR = "."
 LIST_HORIZONTAL_RESOLVING_CHAR = "#"
@@ -314,19 +315,50 @@ class Dictionary:
         Raises a RuntimeError if any of the keys in the param_name does not exist
         """
         if param_name is None:
-            self._content = {**self._content, **origin.get_all()}
+            # self._content = {**self._content, **origin.get_all()}
+            self._content = Dictionary._merge_complex_recursive(self._content, origin.get_all())
         else:
             if not self.key_exists(param_name=param_name):
                 raise RuntimeError(f"Dictionary path [{param_name}] unknown")
 
             current_value = self.get(param_name=param_name, default_value={})
             if isinstance(current_value, dict):
-                self.set(param_name=param_name, value={**current_value, **origin.get_all()})
+                # self.set(param_name=param_name, value={**current_value, **origin.get_all()})
+                self.set(
+                    param_name=param_name,
+                    value=Dictionary._merge_complex_recursive(current_value, origin.get_all())
+                )
             elif isinstance(current_value, list):
                 current_value.append(origin.get_all())
                 self.set(param_name=param_name, value=current_value)
             else:
                 self.set(param_name=param_name, value=origin.get_all())
+    
+    @staticmethod
+    def _merge_simple_recursive(base_dict: dict, over_dict: dict) -> dict:
+        for key, value in over_dict.items():
+            if key in base_dict and isinstance(base_dict[key], dict) and isinstance(value, dict):
+                base_dict[key] = Dictionary._merge_simple_recursive(base_dict[key], value)
+            else:
+                base_dict[key] = value
+        return base_dict
+    
+    @staticmethod
+    def _merge_complex_recursive(base_dict: dict, over_dict: dict) -> dict:
+        merged_dict = {}
+        for key in set(base_dict) | set(over_dict):
+            if key in base_dict and key in over_dict:
+                if isinstance(base_dict[key], list) and isinstance(over_dict[key], list):
+                    merged_dict[key] = base_dict[key] + over_dict[key]
+                elif isinstance(base_dict[key], dict) and isinstance(over_dict[key], dict):
+                    merged_dict[key] = Dictionary._merge_simple_recursive(copy.deepcopy(base_dict[key]), over_dict[key])
+                else:
+                    merged_dict[key] = over_dict[key]
+            elif key in base_dict:
+                merged_dict[key] = copy.deepcopy(base_dict[key])
+            else:
+                merged_dict[key] = copy.deepcopy(over_dict[key])
+        return merged_dict
     
     def remove_none(self) -> None:
         self._content = self._remove_none_recursive(self._content)
