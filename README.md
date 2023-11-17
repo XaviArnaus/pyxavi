@@ -81,7 +81,7 @@ A class for read-only config values inheriting from the `Storage` module.
 A class that helps setting up a built-in logger based on the configuration in a file, handled
 by the `Config` module.
 
-For example, a `config.yaml` with parameters to configure the logger would look like this:
+For example, a `config.yaml` with all parameters to configure the logger explicitly defined would look like this:
 ```yaml
 # Logging config
 logger:
@@ -97,7 +97,37 @@ logger:
   to_stdout: True
   # [String] Format of the log
   format: "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s"
+  # [String] The encoding of the log file
+  encoding: "UTF-8"
+  # [Bool] Do we want to rotate the log files? Only will apply if to_file is True
+  rotate_files: False
+  # [String] When do we rotate. Accepts "S" | "M" | "H" | "D" | "W0"-"W6" | "midnight"
+  #   See https://docs.python.org/3/library/logging.handlers.html#timedrotatingfilehandler
+  when_rotate: "midnight"
+  # [Int] How many rotated old files to keep before it starts to delete the older
+  backup_count: 10
+  # [Bool] Stick to UTC timings when triggering the rotation
+  utc: False
+  # [Tuple] (hour, minute, second) When to trigger THE VERY FIRST rotation.
+  #   Subsequent will attend to when_rotate
+  at_time: (1,0,0)
 ```
+
+Still, the module is be usable without explicit configuration of one or none of the parameters. In this case
+it will use the following default configuration for each parameter:
+
+- `loglevel`: `20`
+- `name`: `custom_logger`
+- `to_file`: `False`
+- `filename`: `debug.log`
+- `to_stdout`: `True`
+- `log_format`: `[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s`
+- `rotate_files`: `False`
+- `when_rotate`: `midnight`
+- `backup_count`: `10`
+- `encoding`: `UTF-8`
+- `utc`: `False`
+- `at_time`: `(1,0,0)`
 
 
 ## The `Debugger` module
