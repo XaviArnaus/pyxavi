@@ -3,7 +3,6 @@ from pyxavi.config import Config
 from pyxavi.logger import Logger
 from logging.handlers import TimedRotatingFileHandler
 from datetime import time
-from logging import Logger as OriginalLogger
 import logging
 import copy
 import pytest
@@ -25,9 +24,6 @@ CONFIG = {
     }
 }
 
-_logger: OriginalLogger = None
-_orig_handlers: list = []
-_orig_level: int = None
 
 @pytest.fixture(autouse=True)
 def setup_function():
@@ -36,28 +32,13 @@ def setup_function():
 
     backup = copy.deepcopy(CONFIG)
 
-    # global _logger
-    # global _orig_handlers
-    # global _orig_level
-
-    # _logger = logging.getLogger(CONFIG["logger"]["name"])
-    # _orig_handlers = _logger.handlers
-    # _logger.handlers = []
-    # _orig_level = _logger.level
-
     yield
-
-    # _logger.handlers = _orig_handlers
-    # _logger.level = _orig_level
 
     CONFIG = backup
 
 
 def patch_config_read_file(self):
     self._content = CONFIG
-
-def patch_logging_getLogger(name):
-    pass
 
 
 @patch.object(Config, "read_file", new=patch_config_read_file)
