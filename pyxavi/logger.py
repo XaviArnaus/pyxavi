@@ -1,11 +1,12 @@
 from pyxavi.config import Config
 from pyxavi.dictionary import Dictionary
 from logging.handlers import TimedRotatingFileHandler
-from datetime import time
+from datetime import datetime, time
 from logging import Logger as OriginalLogger
 import logging
 import sys
 import os
+from pyxavi.debugger import dd
 
 
 class Logger:
@@ -35,12 +36,13 @@ class Logger:
         "backup_count": 10,
         "encoding": "UTF-8",
         "utc": False,  # Hour, Minute, Second
-        "at_time": (1, 0, 0)
+        "at_time": "1:0:0"
     }
     DEFAULT_STDOUT_LOGGING = {"active": False}
     DEFAULT_LOG_LEVEL = 20
     DEFAULT_LOGGER_NAME = "custom_logger"
 
+    TIME_FORMAT = "%H:%M:%S"
     DEFAULTS = {
         "name": "custom_logger",
         "loglevel": 20,
@@ -54,7 +56,7 @@ class Logger:
                 "when": "midnight",
                 "backup_count": 10,
                 "utc": False,
-                "at_time": (1, 0, 0)
+                "at_time": "1:0:0"
             },
         },
         "stdout": {
@@ -149,8 +151,10 @@ class Logger:
         filename = defaults.get("logger.file.filename")
         if self._base_path is not None:
             defaults.set("logger.file.filename", os.path.join(self._base_path, filename))
+        dd(defaults.get("logger.file.rotate.at_time"))
         defaults.set(
-            "logger.file.rotate.at_time", time(*defaults.get("logger.file.rotate.at_time"))
+            "logger.file.rotate.at_time",
+            datetime.strptime(defaults.get("logger.file.rotate.at_time"), self.TIME_FORMAT).time()
         )
         self._logger_config = Dictionary(defaults.get("logger"))
 
