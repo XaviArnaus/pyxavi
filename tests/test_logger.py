@@ -259,7 +259,8 @@ def test_logger_file_default_with_rotate():
         backupCount=CONFIG["logger"]["file"]["rotate"]["backup_count"],
         encoding=CONFIG["logger"]["file"]["encoding"],
         utc=False,
-        atTime=datetime.strptime(CONFIG["logger"]["file"]["rotate"]["at_time"], "%H:%M:%S").time(),
+        atTime=datetime.strptime(CONFIG["logger"]["file"]["rotate"]["at_time"],
+                                 "%H:%M:%S").time(),
     )
 
 
@@ -290,7 +291,8 @@ def test_logger_file_default_with_rotate_UTC():
         backupCount=CONFIG["logger"]["file"]["rotate"]["backup_count"],
         encoding=CONFIG["logger"]["file"]["encoding"],
         utc=True,
-        atTime=datetime.strptime(CONFIG["logger"]["file"]["rotate"]["at_time"], "%H:%M:%S").time(),
+        atTime=datetime.strptime(CONFIG["logger"]["file"]["rotate"]["at_time"],
+                                 "%H:%M:%S").time(),
     )
 
 
@@ -321,8 +323,10 @@ def test_logger_file_default_with_rotate_every_hour():
         backupCount=CONFIG["logger"]["file"]["rotate"]["backup_count"],
         encoding=CONFIG["logger"]["file"]["encoding"],
         utc=False,
-        atTime=datetime.strptime(CONFIG["logger"]["file"]["rotate"]["at_time"], "%H:%M:%S").time(),
+        atTime=datetime.strptime(CONFIG["logger"]["file"]["rotate"]["at_time"],
+                                 "%H:%M:%S").time(),
     )
+
 
 def patch_config_read_file_yaml(self):
     content = """
@@ -361,6 +365,7 @@ logger:
       active: False
 """
     self._content = yaml.safe_load(content)
+
 
 @patch.object(Config, "read_file", new=patch_config_read_file_yaml)
 def test_from_yaml_config():

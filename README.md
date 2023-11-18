@@ -119,20 +119,30 @@ logger:
 ```
 
 Still, the module is be usable without explicit configuration of one or none of the parameters. In this case
-it will use the following default configuration for each parameter:
+it will use the following default configuration, where each parameter will read the default from:
 
-- `loglevel`: `20`
-- `name`: `custom_logger`
-- `to_file`: `False`
-- `filename`: `debug.log`
-- `to_stdout`: `True`
-- `log_format`: `[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s`
-- `rotate_files`: `False`
-- `when_rotate`: `midnight`
-- `backup_count`: `10`
-- `encoding`: `UTF-8`
-- `utc`: `False`
-- `at_time`: `(1,0,0)`
+```Python
+{
+    "name": "custom_logger",
+    "loglevel": 20,
+    "format": "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s",
+    "file": {
+        "active": False,
+        "filename": "debug.log",
+        "encoding": "UTF-8",
+        "rotate": {
+            "active": False,
+            "when": "midnight",
+            "backup_count": 10,
+            "utc": False,
+            "at_time": "1:0:0"
+        },
+    },
+    "stdout": {
+        "active": False
+    }
+}
+```
 
 
 ## The `Debugger` module

@@ -6,7 +6,6 @@ from logging import Logger as OriginalLogger
 import logging
 import sys
 import os
-from pyxavi.debugger import dd
 
 
 class Logger:
@@ -26,21 +25,6 @@ class Logger:
         Xavier Arnaus <xavi@arnaus.net>
 
     """
-
-    DEFAULT_LOG_FORMAT = "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s"
-    DEFAULT_FILE_LOGGING = {
-        "active": False,
-        "filename": "debug.log",
-        "rotate_files": False,  # "S" | "M" | "H" | "D" | "W0"-"W6" | "midnight"
-        "when_rotate": "midnight",  # How many old rotated log files to keep
-        "backup_count": 10,
-        "encoding": "UTF-8",
-        "utc": False,  # Hour, Minute, Second
-        "at_time": "1:0:0"
-    }
-    DEFAULT_STDOUT_LOGGING = {"active": False}
-    DEFAULT_LOG_LEVEL = 20
-    DEFAULT_LOGGER_NAME = "custom_logger"
 
     TIME_FORMAT = "%H:%M:%S"
     DEFAULTS = {
@@ -151,10 +135,10 @@ class Logger:
         filename = defaults.get("logger.file.filename")
         if self._base_path is not None:
             defaults.set("logger.file.filename", os.path.join(self._base_path, filename))
-        dd(defaults.get("logger.file.rotate.at_time"))
         defaults.set(
             "logger.file.rotate.at_time",
-            datetime.strptime(defaults.get("logger.file.rotate.at_time"), self.TIME_FORMAT).time()
+            datetime.strptime(defaults.get("logger.file.rotate.at_time"),
+                              self.TIME_FORMAT).time()
         )
         self._logger_config = Dictionary(defaults.get("logger"))
 
