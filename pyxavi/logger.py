@@ -1,7 +1,7 @@
 from pyxavi.config import Config
 from pyxavi.dictionary import Dictionary
 from logging.handlers import TimedRotatingFileHandler
-from datetime import datetime, time
+from datetime import datetime
 from logging import Logger as OriginalLogger
 import logging
 import sys
