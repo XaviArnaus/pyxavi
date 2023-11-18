@@ -5,6 +5,7 @@
 ### Added
 
 - New `get_parent_path` and `get_last_key` methods in `Dictionary` module ([#33](https://github.com/XaviArnaus/pyxavi/pull/33))
+- New `MastodonHelper` class and the related `MastodonConnectionParams` and `StatusPost` objects, to post to Mastodon APIs ([#35](https://github.com/XaviArnaus/pyxavi/pull/35))
 - The `Config` module now supports also `TimeRotatingFileHandler` via Config parameters ([#34](https://github.com/XaviArnaus/pyxavi/pull/34))
 - Added a `Dictionary.remove_none()` to clean keys with `None` values ([#34](https://github.com/XaviArnaus/pyxavi/pull/34))
 

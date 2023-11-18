@@ -173,7 +173,9 @@ A class that wraps the API for [Firefish](https://firefish.social/api-doc). It i
 interchangeable with the [Mastodon.py](https://mastodonpy.readthedocs.io/en/latest/index.html) 
 wrapper library, so one could inject any of both.
 
-At this point of time it only covers posting a new status (creating a note in Firefish).
+At this point of time it only covers:
+- Posting a new status (creating a note in Firefish).
+- Posting new media (create a drive/media in Firefish)
 
 ## The `Network` module
 
@@ -185,6 +187,50 @@ A class to perform some networking actions. At this point:
 
 A class to perform some actions over URLs. At this point:
 - Clean the URL based on given parameters
+
+## The `MastodonHelper` module
+
+A class that abstracts the instantiation of the Mastodon-like API wrapper. At this point it
+supports the original *Mastodon.py* wrapper that at its time supports Mastodon, Pleroma and Akkoma,
+and Firefish through the `Firefish` module above (which support is limited).
+
+The class is meant to receive an object `MastodonConnectionParams` that is responsible of bringing in
+the parameters that facilitate the connection to the Mastodon wrappers and define some specifics
+regarding the server connecting to, like maximum *post length and visibility*.
+
+Also includes a `StatusPost` that is meant to encapsulate everything that is needed to represent
+a Status to be posted. Internally it makes use of `StatusPostVisibility` and `StatusPostContentType`
+that are also referenced from the `MastodonConnectionParams`. While this object is meant to easy the
+transport of the status publishing item, it is not required and totally optional.
+
+The benefit of using this set of tools is to encapsulate and abstract what is needed to initiate
+a connection to the Mastodon-like API and post a status, including the authorisation, making it 
+really simple to include into a given app. One can even instantiate different wrappers to publish
+into different servers at the same time.
+
+```python
+connection_params = MastodonConnectionParams.from_dict({
+  "app_name": "SuperApp",
+  "instance_type": "mastodon",
+  "api_base_url": "https://mastodon.social",
+  "credentials": {
+    "user_file": "user.secret",
+    "client_file": "client.secret",
+    "user": {
+        "email": "bot@my-fancy.site",
+        "password": "SuperSecureP4ss",
+    }
+  }
+})
+
+mastodon_instance =  MastodonHelper.get_instance(
+  connection_params=connection_params
+)
+
+mastodon_instance.status_post(
+  status="I am a text"
+)
+```
 
 
 # How to use it
@@ -221,7 +267,8 @@ app:
 
 logger:
     name: "my_app"
-    to_file: True
+    file:
+      active: True
 ```
 
 2. Create a python file called `test.py` and open it in your editor.
@@ -265,15 +312,18 @@ dd(config)
 
 Now, when it runs it should give the following output:
 ```bash
-$ python3 test.py 
+$ python test.py
 (Config){
   "_filename": (str[11])"config.yaml",
   "_content": (dict[2]){
     "app": (dict[1]){"name": (str[6])"My app"},
-    "logger": (dict[2]){"name": (str[6])"my_app", "to_file": (bool)True}
+    "logger": (dict[2]){
+      "name": (str[6])"my_app",
+      "file": (dict[1]){"active": (bool)True}
+    }
   },
-  class methods: _load_file_contents, get, get_all, get_hashed, read_file, set, set_hashed, write_file
-}
+  "_separator": (str[1])".",
+  class methods: _Dictionary__recursive_set, _get_horizontally, _get_parent_horizontally, _is_int, _is_out_of_range, _load_file_contents, _merge_complex_recursive, _merge_simple_recursive, _remove_none_recursive, _set_horizontally, delete, get, get_all, get_hashed, get_keys_in, get_last_key, get_parent, get_parent_path, initialise_recursive, key_exists, merge, merge_from_dict, merge_from_file, needs_resolving, read_file, remove_none, reso
 ```
 
 ... and also create a `debug.log` file that contains the following content:
@@ -288,4 +338,4 @@ it's level is 10.
 # ToDo
 - [ ] Documentation per module
 - [ ] Iterate inline documentation
-- [ ] Empty the [NEXT MAJOR](./NEXT_MAJOR.md) list
+- [x] Empty the [NEXT MAJOR](./NEXT_MAJOR.md) list
