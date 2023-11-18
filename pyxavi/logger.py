@@ -201,7 +201,7 @@ class Logger:
     def _load_old_config_without_defaults(self, config: Config) -> Dictionary:
         # Previous work
         filename = config.get("logger.filename")
-        if self._base_path is not None:
+        if self._base_path is not None and filename is not None:
             filename = os.path.join(self._base_path, filename)
 
         # What we do here is to build a main dict where we ensure we always have a value.
@@ -225,7 +225,7 @@ class Logger:
     def _load_new_config_without_defaults(self, config: Config) -> Dictionary:
         # Previous work
         filename = config.get("logger.file.filename")
-        if self._base_path is not None:
+        if self._base_path is not None and filename is not None:
             filename = os.path.join(self._base_path, filename)
 
         # What we do here is to build a main dict where we ensure we always have a value.
