@@ -81,7 +81,7 @@ A class for read-only config values inheriting from the `Storage` module.
 A class that helps setting up a built-in logger based on the configuration in a file, handled
 by the `Config` module.
 
-For example, a `config.yaml` with parameters to configure the logger would look like this:
+For example, a `config.yaml` with all parameters to configure the logger explicitly defined would look like this:
 ```yaml
 # Logging config
 logger:
@@ -89,14 +89,59 @@ logger:
   loglevel: 10
   # [String] Name of the logger
   name: "my_app"
-  # [Bool] Dump the log into a file
-  to_file: True
-  # [String] Path and filename of the log file
-  filename: "log/my_app.log"
-  # [Bool] Dump the log into a stdout
-  to_stdout: True
   # [String] Format of the log
   format: "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s"
+  # File related parameters
+  file:
+    # [Bool] Dump the log into a file
+    active: False
+    # [String] Path and filename of the log file
+    filename: "log/my_app.log"
+    # [String] The encoding of the log file
+    encoding: "UTF-8"
+    # [Bool] Do we want to rotate the log files? Only will apply if we log to files
+    rotate:
+        active: False
+        # [String] When do we rotate. Accepts "S" | "M" | "H" | "D" | "W0"-"W6" | "midnight"
+        #   See https://docs.python.org/3/library/logging.handlers.html#timedrotatingfilehandler
+        when: "midnight"
+        # [Int] How many rotated old files to keep before it starts to delete the older
+        backup_count: 10
+        # [Bool] Stick to UTC timings when triggering the rotation
+        utc: False
+        # [String] in format "%H:%M:%S". When to trigger THE VERY FIRST rotation.
+        #   Subsequent will attend to when_rotate
+        at_time: "1:00:00"
+  # Standard output related parameters
+  stdout:
+  # [Bool] Dump the log into a stdout
+      active: True
+```
+
+Still, the module is be usable without explicit configuration of one or none of the parameters. In this case
+it will use the following default configuration, where each parameter will read the default from:
+
+```Python
+{
+    "name": "custom_logger",
+    "loglevel": 20,
+    "format": "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s",
+    "file": {
+        "active": False,
+        "filename": "debug.log",
+        "encoding": "UTF-8",
+        "rotate": {
+            "active": False,
+            "when": "midnight",
+            "backup_count": 10,
+            "utc": False,
+            "at_time": "1:0:0"
+        },
+    },
+    "stdout": {
+        "active": False
+    }
+}
 ```
 
 
