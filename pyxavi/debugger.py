@@ -1,7 +1,7 @@
 import traceback
 import sys
 from collections import deque
-from .terminal_color import TerminalColor
+from pyxavi.terminal_color import TerminalColor
 
 # Constants for customisation
 ENTER_DICT = "{"
