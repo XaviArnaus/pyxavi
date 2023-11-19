@@ -415,7 +415,7 @@ def test_loading_old_config_prints_deprecation_warning(caplog):
 
 
 @patch.object(Config, "read_file", new=patch_config_read_file)
-def test_loading_old_config_prints_deprecation_warning(caplog):
+def test_loading_config_does_not_prints_deprecation_warning(caplog):
 
     CONFIG["logger"]["stdout"]["active"] = True
     CONFIG["logger"]["file"]["active"] = False
