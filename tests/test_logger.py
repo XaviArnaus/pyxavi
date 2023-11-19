@@ -412,3 +412,23 @@ def test_loading_old_config_prints_deprecation_warning(caplog):
         "Read https://github.com/XaviArnaus/pyxavi/blob/main/docs/logger.md"
 
     assert expected_warning in caplog.text
+
+
+@patch.object(Config, "read_file", new=patch_config_read_file)
+def test_loading_config_does_not_prints_deprecation_warning(caplog):
+
+    CONFIG["logger"]["stdout"]["active"] = True
+    CONFIG["logger"]["file"]["active"] = False
+    config = Config()
+
+    mock_logging_basic_config = Mock()
+    with patch.object(logging, "basicConfig", new=mock_logging_basic_config):
+        _ = Logger(config)
+
+    expected_warning = "[pyxavi] An old version of the configuration " +\
+        "file structure for the Logger module has been loaded. This is " +\
+        "deprecated.\n" +\
+        "Please migrate your configuration file to the new structure.\n" +\
+        "Read https://github.com/XaviArnaus/pyxavi/blob/main/docs/logger.md"
+
+    assert expected_warning not in caplog.text

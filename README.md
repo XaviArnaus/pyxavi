@@ -118,6 +118,7 @@ logger:
       active: True
 ```
 
+Read more about the [`Logger` module](docs/logger.md).
 
 ## The `Debugger` module
 
