@@ -13,6 +13,10 @@
 
 - Iterated the `Dictionary.merge()` so that now it performs a recursive merge for dict values ([#34](https://github.com/XaviArnaus/pyxavi/pull/34))
 
+### Fixed
+
+- Bug that made a wrong identification when the old config was used for `Logger` ([#37](https://github.com/XaviArnaus/pyxavi/pull/37))
+
 ## [v0.7.7](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.7.7) - 2023-11-11
 
 ### Added
