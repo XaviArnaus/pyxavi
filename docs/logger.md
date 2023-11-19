@@ -94,7 +94,7 @@ logger:
 - The object structure is nested
 - There is support for log rotation with `TimedRotatingFileHandler` parameters
 
-In the *v0.8.0* version, passing a `Config` instance that loaded its parameter set from the old structure will register a WARNING log message with the following message:
+In the *v0.8.0* version, passing a `Config` instance that loaded its parameter set from the old structure will register a WARNING log message with the following note:
 
 ```
 [pyxavi] An old version of the configuration file structure for the Logger module has been loaded. This is deprecated.

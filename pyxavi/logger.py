@@ -237,8 +237,7 @@ class Logger:
 
         # In case we're using the condif loaded here, the old one,
         #   we want to warn that this is deprecated.
-        if logger_config.get("logger.stdout.active", False)\
-           or logger_config.get("logger.file.active", False):
+        if config.key_exists("logger.to_file") or config.key_exists("logger.to_stdout"):
             self.__using_old_config = True
 
         return logger_config
