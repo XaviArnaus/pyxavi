@@ -392,3 +392,22 @@ def test_from_yaml_config():
         utc=True,
         atTime=time(2, 0, 0)
     )
+
+@patch.object(Config, "read_file", new=patch_config_old_read_file)
+def test_loading_old_config_prints_deprecation_warning(caplog):
+
+    CONFIG_OLD["logger"]["to_stdout"] = True
+    CONFIG_OLD["logger"]["to_file"] = False
+    config = Config()
+
+    mock_logging_basic_config = Mock()
+    with patch.object(logging, "basicConfig", new=mock_logging_basic_config):
+        _ = Logger(config)
+
+    expected_warning = "[pyxavi] An old version of the configuration " +\
+        "file structure for the Logger module has been loaded. This is " +\
+        "deprecated.\n" +\
+        "Please migrate your configuration file to the new structure.\n" +\
+        "Read https://github.com/XaviArnaus/pyxavi/blob/main/docs/logger.md"
+
+    assert expected_warning in caplog.text

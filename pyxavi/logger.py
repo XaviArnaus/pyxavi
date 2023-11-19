@@ -1,5 +1,6 @@
 from pyxavi.config import Config
 from pyxavi.dictionary import Dictionary
+from pyxavi.terminal_color import TerminalColor
 from logging.handlers import TimedRotatingFileHandler
 from datetime import datetime
 from logging import Logger as OriginalLogger
@@ -52,6 +53,7 @@ class Logger:
     _base_path: str = None
     _logger_config: Dictionary = None
     _handlers = []
+    __using_old_config = False
 
     def __init__(self, config: Config, base_path: str = None) -> None:
 
@@ -73,6 +75,17 @@ class Logger:
         )
         # Define your own logger name
         self._logger = logging.getLogger(self._logger_config.get("name"))
+
+        # In case we are using the old config, show a warning
+        if self.__using_old_config:
+            self._logger.warning(
+                f"{TerminalColor.YELLOW_BRIGHT}[pyxavi] " +
+                "An old version of the configuration file structure for " +
+                "the Logger module has been loaded. This is deprecated.\n" +
+                "Please migrate your configuration file to the new structure.\n" +
+                "Read https://github.com/XaviArnaus/pyxavi/blob/main/docs/logger.md" +
+                f"{TerminalColor.END}"
+            )
 
     def _load_config(self, config: Config) -> None:
         # We may receive the old config, so here the strategy:
@@ -205,7 +218,7 @@ class Logger:
             filename = os.path.join(self._base_path, filename)
 
         # What we do here is to build a main dict where we ensure we always have a value.
-        return Dictionary(
+        logger_config = Dictionary(
             {
                 "logger": {
                     # Common parameters
@@ -221,6 +234,14 @@ class Logger:
                 }
             }
         )
+
+        # In case we're using the condif loaded here, the old one,
+        #   we want to warn that this is deprecated.
+        if logger_config.get("logger.stdout.active", False)\
+           or logger_config.get("logger.file.active", False):
+            self.__using_old_config = True
+        
+        return logger_config
 
     def _load_new_config_without_defaults(self, config: Config) -> Dictionary:
         # Previous work
