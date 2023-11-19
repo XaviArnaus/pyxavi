@@ -393,6 +393,7 @@ def test_from_yaml_config():
         atTime=time(2, 0, 0)
     )
 
+
 @patch.object(Config, "read_file", new=patch_config_old_read_file)
 def test_loading_old_config_prints_deprecation_warning(caplog):
 

@@ -240,7 +240,7 @@ class Logger:
         if logger_config.get("logger.stdout.active", False)\
            or logger_config.get("logger.file.active", False):
             self.__using_old_config = True
-        
+
         return logger_config
 
     def _load_new_config_without_defaults(self, config: Config) -> Dictionary:
