@@ -110,17 +110,18 @@ class Firefish:
         '''
         This is the method that proxies (and builds) all API POST calls.
         '''
-        response = requests.post(
-            url=f"{self.api_base_url}/{endpoint}",
-            headers={
-                **headers, **{
-                    'Authorization': 'Bearer ' + self.bearer_token,
-                }
-            },
-            json=json_data,
-            data=data,
-            files=files
-        )
+        with requests.session() as session:
+            response = requests.post(
+                url=f"{self.api_base_url}/{endpoint}",
+                headers={
+                    **headers, **{
+                        'Authorization': 'Bearer ' + self.bearer_token,
+                    }
+                },
+                json=json_data,
+                data=data,
+                files=files
+            )
 
         if response.status_code == 200:
             return response.content
