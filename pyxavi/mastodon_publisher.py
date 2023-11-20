@@ -5,7 +5,6 @@ from pyxavi.terminal_color import TerminalColor
 from pyxavi.mastodon_helper import MastodonHelper, StatusPost, MastodonConnectionParams
 from logging import Logger
 import time
-from pyxavi.debugger import dd
 
 
 class MastodonPublisher:
@@ -52,15 +51,14 @@ class MastodonPublisher:
                 content_type=self._connection_params.status_params.content_type,
             )
         )
-    
+
     def publish_media(self, media: list = None) -> list:
         if self._is_dry_run:
             self._logger.debug("It's a Dry Run, not publishing Media.")
             return None
 
         self._logger.info(
-            f"{TerminalColor.CYAN}Publishing %s media items{TerminalColor.END}",
-            len(media)
+            f"{TerminalColor.CYAN}Publishing %s media items{TerminalColor.END}", len(media)
         )
         posted_media = []
         for item in media:
@@ -87,10 +85,9 @@ class MastodonPublisher:
                 posted_media.append(posted_result["id"])
             else:
                 self._logger.info(
-                    f"{TerminalColor.RED}Could not post %s{TerminalColor.END}",
-                    media_file
+                    f"{TerminalColor.RED}Could not post %s{TerminalColor.END}", media_file
                 )
-        
+
         return posted_media
 
     def publish_status_post(self, status_post: StatusPost, media: list = None) -> dict:
@@ -190,7 +187,7 @@ class MastodonPublisher:
         else:
             raise RuntimeError(f"Unknown instance type {self._instance_type}")
         return published
-    
+
     def _do_media_publish(
         self,
         media_file: str,

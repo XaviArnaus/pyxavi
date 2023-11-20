@@ -1,14 +1,12 @@
 from pyxavi.config import Config
 from pyxavi.logger import Logger
 from pyxavi.media import Media
-from pyxavi.mastodon_publisher import MastodonPublisher, MastodonPublisherException
-from pyxavi.mastodon_helper import MastodonHelper,\
-    StatusPost, MastodonConnectionParams, MastodonStatusParams
+from pyxavi.mastodon_publisher import MastodonPublisher
+from pyxavi.mastodon_helper import MastodonHelper, StatusPost, MastodonConnectionParams
 from mastodon import Mastodon
-from unittest.mock import patch, Mock, call
+from unittest.mock import patch, Mock
 import pytest
 from logging import Logger as BuildInLogger
-from datetime import datetime
 import copy
 from pyxavi.debugger import dd
 
@@ -17,9 +15,7 @@ CONFIG = {
         "name": "logger_test"
     },
     "publisher": {
-        "media_storage": "storage/media/",
-        "dry_run": False,
-        "named_account": "test"
+        "media_storage": "storage/media/", "dry_run": False, "named_account": "test"
     },
     "mastodon": {
         "named_accounts": {
@@ -114,8 +110,10 @@ def setup_function():
 def patch_config_read_file(self):
     self._content = CONFIG
 
-def patch_mastodon_helper_get_instance(connection_params, logger = None, base_path = None):
+
+def patch_mastodon_helper_get_instance(connection_params, logger=None, base_path=None):
     return _mocked_mastodon_instance
+
 
 @patch.object(Config, "read_file", new=patch_config_read_file)
 @patch.object(MastodonHelper, "get_instance", new=patch_mastodon_helper_get_instance)
@@ -148,10 +146,13 @@ def test_initialize_without_named_account_takes_default():
 @patch.object(Config, "read_file", new=patch_config_read_file)
 @patch.object(MastodonHelper, "get_instance", new=patch_mastodon_helper_get_instance)
 def get_instance(named_account: str = "mastodon") -> MastodonPublisher:
-    
+
     config = Config()
     return MastodonPublisher(
-        config=config, logger=Logger(config=config).get_logger(), named_account=named_account, base_path="bla"
+        config=config,
+        logger=Logger(config=config).get_logger(),
+        named_account=named_account,
+        base_path="bla"
     )
 
 
@@ -278,8 +279,9 @@ def test_publish_status_post_dry_run():
     _mocked_mastodon_instance.status_post.assert_not_called()
     assert result is None
 
+
 def test_publish_text_not_dry_run():
-    text="I am a test"
+    text = "I am a test"
     publisher = get_instance()
     publisher._is_dry_run = False
 
@@ -291,12 +293,15 @@ def test_publish_text_not_dry_run():
     call_arguments = mocked_do_status_publish.mock_calls[0][2]
     assert isinstance(call_arguments["status_post"], StatusPost)
     assert call_arguments["status_post"].status == text
-    assert call_arguments["status_post"].visibility == publisher._connection_params.status_params.visibility
-    assert call_arguments["status_post"].content_type == publisher._connection_params.status_params.content_type
+    assert call_arguments["status_post"
+                          ].visibility == publisher._connection_params.status_params.visibility
+    assert call_arguments[
+        "status_post"].content_type == publisher._connection_params.status_params.content_type
     assert result == {"id": 123}
 
+
 def test_publish_text_dry_run():
-    text="I am a test"
+    text = "I am a test"
     publisher = get_instance()
     publisher._is_dry_run = True
 
@@ -320,9 +325,7 @@ def test_do_media_publish_download_file():
     mocked_download_from_url.return_value = downloaded
     with patch.object(Media, "download_from_url", new=mocked_download_from_url):
         result = publisher._do_media_publish(
-            media_file=media_url,
-            description=description,
-            download_file=shall_download
+            media_file=media_url, description=description, download_file=shall_download
         )
 
     mocked_download_from_url.assert_called_once_with(
@@ -367,9 +370,7 @@ def test_do_media_publish_dont_download_file():
 
 
 def test_publish_media_dry_run():
-    media=[{
-        "url": "http://hello.world/img.png"
-    }]
+    media = [{"url": "http://hello.world/img.png"}]
 
     publisher = get_instance()
     publisher._is_dry_run = True
@@ -377,12 +378,11 @@ def test_publish_media_dry_run():
     result = publisher.publish_media(media=media)
 
     _mocked_mastodon_instance.media_post.assert_not_called()
-    assert result == None
+    assert result is None
+
 
 def test_publish_media_not_dry_run_url():
-    media=[{
-        "url": "http://hello.world/img.png"
-    }]
+    media = [{"url": "http://hello.world/img.png"}]
 
     publisher = get_instance()
 
@@ -390,19 +390,15 @@ def test_publish_media_not_dry_run_url():
     mocked_do_media_publish.return_value = {"id": 456}
     with patch.object(MastodonPublisher, "_do_media_publish", new=mocked_do_media_publish):
         result = publisher.publish_media(media=media)
-    
+
     mocked_do_media_publish.assert_called_once_with(
-        media_file=media[0]["url"],
-        download_file=True,
-        description=None,
-        mime_type=None
+        media_file=media[0]["url"], download_file=True, description=None, mime_type=None
     )
     assert result == [456]
+
 
 def test_publish_media_not_dry_run_path():
-    media=[{
-        "path": CONFIG["publisher"]["media_storage"] + "/img.png"
-    }]
+    media = [{"path": CONFIG["publisher"]["media_storage"] + "/img.png"}]
 
     publisher = get_instance()
 
@@ -410,17 +406,15 @@ def test_publish_media_not_dry_run_path():
     mocked_do_media_publish.return_value = {"id": 456}
     with patch.object(MastodonPublisher, "_do_media_publish", new=mocked_do_media_publish):
         result = publisher.publish_media(media=media)
-    
+
     mocked_do_media_publish.assert_called_once_with(
-        media_file=media[0]["path"],
-        download_file=False,
-        description=None,
-        mime_type=None
+        media_file=media[0]["path"], download_file=False, description=None, mime_type=None
     )
     assert result == [456]
 
+
 def test_publish_media_not_dry_run_not_url_nor_path():
-    media=[CONFIG["publisher"]["media_storage"] + "/img.png"]
+    media = [CONFIG["publisher"]["media_storage"] + "/img.png"]
 
     publisher = get_instance()
 
@@ -428,7 +422,7 @@ def test_publish_media_not_dry_run_not_url_nor_path():
     mocked_do_media_publish.return_value = {"id": 456}
     with patch.object(MastodonPublisher, "_do_media_publish", new=mocked_do_media_publish):
         result = publisher.publish_media(media=media)
-    
+
     mocked_do_media_publish.assert_not_called()
     assert result == []
 
