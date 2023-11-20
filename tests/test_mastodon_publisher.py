@@ -306,21 +306,143 @@ def test_publish_text_dry_run():
     assert result is None
 
 
-def test_post_media():
+def test_do_media_publish_download_file():
     media_url = "http://hello.world/img.png"
     media_file = CONFIG["publisher"]["media_storage"] + "/img.png"
     media_mime = "image/png"
     description = "this is an alt text"
+    shall_download = True
+    downloaded = {"file": media_file, "mime_type": media_mime}
 
     publisher = get_instance()
 
     mocked_download_from_url = Mock()
-    mocked_download_from_url.return_value = {"file": media_file, "mime_type": media_mime}
+    mocked_download_from_url.return_value = downloaded
     with patch.object(Media, "download_from_url", new=mocked_download_from_url):
-        result = publisher._post_media(media_file=media_url, description=description)
+        result = publisher._do_media_publish(
+            media_file=media_url,
+            description=description,
+            download_file=shall_download
+        )
 
     mocked_download_from_url.assert_called_once_with(
         media_url, CONFIG["publisher"]["media_storage"]
     )
+    _mocked_mastodon_instance.media_post.assert_called_once_with(
+        downloaded["file"],
+        mime_type=downloaded["mime_type"],
+        description=description,
+        focus=(0, 1)
+    )
     assert result == {"id": 456}
 
+
+def test_do_media_publish_dont_download_file():
+    media_file = CONFIG["publisher"]["media_storage"] + "/img.png"
+    media_mime = "image/png"
+    description = "this is an alt text"
+    shall_download = False
+    downloaded = {"file": media_file, "mime_type": media_mime}
+
+    publisher = get_instance()
+
+    mocked_download_from_url = Mock()
+    mocked_download_from_url.return_value = downloaded
+    with patch.object(Media, "download_from_url", new=mocked_download_from_url):
+        result = publisher._do_media_publish(
+            media_file=media_file,
+            description=description,
+            download_file=shall_download,
+            mime_type=media_mime
+        )
+
+    mocked_download_from_url.assert_not_called()
+    _mocked_mastodon_instance.media_post.assert_called_once_with(
+        downloaded["file"],
+        mime_type=downloaded["mime_type"],
+        description=description,
+        focus=(0, 1)
+    )
+    assert result == {"id": 456}
+
+
+def test_publish_media_dry_run():
+    media=[{
+        "url": "http://hello.world/img.png"
+    }]
+
+    publisher = get_instance()
+    publisher._is_dry_run = True
+
+    result = publisher.publish_media(media=media)
+
+    _mocked_mastodon_instance.media_post.assert_not_called()
+    assert result == None
+
+def test_publish_media_not_dry_run_url():
+    media=[{
+        "url": "http://hello.world/img.png"
+    }]
+
+    publisher = get_instance()
+
+    mocked_do_media_publish = Mock()
+    mocked_do_media_publish.return_value = {"id": 456}
+    with patch.object(MastodonPublisher, "_do_media_publish", new=mocked_do_media_publish):
+        result = publisher.publish_media(media=media)
+    
+    mocked_do_media_publish.assert_called_once_with(
+        media_file=media[0]["url"],
+        download_file=True,
+        description=None,
+        mime_type=None
+    )
+    assert result == [456]
+
+def test_publish_media_not_dry_run_path():
+    media=[{
+        "path": CONFIG["publisher"]["media_storage"] + "/img.png"
+    }]
+
+    publisher = get_instance()
+
+    mocked_do_media_publish = Mock()
+    mocked_do_media_publish.return_value = {"id": 456}
+    with patch.object(MastodonPublisher, "_do_media_publish", new=mocked_do_media_publish):
+        result = publisher.publish_media(media=media)
+    
+    mocked_do_media_publish.assert_called_once_with(
+        media_file=media[0]["path"],
+        download_file=False,
+        description=None,
+        mime_type=None
+    )
+    assert result == [456]
+
+def test_publish_media_not_dry_run_not_url_nor_path():
+    media=[CONFIG["publisher"]["media_storage"] + "/img.png"]
+
+    publisher = get_instance()
+
+    mocked_do_media_publish = Mock()
+    mocked_do_media_publish.return_value = {"id": 456}
+    with patch.object(MastodonPublisher, "_do_media_publish", new=mocked_do_media_publish):
+        result = publisher.publish_media(media=media)
+    
+    mocked_do_media_publish.assert_not_called()
+    assert result == []
+
+
+# def test_publish_status_post_with_media_separated():
+#     media
+#     status_post = StatusPost(status="I am a test")
+#     publisher = get_instance(named_account="pleroma")
+#     publisher._is_dry_run = False
+
+#     mocked_do_status_publish = Mock()
+#     mocked_do_status_publish.return_value = {"id": 123}
+#     with patch.object(MastodonPublisher, "_do_status_publish", new=mocked_do_status_publish):
+#         result = publisher.publish_status_post(status_post)
+
+#     mocked_do_status_publish.assert_called_once_with(status_post=status_post)
+#     assert result == {"id": 123}

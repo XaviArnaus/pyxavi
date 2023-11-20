@@ -44,15 +44,6 @@ class MastodonPublisher:
             connection_params=self._connection_params, logger=self._logger, base_path=base_path
         )
 
-    def _post_media(self, media_file: str, description: str) -> dict:
-        try:
-            downloaded = Media().download_from_url(media_file, self._media_storage)
-            return self._mastodon.media_post(
-                downloaded["file"], mime_type=downloaded["mime_type"], description=description
-            )
-        except Exception as e:
-            self._logger.exception(e)
-
     def publish_text(self, text: str) -> dict:
         return self.publish_status_post(
             status_post=StatusPost(
@@ -61,29 +52,67 @@ class MastodonPublisher:
                 content_type=self._connection_params.status_params.content_type,
             )
         )
-
-    def publish_status_post(self, status_post: StatusPost) -> dict:
+    
+    def publish_media(self, media: list = None) -> list:
         if self._is_dry_run:
-            self._logger.debug("It's a Dry Run, stopping here.")
+            self._logger.debug("It's a Dry Run, not publishing Media.")
             return None
 
-        # posted_media = []
-        # if "media" in item and item["media"]:
-        #     self._logger.info("Publising first %s media items", len(item["media"]))
-        #     for item in item["media"]:
-        #         posted_result = self._post_media(
-        #             item["url"],
-        #             description=item["alt_text"] if "alt_text" in item else None
-        #         )
-        #         if posted_result:
-        #             posted_media.append(posted_result["id"])
-        #         else:
-        #             self._logger.info("Could not publish %s", item["url"])
+        self._logger.info(
+            f"{TerminalColor.CYAN}Publishing %s media items{TerminalColor.END}",
+            len(media)
+        )
+        posted_media = []
+        for item in media:
+            shall_download = True
+            if "url" in item and item["url"] is not None:
+                media_file = item["url"]
+            elif "path" in item and item["path"] is not None:
+                media_file = item["path"]
+                shall_download = False
+
+            else:
+                self._logger.warning(
+                    f"{TerminalColor.RED}the Media to post does " +
+                    f"not have an URL or a PATH{TerminalColor.END}"
+                )
+                continue
+            posted_result = self._do_media_publish(
+                media_file=media_file,
+                download_file=shall_download,
+                description=item["alt_text"] if "alt_text" in item else None,
+                mime_type=item["mime_type"] if "mime_type" in item else None
+            )
+            if posted_result:
+                posted_media.append(posted_result["id"])
+            else:
+                self._logger.info(
+                    f"{TerminalColor.RED}Could not post %s{TerminalColor.END}",
+                    media_file
+                )
+        
+        return posted_media
+
+    def publish_status_post(self, status_post: StatusPost, media: list = None) -> dict:
+        if self._is_dry_run:
+            self._logger.debug("It's a Dry Run, not publishing StatusPost.")
+            return None
+
+        if media is not None and len(media) > 0:
+            posted_media = self.publish_media(media=media)
+            if len(posted_media) > 0:
+                status_post.media_ids = posted_media
 
         # Let's ensure that it fits according to the params
         status_post.status = self.__slice_status_if_longer_than_defined(
             status=status_post.status
         )
+
+        # Avoid posting if there's no image AND no body
+        if (status_post.media_ids is None or len(status_post.media_ids) == 0)\
+           and len(status_post.status) == 0:
+            self._logger.warning("No media AND no body, skipping this post")
+            return None
 
         retry = 0
         published = None
@@ -161,6 +190,27 @@ class MastodonPublisher:
         else:
             raise RuntimeError(f"Unknown instance type {self._instance_type}")
         return published
+    
+    def _do_media_publish(
+        self,
+        media_file: str,
+        download_file: bool,
+        description: str,
+        mime_type: str = None
+    ) -> dict:
+        try:
+            if download_file is True:
+                downloaded = Media().download_from_url(media_file, self._media_storage)
+            else:
+                downloaded = {"file": media_file, "mime_type": mime_type}
+            return self._mastodon.media_post(
+                downloaded["file"],
+                mime_type=downloaded["mime_type"],
+                description=description,
+                focus=(0, 1)
+            )
+        except Exception as e:
+            self._logger.exception(e)
 
     def __slice_status_if_longer_than_defined(self, status: str) -> str:
         max_length = self._connection_params.status_params.max_length
