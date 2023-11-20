@@ -2,7 +2,8 @@ from __future__ import annotations
 from pyxavi.config import Config
 from pyxavi.media import Media
 from pyxavi.terminal_color import TerminalColor
-from pyxavi.mastodon_helper import MastodonHelper, StatusPost, MastodonConnectionParams
+from pyxavi.mastodon_helper import MastodonHelper, StatusPost,\
+    MastodonConnectionParams, MastodonInstanceType
 from logging import Logger
 import time
 
@@ -27,20 +28,28 @@ class MastodonPublisher:
     ) -> None:
         self._config = config
         self._logger = logger
+        self._base_path = base_path
 
-        if named_account is None:
-            named_account = config.get("publisher.named_account", self.DEFAULT_NAMED_ACCOUNT)
-        self._connection_params = MastodonConnectionParams.from_dict(
-            config.get(f"mastodon.named_accounts.{named_account}")
-        )
-        self._instance_type = MastodonHelper.valid_or_raise(
-            self._connection_params.instance_type
-        )
+        self.load_connection_params(named_account=named_account)
+        self.load_mastodon_instance()
+
         self._is_dry_run = config.get("publisher.dry_run", False)
         self._media_storage = config.get("publisher.media_storage")
 
+    def load_connection_params(self, named_account=None) -> None:
+        if named_account is None:
+            named_account = self._config.get(
+                "publisher.named_account", self.DEFAULT_NAMED_ACCOUNT
+            )
+        self._connection_params = MastodonConnectionParams.from_dict(
+            self._config.get(f"mastodon.named_accounts.{named_account}")
+        )
+
+    def load_mastodon_instance(self) -> None:
         self._mastodon = MastodonHelper.get_instance(
-            connection_params=self._connection_params, logger=self._logger, base_path=base_path
+            connection_params=self._connection_params,
+            logger=self._logger,
+            base_path=self._base_path
         )
 
     def publish_text(self, text: str) -> dict:
@@ -117,7 +126,7 @@ class MastodonPublisher:
             try:
                 self._logger.info(
                     f"{TerminalColor.CYAN}Publishing new post (retry {retry}) for " +
-                    f"instance type {self._instance_type} and account " +
+                    f"instance type {self._connection_params.instance_type} and account " +
                     f"{self._connection_params.app_name}{TerminalColor.END}"
                 )
                 published = self._do_status_publish(status_post=status_post)
@@ -141,7 +150,7 @@ class MastodonPublisher:
         No checks, no validations, just the action.
         """
 
-        if self._instance_type == MastodonHelper.TYPE_MASTODON:
+        if self._connection_params.instance_type == MastodonInstanceType.MASTODON:
             published = self._mastodon.status_post(
                 status=status_post.status,
                 in_reply_to_id=status_post.in_reply_to_id,
@@ -154,7 +163,7 @@ class MastodonPublisher:
                 scheduled_at=status_post.scheduled_at,
                 poll=status_post.poll
             )
-        elif self._instance_type == MastodonHelper.TYPE_PLEROMA:
+        elif self._connection_params.instance_type == MastodonInstanceType.PLEROMA:
             published = self._mastodon.status_post(
                 status=status_post.status,
                 in_reply_to_id=status_post.in_reply_to_id,
@@ -169,7 +178,7 @@ class MastodonPublisher:
                 poll=status_post.poll,
                 quote_id=status_post.quote_id
             )
-        elif self._instance_type == MastodonHelper.TYPE_FIREFISH:
+        elif self._connection_params.instance_type == MastodonInstanceType.FIREFISH:
             published = self._mastodon.status_post(
                 status=status_post.status,
                 in_reply_to_id=status_post.in_reply_to_id,
@@ -185,7 +194,7 @@ class MastodonPublisher:
                 quote_id=status_post.quote_id
             )
         else:
-            raise RuntimeError(f"Unknown instance type {self._instance_type}")
+            raise RuntimeError(f"Unknown instance type {self._connection_params.instance_type}")
         return published
 
     def _do_media_publish(

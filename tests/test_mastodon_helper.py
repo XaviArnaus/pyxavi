@@ -1,4 +1,5 @@
-from pyxavi.mastodon_helper import MastodonHelper, MastodonConnectionParams
+from pyxavi.mastodon_helper import MastodonHelper,\
+    MastodonConnectionParams, MastodonInstanceType
 from unittest.mock import patch, Mock, call
 from unittest import TestCase
 import pytest
@@ -24,18 +25,18 @@ CONFIG_MASTODON_CONN_PARAMS = {
 @pytest.mark.parametrize(
     argnames=('value', 'expected_type', 'expected_exception'),
     argvalues=[
-        ("mastodon", MastodonHelper.TYPE_MASTODON, False),
-        ("pleroma", MastodonHelper.TYPE_PLEROMA, False),
-        ("firefish", MastodonHelper.TYPE_FIREFISH, False),
+        ("mastodon", MastodonInstanceType.MASTODON, False),
+        ("pleroma", MastodonInstanceType.PLEROMA, False),
+        ("firefish", MastodonInstanceType.FIREFISH, False),
         ("exception", None, RuntimeError),
     ],
 )
-def test_message_type_valid_or_raise(value, expected_type, expected_exception):
+def test_instance_type_valid_or_raise(value, expected_type, expected_exception):
     if expected_exception:
-        with TestCase.assertRaises(MastodonHelper, expected_exception):
-            instanciated_type = MastodonHelper.valid_or_raise(value=value)
+        with TestCase.assertRaises(MastodonInstanceType, expected_exception):
+            instanciated_type = MastodonInstanceType.valid_or_raise(value=value)
     else:
-        instanciated_type = MastodonHelper.valid_or_raise(value=value)
+        instanciated_type = MastodonInstanceType.valid_or_raise(value=value)
         assert instanciated_type, expected_type
 
 

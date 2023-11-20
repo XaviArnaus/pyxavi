@@ -7,17 +7,43 @@ import logging
 import os
 
 
+class MastodonInstanceType:
+    """
+    The instance_type parameter is a string value and accepts any of:
+
+    "mastodon" - Mastodon instances
+    "pleroma" - Pleroma / Akkoma
+    "firefish" - Firefish / Calckey
+    """
+    MASTODON = "mastodon"
+    PLEROMA = "pleroma"
+    FIREFISH = "firefish"
+
+    @staticmethod
+    def valid_or_raise(value: str) -> MastodonInstanceType:
+        valid_items = [
+            MastodonInstanceType.MASTODON,
+            MastodonInstanceType.PLEROMA,
+            MastodonInstanceType.FIREFISH
+        ]
+
+        if value not in valid_items:
+            raise RuntimeError(f"Value [{value}] is not a valid MastodonInstanceType")
+
+        return value
+
+
 class MastodonHelper:
 
-    TYPE_MASTODON = "mastodon"
-    TYPE_PLEROMA = "pleroma"
-    TYPE_FIREFISH = "firefish"
+    FEATURE_SET_BY_INSTANCE_TYPE = {
+        MastodonInstanceType.MASTODON: "mainline", MastodonInstanceType.PLEROMA: "pleroma"
+    }
 
-    VALID_TYPES = [TYPE_MASTODON, TYPE_PLEROMA, TYPE_FIREFISH]
-
-    FEATURE_SET_BY_INSTANCE_TYPE = {TYPE_MASTODON: "mainline", TYPE_PLEROMA: "pleroma"}
-
-    WRAPPER = {TYPE_MASTODON: Mastodon, TYPE_PLEROMA: Mastodon, TYPE_FIREFISH: Firefish}
+    WRAPPER = {
+        MastodonInstanceType.MASTODON: Mastodon,
+        MastodonInstanceType.PLEROMA: Mastodon,
+        MastodonInstanceType.FIREFISH: Firefish
+    }
 
     @staticmethod
     def get_instance(
@@ -28,7 +54,7 @@ class MastodonHelper:
         if logger is None:
             logger = logging.getLogger()
 
-        instance_type = MastodonHelper.valid_or_raise(connection_params.instance_type)
+        instance_type = MastodonInstanceType.valid_or_raise(connection_params.instance_type)
         user_file = connection_params.credentials.user_file
         client_file = connection_params.credentials.client_file
         if base_path is not None:
@@ -51,8 +77,8 @@ class MastodonHelper:
             mastodon = MastodonHelper.WRAPPER[instance_type](
                 access_token=user_file,
                 feature_set=MastodonHelper.FEATURE_SET_BY_INSTANCE_TYPE[instance_type]
-                if instance_type in [MastodonHelper.TYPE_MASTODON, MastodonHelper.TYPE_PLEROMA]
-                else None
+                if instance_type
+                in [MastodonInstanceType.MASTODON, MastodonInstanceType.PLEROMA] else None
             )
         else:
             logger.debug("Using Client Credentials")
@@ -60,8 +86,8 @@ class MastodonHelper:
                 client_id=client_file,
                 api_base_url=connection_params.api_base_url,
                 feature_set=MastodonHelper.FEATURE_SET_BY_INSTANCE_TYPE[instance_type]
-                if instance_type in [MastodonHelper.TYPE_MASTODON, MastodonHelper.TYPE_PLEROMA]
-                else None
+                if instance_type
+                in [MastodonInstanceType.MASTODON, MastodonInstanceType.PLEROMA] else None
             )
 
             # Logging in is required for all individual runs
@@ -75,13 +101,6 @@ class MastodonHelper:
         return mastodon
 
     @staticmethod
-    def valid_or_raise(value: str) -> str:
-        if value not in MastodonHelper.VALID_TYPES:
-            raise RuntimeError(f"Value [{value}] is not a valid instance type")
-
-        return value
-
-    @staticmethod
     def create_app(
         instance_type: str, client_name: str, api_base_url: str, to_file: str
     ) -> tuple:
@@ -92,16 +111,10 @@ class MastodonHelper:
 
 class MastodonConnectionParams():
 
-    TYPE_MASTODON = "mastodon"
-    TYPE_PLEROMA = "pleroma"
-    TYPE_FIREFISH = "firefish"
-
-    VALID_TYPES = [TYPE_MASTODON, TYPE_PLEROMA, TYPE_FIREFISH]
-
-    DEFAULT_INSTANCE_TYPE = TYPE_MASTODON
+    DEFAULT_INSTANCE_TYPE = MastodonInstanceType.MASTODON
 
     app_name: str
-    instance_type: str
+    instance_type: MastodonInstanceType
     api_base_url: str
     credentials: MastodonCredentials
     status_params: MastodonStatusParams
@@ -141,8 +154,9 @@ class MastodonConnectionParams():
         return MastodonConnectionParams(
             app_name=connection_params_dict["app_name"]
             if "app_name" in connection_params_dict else None,
-            instance_type=connection_params_dict["instance_type"]
-            if "instance_type" in connection_params_dict else None,
+            instance_type=MastodonInstanceType.valid_or_raise(
+                connection_params_dict["instance_type"]
+            ) if "instance_type" in connection_params_dict else None,
             api_base_url=connection_params_dict["api_base_url"]
             if "api_base_url" in connection_params_dict else None,
             credentials=MastodonCredentials.from_dict(connection_params_dict["credentials"])
