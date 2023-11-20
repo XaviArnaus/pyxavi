@@ -5,6 +5,7 @@ from pyxavi.terminal_color import TerminalColor
 from pyxavi.mastodon_helper import MastodonHelper, StatusPost, MastodonConnectionParams
 from logging import Logger
 import time
+from pyxavi.debugger import dd
 
 
 class MastodonPublisher:
