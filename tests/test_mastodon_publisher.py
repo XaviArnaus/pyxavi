@@ -259,8 +259,6 @@ def test_publish_status_post_not_dry_run():
     publisher = get_instance(named_account="pleroma")
     publisher._is_dry_run = False
 
-    mocked_build_status_post = Mock()
-    mocked_build_status_post.return_value = status_post
     mocked_do_status_publish = Mock()
     mocked_do_status_publish.return_value = {"id": 123}
     with patch.object(MastodonPublisher, "_do_status_publish", new=mocked_do_status_publish):
@@ -276,6 +274,33 @@ def test_publish_status_post_dry_run():
     publisher._is_dry_run = True
 
     result = publisher.publish_status_post(status_post)
+
+    _mocked_mastodon_instance.status_post.assert_not_called()
+    assert result is None
+
+def test_publish_text_not_dry_run():
+    text="I am a test"
+    publisher = get_instance()
+    publisher._is_dry_run = False
+
+    mocked_do_status_publish = Mock()
+    mocked_do_status_publish.return_value = {"id": 123}
+    with patch.object(MastodonPublisher, "_do_status_publish", new=mocked_do_status_publish):
+        result = publisher.publish_text(text)
+
+    call_arguments = mocked_do_status_publish.mock_calls[0][2]
+    assert isinstance(call_arguments["status_post"], StatusPost)
+    assert call_arguments["status_post"].status == text
+    assert call_arguments["status_post"].visibility == publisher._connection_params.status_params.visibility
+    assert call_arguments["status_post"].content_type == publisher._connection_params.status_params.content_type
+    assert result == {"id": 123}
+
+def test_publish_text_dry_run():
+    text="I am a test"
+    publisher = get_instance()
+    publisher._is_dry_run = True
+
+    result = publisher.publish_text(text)
 
     _mocked_mastodon_instance.status_post.assert_not_called()
     assert result is None
