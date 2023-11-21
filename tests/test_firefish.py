@@ -3,7 +3,7 @@ from pyxavi.config import Config
 from pyxavi.logger import Logger
 import logging
 from unittest.mock import Mock, patch, mock_open, call, MagicMock
-from unittest import TestCase, mock
+from unittest import TestCase
 import pytest
 import builtins
 import requests

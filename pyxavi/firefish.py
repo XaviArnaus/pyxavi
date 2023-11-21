@@ -118,7 +118,8 @@ class Firefish:
         '''
         This is the method that proxies (and builds) all API POST calls.
 
-        Take a look at this for extending to work with sessions: https://stackoverflow.com/a/37118451
+        Take a look at this for extending to work with sessions:
+            https://stackoverflow.com/a/37118451
         '''
         self._logger.debug(
             f"Calling {self.api_base_url}/{endpoint} with " +
