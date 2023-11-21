@@ -111,7 +111,7 @@ class Firefish:
         This is the method that proxies (and builds) all API POST calls.
         '''
         with requests.session() as session:
-            response = requests.post(
+            response = session.post(
                 url=f"{self.api_base_url}/{endpoint}",
                 headers={
                     **headers, **{
