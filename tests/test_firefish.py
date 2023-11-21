@@ -398,6 +398,24 @@ def test__post_call(
         ),
         (
             "test content",
+            None,
+            None,
+            None,
+            None,
+            None,
+            "ca_ES",
+            None,
+            None,
+            None,
+            None,
+            None,
+            "api/notes/create", {
+                "text": "test content", "lang": "ca-ES"
+            },
+            123
+        ),
+        (
+            "test content",
             1234,
             None,
             None,
