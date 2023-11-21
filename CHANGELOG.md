@@ -8,6 +8,8 @@
 - New `MastodonHelper` class and the related `MastodonConnectionParams` and `StatusPost` objects, to post to Mastodon APIs ([#35](https://github.com/XaviArnaus/pyxavi/pull/35))
 - The `Config` module now supports also `TimeRotatingFileHandler` via Config parameters ([#34](https://github.com/XaviArnaus/pyxavi/pull/34))
 - Added a `Dictionary.remove_none()` to clean keys with `None` values ([#34](https://github.com/XaviArnaus/pyxavi/pull/34))
+- New `MastodonPublisher` class to help on publishing to Mastodon APIs ([#38](https://github.com/XaviArnaus/pyxavi/pull/38))
+- Added a logger into the `Firefish` API wrapper ([#38](https://github.com/XaviArnaus/pyxavi/pull/38))
 
 ### Changed
 

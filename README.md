@@ -207,6 +207,44 @@ mastodon_instance.status_post(
 )
 ```
 
+## The `MastodonPublisher` module
+
+A class that abstracts the process of publishing text and media into a Mastodon-like API.
+
+Benefits of using it:
+- Total encapsulation of `MastodonHelper` related work.
+- Facilitates methods to publish simple text, full `StatusPost` objects and media URLs or paths.
+- Retries with delay in case the communication is poor.
+- Slices the text so that it fits within the defined status maximum length
+- Proxies the posting through any of the supported instance types.
+- Supports the definition of a *dry run* so that execution can be tested without actual publishing
+- Supports parametrisation through `Config` objects
+
+Having a `Config` like the following YAML:
+```yaml
+publisher:
+  media_storage: "storage/media/"
+  dry_run: False
+  named_account: test
+mastodon:
+  named_accounts:
+    test:
+      app_name: "Test"
+      api_base_url: "https://mastodon.social"
+      instance_type: "mastodon"
+      credentials:
+        client_file: "client_test.secret"
+        user_file: "user_test.secret"
+        user:
+          email: "test@my-fancy.site"
+          password: "SuperSecureP4ss"
+```
+
+Publishing is as simple as:
+```Python
+Publisher(config=Config()).publish_text("This is a test")
+```
+
 
 # How to use it
 

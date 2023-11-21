@@ -1,9 +1,12 @@
+import logging
 import requests
 import os
 import json
 
 
 class Firefish:
+
+    LOGGER_DEFAULT_NAME = "firefish_wrapper"
 
     bearer_token: str = None
     api_base_url: str = None
@@ -41,7 +44,8 @@ class Firefish:
         client_id: str = None,
         api_base_url: str = None,
         access_token: str = None,
-        feature_set: str = None
+        feature_set: str = None,
+        logger: logging.Logger = None
     ):
         '''
         If client_id comes we expect to find a file called like client_id
@@ -71,6 +75,10 @@ class Firefish:
 
         if api_base_url is not None:
             self.api_base_url = api_base_url
+
+        self._logger = logger if logger is not None else logging.getLogger(
+            self.LOGGER_DEFAULT_NAME
+        )
 
         # If we don't have a client_name, means that nothing came with. Error!
         if self.client_name is None and self.api_base_url is None:
@@ -103,13 +111,20 @@ class Firefish:
         self,
         endpoint: str,
         headers: dict = {},
-        json_data: str = None,
+        json_data: dict = None,
         data: str = None,
         files: dict = None
     ):
         '''
         This is the method that proxies (and builds) all API POST calls.
+
+        Take a look at this for extending to work with sessions:
+            https://stackoverflow.com/a/37118451
         '''
+        self._logger.debug(
+            f"Calling {self.api_base_url}/{endpoint} with " +
+            f"{len(json_data)} JSON data objects and {len(headers)+1} headers"
+        )
         response = requests.post(
             url=f"{self.api_base_url}/{endpoint}",
             headers={
