@@ -8,7 +8,6 @@ from unittest.mock import patch, Mock
 import pytest
 from logging import Logger as BuildInLogger
 import copy
-from pyxavi.debugger import dd
 
 CONFIG = {
     "logger": {
@@ -124,8 +123,6 @@ def test_initialize_without_named_account_takes_config():
     )
 
     assert isinstance(publisher._connection_params, MastodonConnectionParams)
-    dd(publisher._connection_params.app_name)
-    dd(publisher._connection_params)
     assert publisher._connection_params.app_name == "Test"
 
 
@@ -139,7 +136,6 @@ def test_initialize_without_named_account_takes_default():
     )
 
     assert isinstance(publisher._connection_params, MastodonConnectionParams)
-    dd(publisher._connection_params.app_name)
     assert publisher._connection_params.app_name == "Default"
 
 
