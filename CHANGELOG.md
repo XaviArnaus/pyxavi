@@ -16,6 +16,7 @@
 ### Fixed
 
 - Bug that made a wrong identification when the old config was used for `Logger` ([#37](https://github.com/XaviArnaus/pyxavi/pull/37))
+- Bug that made `Firefish` status posting with language codes containing an underscore to fail ([#39](https://github.com/XaviArnaus/pyxavi/pull/39))
 
 ## [v0.7.7](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.7.7) - 2023-11-11
 
