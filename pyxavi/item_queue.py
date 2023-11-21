@@ -29,7 +29,6 @@ class SimpleQueueItem(QueueItemProtocol):
 
     def __init__(self, item: dict) -> None:
         self.item = item
-        super().__init__()
 
     def to_dict(self) -> dict:
         return self.item
@@ -50,18 +49,27 @@ class Queue:
     DEFAULT_STORAGE_FILE = "storage/queue.yaml"
     _queue = []
 
-    def __init__(self, config: Config, base_path: str = None) -> None:
+    def __init__(
+        self,
+        config: Config,
+        base_path: str = None,
+        queue_item_object: QueueItemProtocol = SimpleQueueItem
+    ) -> None:
         self._config = config
         self._logger = logging.getLogger(config.get("logger.name"))
         self.__storage_file = config.get("queue_storage.file", self.DEFAULT_STORAGE_FILE)
         if base_path is not None:
             self.__storage_file = os.path.join(base_path, self.__storage_file)
+        self._queue_item_object = queue_item_object
         self.load()
 
     def load(self) -> int:
         self._queue_manager = Storage(filename=self.__storage_file)
         self._queue = list(
-            map(lambda x: QueueItemProtocol.from_dict(x), self._queue_manager.get("queue", []))
+            map(
+                lambda x: self._queue_item_object.from_dict(x),
+                self._queue_manager.get("queue", [])
+            )
         )
         return self.length()
 
