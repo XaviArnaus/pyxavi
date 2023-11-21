@@ -255,7 +255,7 @@ class Firefish:
 
         # Do we define the language?
         if language is not None:
-            json_data["lang"] = language
+            json_data["lang"] = str(language).replace("_", "-")
 
         # Is this a reply to another status?
         if in_reply_to_id is not None:
