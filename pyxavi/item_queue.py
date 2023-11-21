@@ -38,10 +38,10 @@ class SimpleQueueItem(QueueItemProtocol):
     def from_dict(dictionary: dict) -> QueueItemProtocol:
         return SimpleQueueItem(item=dictionary)
 
-    def sort_value(self, param: any = None) -> any:
+    def sort_value(self, param: str = None) -> any:
         return self.item[param] if param in self.item else None
 
-    def unique_value(self, param: any = None) -> any:
+    def unique_value(self, param: str = None) -> any:
         return self.item[param] if param in self.item else None
 
 
@@ -68,11 +68,11 @@ class Queue:
     def append(self, item: QueueItemProtocol) -> None:
         self._queue.append(item)
 
-    def sort(self, param: any = None) -> None:
+    def sort(self, param: str = None) -> None:
         self._logger.debug("Sorting queue by date ASC")
         self._queue = sorted(self._queue, key=lambda x: x.sort_value(param=param))
 
-    def deduplicate(self, param: any = None) -> None:
+    def deduplicate(self, param: str = None) -> None:
         self._logger.debug("Deduplicating queue")
         uniques_queue = []
         output_queue = []
@@ -104,7 +104,7 @@ class Queue:
     def length(self) -> int:
         return len(self._queue)
 
-    def pop(self) -> dict:
+    def pop(self) -> QueueItemProtocol:
         return self._queue.pop(0) if not self.is_empty() else None
 
     def unpop(self, item: QueueItemProtocol) -> None:
@@ -113,8 +113,8 @@ class Queue:
 
         self._queue = [item] + self._queue
 
-    def first(self) -> dict:
+    def first(self) -> QueueItemProtocol:
         return self._queue[0] if not self.is_empty() else None
 
-    def last(self) -> dict:
+    def last(self) -> QueueItemProtocol:
         return self._queue[-1] if not self.is_empty() else None
