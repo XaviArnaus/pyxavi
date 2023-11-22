@@ -15,6 +15,7 @@
 ### Changed
 
 - Iterated the `Dictionary.merge()` so that now it performs a recursive merge for dict values ([#34](https://github.com/XaviArnaus/pyxavi/pull/34))
+- Filename for class `Queue` is renamed ([#44](https://github.com/XaviArnaus/pyxavi/pull/44))
 
 ### Fixed
 

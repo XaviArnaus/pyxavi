@@ -1,32 +1,10 @@
 from pyxavi.storage import Storage
 from pyxavi.dictionary import Dictionary
-from pyxavi.item_queue import Queue, SimpleQueueItem
+from pyxavi.queue_stack import Queue, SimpleQueueItem
 from unittest.mock import patch, Mock
 import pytest
 from logging import Logger
 from datetime import datetime
-
-CONFIG = {"logger.name": "logger_test", "queue_storage.file": "queue.yaml"}
-
-
-def patched_config_init(self):
-    pass
-
-
-def patched_config_get(self, param: str, default=None) -> str:
-    return CONFIG[param]
-
-
-def patched_storage_init(self, filename):
-    pass
-
-
-def patched_storage_write(self):
-    pass
-
-
-def patched_storage_get(self, param_name: str = "", default_value: any = None) -> any:
-    return []
 
 
 @pytest.fixture
