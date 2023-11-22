@@ -1,11 +1,10 @@
-from pyxavi.config import Config
 from pyxavi.storage import Storage
+from pyxavi.dictionary import Dictionary
 from pyxavi.item_queue import Queue, SimpleQueueItem
 from unittest.mock import patch, Mock
 import pytest
 from logging import Logger
 from datetime import datetime
-import os
 
 CONFIG = {"logger.name": "logger_test", "queue_storage.file": "queue.yaml"}
 
@@ -60,43 +59,36 @@ def queue_item_3(datetime_3):
     return SimpleQueueItem({"text": "three", "date": datetime_3})
 
 
-def get_instance() -> Queue:
-    with patch.object(Config, "__init__", new=patched_config_init):
-        with patch.object(Config, "get", new=patched_config_get):
-            with patch.object(Storage, "__init__", new=patched_storage_init):
-                with patch.object(Storage, "get", new=patched_storage_get):
-                    return Queue(config=Config())
+def patch_storage_read_file(self):
+    self._content = []
 
 
-def test_initialize():
-    queue = get_instance()
+@patch.object(Storage, "read_file", new=patch_storage_read_file)
+def get_stateful_instance():
+    return Queue(storage_file="queue.yaml")
+
+
+def test_stateful_instance():
+    
+    queue = get_stateful_instance()
 
     assert isinstance(queue, Queue)
-    assert isinstance(queue._config, Config)
     assert isinstance(queue._logger, Logger)
     assert isinstance(queue._queue_manager, Storage)
     assert isinstance(queue._queue, list)
 
 
-def test_initialize_with_base_path():
-    mocked_storage_init = Mock()
-    mocked_storage_init.return_value = None
-    with patch.object(Config, "__init__", new=patched_config_init):
-        with patch.object(Config, "get", new=patched_config_get):
-            with patch.object(Storage, "__init__", new=mocked_storage_init):
-                with patch.object(Storage, "get", new=patched_storage_get):
-                    queue = Queue(config=Config(), base_path="bla")
+def test_stateless_initialize():
+    queue = Queue()
 
     assert isinstance(queue, Queue)
-    assert isinstance(queue._config, Config)
     assert isinstance(queue._logger, Logger)
-    assert isinstance(queue._queue_manager, Storage)
+    assert isinstance(queue._queue_manager, Dictionary)
     assert isinstance(queue._queue, list)
-    mocked_storage_init.assert_called_once_with(filename=os.path.join("bla", "queue.yaml"))
 
 
 def test_append():
-    queue = get_instance()
+    queue = Queue()
     queue_item = SimpleQueueItem(item="a")
 
     expected_queue = [queue_item]
@@ -106,7 +98,7 @@ def test_append():
 
 
 def test_sort_by_date(queue_item_1, queue_item_2, queue_item_3):
-    queue = get_instance()
+    queue = Queue()
     queue.append(queue_item_1)
     queue.append(queue_item_3)
     queue.append(queue_item_2)
@@ -120,7 +112,7 @@ def test_sort_by_date(queue_item_1, queue_item_2, queue_item_3):
 
 
 def test_deduplicate(queue_item_1, queue_item_2, queue_item_3):
-    queue = get_instance()
+    queue = Queue()
     queue.append(queue_item_1)
     queue.append(queue_item_2)
     queue.append(queue_item_2)
@@ -135,7 +127,7 @@ def test_deduplicate(queue_item_1, queue_item_2, queue_item_3):
 
 
 def test_save(datetime_1, datetime_2, datetime_3, queue_item_1, queue_item_2, queue_item_3):
-    queue = get_instance()
+    queue = get_stateful_instance()
     queue.append(queue_item_1)
     queue.append(queue_item_2)
     queue.append(queue_item_3)
@@ -161,8 +153,24 @@ def test_save(datetime_1, datetime_2, datetime_3, queue_item_1, queue_item_2, qu
     mocked_write.assert_called_once()
 
 
+def test_save_stateless(datetime_1, datetime_2, datetime_3, queue_item_1, queue_item_2, queue_item_3):
+    queue = Queue()
+    queue.append(queue_item_1)
+    queue.append(queue_item_2)
+    queue.append(queue_item_3)
+
+    mocked_set = Mock()
+    mocked_write = Mock()
+    with patch.object(Storage, "set", new=mocked_set):
+        with patch.object(Storage, "write_file", new=mocked_write):
+            queue.save()
+
+    mocked_set.assert_not_called()
+    mocked_write.assert_not_called()
+
+
 def test_is_empty(queue_item_1):
-    queue = get_instance()
+    queue = Queue()
 
     assert queue.is_empty() is True
 
@@ -176,7 +184,7 @@ def test_is_empty(queue_item_1):
 
 
 def test_get_all(queue_item_1, queue_item_2, queue_item_3):
-    queue = get_instance()
+    queue = Queue()
     queue.append(queue_item_1)
     queue.append(queue_item_2)
     queue.append(queue_item_3)
@@ -186,7 +194,7 @@ def test_get_all(queue_item_1, queue_item_2, queue_item_3):
 
 
 def test_clean(queue_item_1, queue_item_2, queue_item_3):
-    queue = get_instance()
+    queue = Queue()
     queue.append(queue_item_1)
     queue.append(queue_item_2)
     queue.append(queue_item_3)
@@ -199,7 +207,7 @@ def test_clean(queue_item_1, queue_item_2, queue_item_3):
 
 
 def test_pop(queue_item_1, queue_item_2, queue_item_3):
-    queue = get_instance()
+    queue = Queue()
     queue.append(queue_item_1)
     queue.append(queue_item_2)
     queue.append(queue_item_3)
@@ -213,16 +221,13 @@ def test_pop(queue_item_1, queue_item_2, queue_item_3):
 
 
 def test_unpop(queue_item_1, queue_item_2, queue_item_3):
-    queue = get_instance()
+    queue = Queue()
     queue.append(queue_item_1)
     queue.append(queue_item_2)
 
     assert len(queue.get_all()), 2
 
-    mocked_get_dry_run = Mock()
-    mocked_get_dry_run.return_value = False
-    with patch.object(Config, "get", new=mocked_get_dry_run):
-        queue.unpop(item=queue_item_3)
+    queue.unpop(item=queue_item_3)
 
     stack = queue.get_all()
     assert len(stack), 3
@@ -233,7 +238,7 @@ def test_unpop(queue_item_1, queue_item_2, queue_item_3):
 
 
 def test_first(queue_item_1, queue_item_2, queue_item_3):
-    queue = get_instance()
+    queue = Queue()
     queue.append(queue_item_1)
     queue.append(queue_item_2)
     queue.append(queue_item_3)
@@ -247,7 +252,7 @@ def test_first(queue_item_1, queue_item_2, queue_item_3):
 
 
 def test_last(queue_item_1, queue_item_2, queue_item_3):
-    queue = get_instance()
+    queue = Queue()
     queue.append(queue_item_1)
     queue.append(queue_item_2)
     queue.append(queue_item_3)
