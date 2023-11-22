@@ -1,7 +1,6 @@
 from __future__ import annotations
 from pyxavi.config import Config
 from pyxavi.storage import Storage
-# from janitor.objects.queue_item import QueueItem
 from typing import Protocol
 import logging
 import os
@@ -84,21 +83,17 @@ class Queue:
         self._logger.debug("Deduplicating queue")
         uniques_queue = []
         output_queue = []
-        [
-            output_queue.append(x) and uniques_queue.append(x.unique_value(param=param))
-            for x in self._queue if x.unique_value(param=param) not in uniques_queue
-        ]
+        for item in self._queue:
+            unique = item.unique_value(param=param)
+            if unique not in uniques_queue:
+                output_queue.append(item)
+                uniques_queue.append(unique)
         self._queue = output_queue
 
     def save(self) -> None:
         self._logger.debug("Saving the queue")
         self._queue_manager.set("queue", list(map(lambda x: x.to_dict(), self._queue)))
         self._queue_manager.write_file()
-
-    # def update(self, param: any = None) -> None:
-    #     self.sort(param=param)
-    #     self.deduplicate()
-    #     self.save()
 
     def is_empty(self) -> bool:
         return False if self._queue else True

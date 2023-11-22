@@ -21,6 +21,7 @@
 - Bug that made `Firefish` status posting to fail with language codes containing an underscore ([#39](https://github.com/XaviArnaus/pyxavi/pull/39))
 - Bad types in variables and method returns in the `Queue` class ([#40](https://github.com/XaviArnaus/pyxavi/pull/40))
 - Bug that made Queue to not initialise its elements when loading ([#41](https://github.com/XaviArnaus/pyxavi/pull/41))
+- Bug that made Queue to not deduplicate correctly complex items ([#42](https://github.com/XaviArnaus/pyxavi/pull/42))
 
 ## [v0.7.7](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.7.7) - 2023-11-11
 

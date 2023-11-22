@@ -161,22 +161,6 @@ def test_save(datetime_1, datetime_2, datetime_3, queue_item_1, queue_item_2, qu
     mocked_write.assert_called_once()
 
 
-# def test_update():
-#     queue = get_instance()
-
-#     mocked_sort = Mock()
-#     mocked_deduplicate = Mock()
-#     mocked_save = Mock()
-#     with patch.object(Queue, "sort", new=mocked_sort):
-#         with patch.object(Queue, "deduplicate", new=mocked_deduplicate):
-#             with patch.object(Queue, "save", new=mocked_save):
-#                 queue.update()
-
-#     mocked_sort.assert_called_once()
-#     mocked_deduplicate.assert_called_once()
-#     mocked_save.assert_called_once()
-
-
 def test_is_empty(queue_item_1):
     queue = get_instance()
 
