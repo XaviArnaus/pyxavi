@@ -1,6 +1,6 @@
 from pyxavi.storage import Storage
 from pyxavi.dictionary import Dictionary
-from pyxavi.item_queue import Queue, SimpleQueueItem
+from pyxavi.queue_stack import Queue, SimpleQueueItem
 from unittest.mock import patch, Mock
 import pytest
 from logging import Logger
