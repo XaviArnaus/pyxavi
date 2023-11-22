@@ -69,7 +69,7 @@ def get_stateful_instance():
 
 
 def test_stateful_instance():
-    
+
     queue = get_stateful_instance()
 
     assert isinstance(queue, Queue)
@@ -153,7 +153,9 @@ def test_save(datetime_1, datetime_2, datetime_3, queue_item_1, queue_item_2, qu
     mocked_write.assert_called_once()
 
 
-def test_save_stateless(datetime_1, datetime_2, datetime_3, queue_item_1, queue_item_2, queue_item_3):
+def test_save_stateless(
+    datetime_1, datetime_2, datetime_3, queue_item_1, queue_item_2, queue_item_3
+):
     queue = Queue()
     queue.append(queue_item_1)
     queue.append(queue_item_2)
