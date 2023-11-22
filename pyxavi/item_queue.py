@@ -1,9 +1,8 @@
 from __future__ import annotations
-from pyxavi.config import Config
 from pyxavi.storage import Storage
+from pyxavi.dictionary import Dictionary
 from typing import Protocol
 import logging
-import os
 
 
 class QueueItemProtocol(Protocol):
@@ -45,25 +44,31 @@ class SimpleQueueItem(QueueItemProtocol):
 
 class Queue:
 
-    DEFAULT_STORAGE_FILE = "storage/queue.yaml"
+    DEFAULT_LOGGER_NAME = "pyxavi-queue"
     _queue = []
 
     def __init__(
         self,
-        config: Config,
-        base_path: str = None,
+        logger: logging.Logger = None,
+        storage_file: str = None,
         queue_item_object: QueueItemProtocol = SimpleQueueItem
     ) -> None:
-        self._config = config
-        self._logger = logging.getLogger(config.get("logger.name"))
-        self.__storage_file = config.get("queue_storage.file", self.DEFAULT_STORAGE_FILE)
-        if base_path is not None:
-            self.__storage_file = os.path.join(base_path, self.__storage_file)
+        self._logger = logger if logger is not None\
+            else logging.getLogger(self.DEFAULT_LOGGER_NAME)
+        self.__storage_file = storage_file
         self._queue_item_object = queue_item_object
         self.load()
 
     def load(self) -> int:
-        self._queue_manager = Storage(filename=self.__storage_file)
+        if self.__storage_file is not None:
+            # If we have a storage file defined we'll
+            #   then have a place to save the state.
+            self._queue_manager = Storage(filename=self.__storage_file)
+        else:
+            # If we don't have a storage file defined we'll
+            #   then use a Dictionary and won't allow to save the state
+            self._queue_manager = Dictionary({"queue": []})
+
         self._queue = list(
             map(
                 lambda x: self._queue_item_object.from_dict(x),
@@ -91,9 +96,14 @@ class Queue:
         self._queue = output_queue
 
     def save(self) -> None:
-        self._logger.debug("Saving the queue")
-        self._queue_manager.set("queue", list(map(lambda x: x.to_dict(), self._queue)))
-        self._queue_manager.write_file()
+        if isinstance(self._queue_manager, Storage):
+            self._logger.debug("Saving the queue")
+            self._queue_manager.set("queue", list(map(lambda x: x.to_dict(), self._queue)))
+            self._queue_manager.write_file()
+        elif isinstance(self._queue_manager, Dictionary):
+            self._logger.warning(
+                "This queue has no state and a call to save() is received. Ignoring"
+            )
 
     def is_empty(self) -> bool:
         return False if self._queue else True
