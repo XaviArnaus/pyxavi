@@ -55,18 +55,9 @@ def setup_function():
     CONFIG = backup
 
 
-def patch_config_read_file(self):
-    self._content = CONFIG
-
-
-def patch_config_old_read_file(self):
-    self._content = CONFIG_OLD
-
-
-@patch.object(Config, "read_file", new=patch_config_old_read_file)
 def test_initialize_logger_old_config():
 
-    config = Config()
+    config = Config(params=CONFIG_OLD)
 
     mock_logging_basic_config = Mock()
     with patch.object(logging, "basicConfig", new=mock_logging_basic_config):
@@ -81,12 +72,11 @@ def test_initialize_logger_old_config():
     assert isinstance(call_arguments["handlers"][0], logging.StreamHandler)
 
 
-@patch.object(Config, "read_file", new=patch_config_old_read_file)
 def test_logger_old_only_stdout():
 
     CONFIG_OLD["logger"]["to_stdout"] = True
     CONFIG_OLD["logger"]["to_file"] = False
-    config = Config()
+    config = Config(params=CONFIG_OLD)
 
     mock_logging_basic_config = Mock()
     with patch.object(logging, "basicConfig", new=mock_logging_basic_config):
@@ -97,12 +87,11 @@ def test_logger_old_only_stdout():
     assert isinstance(call_arguments["handlers"][0], logging.StreamHandler)
 
 
-@patch.object(Config, "read_file", new=patch_config_old_read_file)
 def test_logger_old_only_file_default_no_rotate():
 
     CONFIG_OLD["logger"]["to_stdout"] = False
     CONFIG_OLD["logger"]["to_file"] = True
-    config = Config()
+    config = Config(params=CONFIG_OLD)
 
     mock_logging_basic_config = Mock()
     mock_file_handler = Mock()
@@ -121,12 +110,11 @@ def test_logger_old_only_file_default_no_rotate():
     )
 
 
-@patch.object(Config, "read_file", new=patch_config_old_read_file)
 def test_logger_old_both_stdout_and_file_default_no_rotate():
 
     CONFIG_OLD["logger"]["to_stdout"] = True
     CONFIG_OLD["logger"]["to_file"] = True
-    config = Config()
+    config = Config(params=CONFIG_OLD)
 
     mock_logging_basic_config = Mock()
     mock_file_handler = Mock()
@@ -146,10 +134,9 @@ def test_logger_old_both_stdout_and_file_default_no_rotate():
     )
 
 
-@patch.object(Config, "read_file", new=patch_config_read_file)
 def test_initialize_logger():
 
-    config = Config()
+    config = Config(params=CONFIG)
 
     mock_logging_basic_config = Mock()
     with patch.object(logging, "basicConfig", new=mock_logging_basic_config):
@@ -164,12 +151,11 @@ def test_initialize_logger():
     assert isinstance(call_arguments["handlers"][0], logging.StreamHandler)
 
 
-@patch.object(Config, "read_file", new=patch_config_read_file)
 def test_logger_only_stdout():
 
     CONFIG["logger"]["stdout"]["active"] = True
     CONFIG["logger"]["file"]["active"] = False
-    config = Config()
+    config = Config(params=CONFIG)
 
     mock_logging_basic_config = Mock()
     with patch.object(logging, "basicConfig", new=mock_logging_basic_config):
@@ -180,12 +166,11 @@ def test_logger_only_stdout():
     assert isinstance(call_arguments["handlers"][0], logging.StreamHandler)
 
 
-@patch.object(Config, "read_file", new=patch_config_read_file)
 def test_logger_only_file_default_no_rotate():
 
     CONFIG["logger"]["stdout"]["active"] = False
     CONFIG["logger"]["file"]["active"] = True
-    config = Config()
+    config = Config(params=CONFIG)
 
     mock_logging_basic_config = Mock()
     mock_file_handler = Mock()
@@ -206,12 +191,11 @@ def test_logger_only_file_default_no_rotate():
     )
 
 
-@patch.object(Config, "read_file", new=patch_config_read_file)
 def test_logger_both_stdout_and_file_default_no_rotate():
 
     CONFIG["logger"]["stdout"]["active"] = True
     CONFIG["logger"]["file"]["active"] = True
-    config = Config()
+    config = Config(params=CONFIG)
 
     mock_logging_basic_config = Mock()
     mock_file_handler = Mock()
@@ -233,13 +217,12 @@ def test_logger_both_stdout_and_file_default_no_rotate():
     )
 
 
-@patch.object(Config, "read_file", new=patch_config_read_file)
 def test_logger_file_default_with_rotate():
 
     CONFIG["logger"]["stdout"]["active"] = False
     CONFIG["logger"]["file"]["active"] = True
     CONFIG["logger"]["file"]["rotate"]["active"] = True
-    config = Config()
+    config = Config(params=CONFIG)
 
     mock_logging_basic_config = Mock()
     mock_file_handler = Mock()
@@ -264,14 +247,13 @@ def test_logger_file_default_with_rotate():
     )
 
 
-@patch.object(Config, "read_file", new=patch_config_read_file)
 def test_logger_file_default_with_rotate_UTC():
 
     CONFIG["logger"]["stdout"]["active"] = False
     CONFIG["logger"]["file"]["active"] = True
     CONFIG["logger"]["file"]["rotate"]["active"] = True
     CONFIG["logger"]["file"]["rotate"]["utc"] = True
-    config = Config()
+    config = Config(params=CONFIG)
 
     mock_logging_basic_config = Mock()
     mock_file_handler = Mock()
@@ -296,14 +278,13 @@ def test_logger_file_default_with_rotate_UTC():
     )
 
 
-@patch.object(Config, "read_file", new=patch_config_read_file)
 def test_logger_file_default_with_rotate_every_hour():
 
     CONFIG["logger"]["stdout"]["active"] = False
     CONFIG["logger"]["file"]["active"] = True
     CONFIG["logger"]["file"]["rotate"]["active"] = True
     CONFIG["logger"]["file"]["rotate"]["when"] = "H"
-    config = Config()
+    config = Config(params=CONFIG)
 
     mock_logging_basic_config = Mock()
     mock_file_handler = Mock()
@@ -370,7 +351,7 @@ logger:
 @patch.object(Config, "read_file", new=patch_config_read_file_yaml)
 def test_from_yaml_config():
 
-    config = Config()
+    config = Config(filename="faked.yaml")
 
     mock_logging_basic_config = Mock()
     mock_file_handler = Mock()
@@ -394,12 +375,11 @@ def test_from_yaml_config():
     )
 
 
-@patch.object(Config, "read_file", new=patch_config_old_read_file)
 def test_loading_old_config_prints_deprecation_warning(caplog):
 
     CONFIG_OLD["logger"]["to_stdout"] = True
     CONFIG_OLD["logger"]["to_file"] = False
-    config = Config()
+    config = Config(params=CONFIG_OLD)
 
     mock_logging_basic_config = Mock()
     with patch.object(logging, "basicConfig", new=mock_logging_basic_config):
@@ -414,12 +394,11 @@ def test_loading_old_config_prints_deprecation_warning(caplog):
     assert expected_warning in caplog.text
 
 
-@patch.object(Config, "read_file", new=patch_config_read_file)
 def test_loading_config_does_not_prints_deprecation_warning(caplog):
 
     CONFIG["logger"]["stdout"]["active"] = True
     CONFIG["logger"]["file"]["active"] = False
-    config = Config()
+    config = Config(params=CONFIG)
 
     mock_logging_basic_config = Mock()
     with patch.object(logging, "basicConfig", new=mock_logging_basic_config):

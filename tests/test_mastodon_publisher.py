@@ -106,18 +106,13 @@ def setup_function():
     CONFIG = backup
 
 
-def patch_config_read_file(self):
-    self._content = CONFIG
-
-
 def patch_mastodon_helper_get_instance(connection_params, logger=None, base_path=None):
     return _mocked_mastodon_instance
 
 
-@patch.object(Config, "read_file", new=patch_config_read_file)
 @patch.object(MastodonHelper, "get_instance", new=patch_mastodon_helper_get_instance)
 def test_initialize_without_named_account_takes_config():
-    config = Config()
+    config = Config(params=CONFIG)
     publisher = MastodonPublisher(
         config=config, logger=Logger(config=config).get_logger(), base_path="bla"
     )
@@ -126,11 +121,10 @@ def test_initialize_without_named_account_takes_config():
     assert publisher._connection_params.app_name == "Test"
 
 
-@patch.object(Config, "read_file", new=patch_config_read_file)
 @patch.object(MastodonHelper, "get_instance", new=patch_mastodon_helper_get_instance)
 def test_initialize_without_named_account_takes_default():
     del CONFIG["publisher"]["named_account"]
-    config = Config()
+    config = Config(params=CONFIG)
     publisher = MastodonPublisher(
         config=config, logger=Logger(config=config).get_logger(), base_path="bla"
     )
@@ -139,11 +133,10 @@ def test_initialize_without_named_account_takes_default():
     assert publisher._connection_params.app_name == "Default"
 
 
-@patch.object(Config, "read_file", new=patch_config_read_file)
 @patch.object(MastodonHelper, "get_instance", new=patch_mastodon_helper_get_instance)
 def get_instance(named_account: str = "mastodon") -> MastodonPublisher:
 
-    config = Config()
+    config = Config(params=CONFIG)
     return MastodonPublisher(
         config=config,
         logger=Logger(config=config).get_logger(),

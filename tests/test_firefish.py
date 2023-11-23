@@ -12,10 +12,6 @@ import json
 CONFIG = {"logger": {"name": "logger_test"}}
 
 
-def patch_config_read_file(self):
-    self._content = CONFIG
-
-
 @pytest.mark.parametrize(
     argnames=('client_name', 'api_base_url', 'to_file', 'expected_values'),
     argvalues=[
@@ -185,14 +181,13 @@ def test_log_in_with_password():
         assert instance.bearer_token == token
 
 
-@patch.object(Config, "read_file", new=patch_config_read_file)
 def test_init_with_logger():
     client_id_filename = "client.secret"
     client_id_client_name = "Client"
     client_id_api_base_url = "https://social.devnamic.com"
     client_id_content = "\n".join([client_id_api_base_url, client_id_client_name])
 
-    logger = Logger(config=Config()).get_logger()
+    logger = Logger(config=Config(params=CONFIG)).get_logger()
 
     with patch.object(builtins, "open", mock_open(read_data=client_id_content)):
         instance = Firefish(client_id=client_id_filename, logger=logger)
