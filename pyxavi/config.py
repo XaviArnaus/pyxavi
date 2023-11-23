@@ -27,11 +27,11 @@ class Config(Storage):
         else:
             self._avoid_load_data_from_file = True
             filename = "FAKE.yaml"
-        
+
         # Now we're ready to initialise by the parent class.
         #   read_file() will be called!
         super().__init__(filename=filename)
-        
+
         # If we receive a dict with params we merge it over whatever we have already load
         if params is not None:
             # pre-initialise the content in case it's None
