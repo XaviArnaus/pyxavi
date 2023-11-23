@@ -11,6 +11,7 @@
 - New `MastodonPublisher` class to help on publishing to Mastodon APIs ([#38](https://github.com/XaviArnaus/pyxavi/pull/38))
 - Added a logger into the `Firefish` API wrapper ([#38](https://github.com/XaviArnaus/pyxavi/pull/38))
 - The `Queue` class now is able to work stateless ([#43](https://github.com/XaviArnaus/pyxavi/pull/43))
+- The `Config` class now is able to work without a file but a given dict ([#45](https://github.com/XaviArnaus/pyxavi/pull/45))
 
 ### Changed
 
