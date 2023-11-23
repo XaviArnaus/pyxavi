@@ -19,25 +19,27 @@ def os_path_exists_false(path):
     return False
 
 
-@patch("yaml.safe_load", new=patched_yaml_safe_load)
-@patch("builtins.open", mock_open(read_data=""))
-@patch("os.path.exists", new=os_path_exists_true)
 def initialize():
-    return Config()
+    return Config(params=CONFIG)
 
 
-def test_initialize_config():
+def test_initialize_config_with_params():
     config = initialize()
 
     assert config._content == CONFIG
 
 
+def test_initialize_config_without_params_exception():
+    with TestCase.assertRaises("pyxavi.config", RuntimeError):
+        _ = Config()
+
+
 @patch("yaml.safe_load", new=patched_yaml_safe_load)
 @patch("builtins.open", mock_open(read_data=""))
 @patch("os.path.exists", new=os_path_exists_true)
-def test_initialize_config_with_another_filename():
+def test_initialize_config_with_filename():
     filename = "another_file.yaml"
-    config = Config(filename)
+    config = Config(filename=filename)
 
     assert config._filename == filename
     assert config._content == CONFIG
@@ -46,7 +48,7 @@ def test_initialize_config_with_another_filename():
 @patch("os.path.exists", new=os_path_exists_false)
 def test_initialize_config_file_not_found_exception():
     with TestCase.assertRaises("pyxavi.config", RuntimeError):
-        _ = Config()
+        _ = Config(filename="not_existing.yaml")
 
 
 def test_get_all():
