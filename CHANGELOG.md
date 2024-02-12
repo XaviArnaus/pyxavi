@@ -11,6 +11,7 @@
 - New `MastodonPublisher` class to help on publishing to Mastodon APIs ([#38](https://github.com/XaviArnaus/pyxavi/pull/38))
 - Added a logger into the `Firefish` API wrapper ([#38](https://github.com/XaviArnaus/pyxavi/pull/38))
 - The `Queue` class now is able to work stateless ([#43](https://github.com/XaviArnaus/pyxavi/pull/43))
+- First iteration to support slugified keys ([#46](https://github.com/XaviArnaus/pyxavi/pull/46))
 
 ### Changed
 
