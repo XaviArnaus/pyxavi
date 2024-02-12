@@ -10,7 +10,8 @@ FILE = {
         }
     },
     "que": "tal",
-    "cdb4d88dca0bef8defe13d71624a46e7e851750a750a5467d53cb1bf273ab973": 42
+    "cdb4d88dca0bef8defe13d71624a46e7e851750a750a5467d53cb1bf273ab973": 42,
+    "https-www-example-com": 69
 }
 FILENAME = "filename.yaml"
 
@@ -201,6 +202,25 @@ def test_set_hashed():
     instance.set_hashed(key, 45)
 
     assert instance.get_hashed(key) == 45
+
+
+def test_get_slugged():
+    instance = initialize()
+
+    key = "https://www.example.com"
+    # print(slugify(key))
+
+    assert instance.get_slugged(key) == 69
+
+
+def test_set_slugged():
+    instance = initialize()
+
+    key = "https://www.example.com"
+
+    instance.set_slugged(key, 69)
+
+    assert instance.get_slugged(key) == 69
 
 
 @pytest.mark.parametrize(
