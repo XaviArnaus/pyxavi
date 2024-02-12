@@ -1,5 +1,6 @@
 from pyxavi.dictionary import Dictionary
 from hashlib import sha256
+from slugify import slugify
 from pathlib import Path
 import yaml
 import os
@@ -61,5 +62,15 @@ class Storage(Dictionary):
         #     param_name = param_name + sha256(last.encode()).hexdigest()
         # else:
         param_name = sha256(param_name.encode()).hexdigest()
+
+        self.set(param_name, value)
+
+    def get_slugged(self, param_name: str = "", default_value: any = None) -> any:
+        param_name = slugify(param_name)
+
+        return self.get(param_name, default_value)
+
+    def set_slugged(self, param_name: str, value: any = None):
+        param_name = slugify(param_name)
 
         self.set(param_name, value)
