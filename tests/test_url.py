@@ -50,3 +50,17 @@ import pytest
 )
 def test_clean(url, params, expected_result):
     assert Url.clean(url=url, remove_components=params) == expected_result
+
+@pytest.mark.parametrize(
+    argnames=('url', 'expected_result'),
+    argvalues=[
+        ("http://domain.com/a/path.html?query=string#anchor",True),
+        ("http://example.com",True),
+        ("https://example.com",True),
+        ("https://www.example.com",True),
+        ("https://www,example.com",False),
+        ("https://www.example,com",False),
+    ],
+)
+def test_clean(url, expected_result):
+    assert Url.is_valid(url=url) == expected_result
