@@ -171,6 +171,98 @@ def content_with_rss_and_atom_in_links(content_placeholder: str, link_rss_absolu
     return content_placeholder.replace("%LINK%", links).replace("%AHREF%", "")
 
 @pytest.fixture
+def case_maho_dev():
+    return """
+<html lang="en-us">
+  <head>
+    <title>Raccoon Bits</title>
+    <link rel="alternate" type="application/rss+xml" href="https://maho.dev/index.xml" title="Raccoon Bits">
+  </head>
+  <body>
+    <h1>I am a title</h1>
+    <div class="btn-group">
+        <h2>hello</2>
+    </div>
+  </body>
+</html>  
+"""
+
+@pytest.fixture
+def case_garrigos_cat():
+    return """
+<html lang="en-us">
+  <head>
+    <title>Garrigos.cat |</title>
+  </head>
+  <body>
+    <div class="col-sm text-center pt-1">
+        <a href="https://github.com/robertgarrigos" class="pr-3"><i class="fab fa-github-square fa-2x"></i></a>
+        <a href="https://www.garrigos.cat/rss.xml" class="pr-3"><i class="fas fa-rss-square fa-2x"></i></a>
+        <a href="https://mastodont.cat/@robertgarrigos" rel="me" class="pr-3"><i class="fab fa-mastodon fa-2x"></i></a>
+    </div>
+  </body>
+</html>  
+"""
+
+@pytest.fixture
+def case_retiolus_net():
+    return """
+<html lang="en-us">
+  <head>
+    <title>Posts · retiolus</title>
+    <link rel="alternate" type="application/rss+xml" href="/posts/index.xml" title="retiolus" />
+  </head>
+  <body>
+   <h1>I am a title</h1>
+    <div class="btn-group">
+        <h2>hello</2>
+    </div>
+  </body>
+</html>  
+"""
+
+@pytest.fixture
+def case_world_hey_com():
+    return """
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>David Heinemeier Hansson</title>
+    <link rel="alternate" type="application/atom+xml" title="Feed" href="https://world.hey.com/dhh/feed.atom">
+  </head>
+  <body>
+   <h1>I am a title</h1>
+    <div class="btn-group">
+        <h2>hello</2>
+    </div>
+  </body>
+</html>  
+"""
+
+@pytest.fixture
+def case_xavier_arnaus_net():
+    return """
+<html lang="en">
+    <head>
+        <title>Home | Xavier.Arnaus.net</title>
+        <link rel="alternate" type="application/atom+xml" title="Xavi's blog" href=".atom" />
+        <link rel="alternate" type="application/rss+xml" title="Xavi's blog" href=".rss" />
+  </head>
+  <body>
+   <h1>I am a title</h1>
+    <div class="btn-group">
+        <a class="btn btn-warning" href="/blog.atom/tag:english"><i class="fa fa-rss-square"></i> Atom 1.0</a>
+        <a class="btn btn-warning" href="/blog.rss/tag:english"><i class="fa fa-rss-square"></i> RSS</a>
+    </div>
+    <div class="btn-group">
+        <a class="btn btn-warning" href="/blog.atom/tag:català"><i class="fa fa-rss-square"></i> Atom 1.0</a>
+        <a class="btn btn-warning" href="/blog.rss/tag:català"><i class="fa fa-rss-square"></i> RSS</a>
+    </div>
+  </body>
+</html>  
+"""
+
+@pytest.fixture
 def rss_feed():
     feed = """
 <?xml version="1.0" encoding="utf-8"?>
@@ -260,27 +352,43 @@ def atom_feed():
 
 
 @pytest.mark.parametrize(
-    argnames=('content_test', 'expected_result_fixtures'),
+    argnames=('content_test', 'specific_base_url', 'expected_result_fixtures'),
     argvalues=[
-        ("content_with_no_link_alternate_nor_a_href", []),
-        ("content_with_link_alternate_but_not_a_href_absolute", ["rss_url"]),
-        ("content_with_no_link_alternate_but_a_href_absolute", ["rss_url"]),
-        ("content_with_both_link_alternate_and_a_href_absolute", ["rss_url"]),
-        ("content_with_link_alternate_but_not_a_href_relative", ["rss_url"]),
-        ("content_with_no_link_alternate_but_a_href_relative", ["rss_url"]),
-        ("content_with_both_link_alternate_and_a_href_relative", ["rss_url"]),
+        # Common cases
+        ("content_with_no_link_alternate_nor_a_href", None, []),
+        ("content_with_link_alternate_but_not_a_href_absolute", None, ["rss_url"]),
+        ("content_with_no_link_alternate_but_a_href_absolute", None, ["rss_url"]),
+        ("content_with_both_link_alternate_and_a_href_absolute", None, ["rss_url"]),
+        ("content_with_link_alternate_but_not_a_href_relative", None, ["rss_url"]),
+        ("content_with_no_link_alternate_but_a_href_relative", None, ["rss_url"]),
+        ("content_with_both_link_alternate_and_a_href_relative", None, ["rss_url"]),
         # Testing the sorting.
-        ("content_with_atom_and_rss_in_links", ["rss_url", "atom_url"]),
-        ("content_with_rss_and_atom_in_links", ["rss_url", "atom_url"]),
+        ("content_with_atom_and_rss_in_links", None, ["rss_url", "atom_url"]),
+        ("content_with_rss_and_atom_in_links", None, ["rss_url", "atom_url"]),
+        # Specific cases (failures saw online)
+        ("case_maho_dev", None, ["https://maho.dev/index.xml"]),
+        ("case_garrigos_cat", None, ["https://www.garrigos.cat/rss.xml"]),
+        ("case_retiolus_net", "https://retiolus.net/", ["https://retiolus.net/posts/index.xml"]),
+        ("case_world_hey_com", None, ["https://world.hey.com/dhh/feed.atom"]),
+        ("case_xavier_arnaus_net", "https://xavier.arnaus.net/blog", [
+            'https://xavier.arnaus.net/blog.rss',
+            'https://xavier.arnaus.net/blog.rss/tag:català',
+            'https://xavier.arnaus.net/blog.rss/tag:english',
+            'https://xavier.arnaus.net/blog.atom'
+        ]),
     ],
 )
-def test_findfeeds(content_test, expected_result_fixtures, base_url, rss_feed, atom_feed, request):
+def test_findfeeds(content_test, specific_base_url, expected_result_fixtures, base_url, rss_feed, atom_feed, request):
 
     content_to_return = request.getfixturevalue(content_test)
+    base_url = specific_base_url if specific_base_url else base_url
     url = base_url + "/fake_url.html"
     expected_result = []
     for fixture in expected_result_fixtures:
-        expected_result.append(base_url + request.getfixturevalue(fixture))
+        if str(fixture).startswith("http"):
+            expected_result.append(fixture)
+        else:
+            expected_result.append(base_url + request.getfixturevalue(fixture))
     
     class FakeRequest:
         url: str

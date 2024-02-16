@@ -52,12 +52,12 @@ class Url:
         """
 
         def by_priority(element):
+            prio_value = 9
             if "rss" in element:
-                return 1
+                prio_value = 1
             elif "atom" in element:
-                return 3
-            else:
-                return 5
+                prio_value = 3
+            return prio_value
 
         # kindly adapted from
         #   https://alexmiller.phd/posts/python-3-feedfinder-rss-detection-from-url/
@@ -88,7 +88,6 @@ class Url:
             for f in feed_urls:
                 # They have to have a "type" attribute
                 t = f.get("type", None)
-                print(t)
                 if t:
                     # ... and it has to contain "rss" or "xml"
                     if "rss" in t or "xml" in t:
@@ -118,7 +117,7 @@ class Url:
                 result.append(possible_feed)
 
         # Finally, apply sorting, as RSS are more prio than Atom...
-        sorted(result, key=by_priority)
+        result = sorted(result, key=by_priority)
 
         # Return the list found!
         return (result)
