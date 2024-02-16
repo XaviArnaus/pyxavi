@@ -162,6 +162,7 @@ A class to perform some networking actions. At this point:
 
 A class to perform some actions over URLs. At this point:
 - Clean the URL based on given parameters
+- Validate URLs
 
 ## The `MastodonHelper` module
 

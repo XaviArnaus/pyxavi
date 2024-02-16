@@ -1,4 +1,5 @@
 from urllib.parse import urlparse
+import validators
 
 
 class Url:
@@ -35,3 +36,6 @@ class Url:
             parsed = parsed._replace(fragment="")
 
         return parsed.geturl()
+
+    def is_valid(url) -> bool:
+        return True if validators.url(url) else False
