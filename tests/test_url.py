@@ -1,5 +1,8 @@
 from pyxavi.url import Url
+from unittest.mock import patch, Mock
 import pytest
+import requests
+import feedparser
 
 
 @pytest.mark.parametrize(
@@ -65,3 +68,222 @@ def test_clean(url, params, expected_result):
 )
 def test_is_valid(url, expected_result):
     assert Url.is_valid(url=url) == expected_result
+
+
+@pytest.fixture
+def base_url():
+    return "https://example.com"
+
+@pytest.fixture
+def rss_url():
+    return "/feed.rss"
+
+@pytest.fixture
+def atom_url():
+    return "/feed.atom"
+
+@pytest.fixture
+def link_rss_absolute(base_url, rss_url):
+    return f"<link rel=\"alternate\" type=\"application/rss+xml\" href=\"{base_url}{rss_url}\">"
+
+@pytest.fixture
+def link_atom_absolute(base_url, atom_url):
+    return f"<link rel=\"alternate\" type=\"application/atom+xml\" href=\"{base_url}{atom_url}\">"
+
+@pytest.fixture
+def link_rss_relative(rss_url):
+    return f"<link rel=\"alternate\" type=\"application/rss+xml\" href=\"{rss_url}\">"
+
+@pytest.fixture
+def link_atom_relative(atom_url):
+    return f"<link rel=\"alternate\" type=\"application/atom+xml\" href=\"{atom_url}\">"
+
+@pytest.fixture
+def ahref_rss_absolute(base_url, rss_url):
+    return f"<a href=\"{base_url}{rss_url}\"><i class=\"fa\"></i> RSS</a>"
+
+@pytest.fixture
+def ahref_atom_absolute(base_url, atom_url):
+    return f"<a href=\"{base_url}{atom_url}\"><i class=\"fa\"></i> Atom</a>"
+
+@pytest.fixture
+def ahref_rss_relative(rss_url):
+    return f"<a href=\"{rss_url}\"><i class=\"fa\"></i> RSS</a>"
+
+@pytest.fixture
+def ahref_atom_relative(atom_url):
+    return f"<a href=\"{atom_url}h\"><i class=\"fa\"></i> Atom</a>"
+
+@pytest.fixture
+def content_placeholder():
+    return """
+<html lang="en">
+  <head>
+    <title>I am a title</title>
+    <link rel="stylesheet" href="whatever.css" media="all" />
+    %LINK%
+  </head>
+  <body>
+    <h1>I am a title</h1>
+    <div class="btn-group">
+        %AHREF%
+    </div>
+  </body>
+</html>  
+"""
+
+@pytest.fixture
+def content_with_no_link_alternate_nor_a_href(content_placeholder: str):
+    return content_placeholder.replace("%LINK%", "").replace("%AHREF%", "")
+
+@pytest.fixture
+def content_with_link_alternate_but_not_a_href_absolute(content_placeholder: str, link_rss_absolute):
+    return content_placeholder.replace("%LINK%", link_rss_absolute).replace("%AHREF%", "")
+
+@pytest.fixture
+def content_with_no_link_alternate_but_a_href_absolute(content_placeholder: str, ahref_rss_absolute):
+    return content_placeholder.replace("%LINK%", "").replace("%AHREF%", ahref_rss_absolute)
+
+@pytest.fixture
+def content_with_both_link_alternate_and_a_href_absolute(content_placeholder: str, link_rss_absolute, ahref_rss_absolute):
+    return content_placeholder.replace("%LINK%", link_rss_absolute).replace("%AHREF%", ahref_rss_absolute)
+
+@pytest.fixture
+def content_with_link_alternate_but_not_a_href_relative(content_placeholder: str, link_rss_relative):
+    return content_placeholder.replace("%LINK%", link_rss_relative).replace("%AHREF%", "")
+
+@pytest.fixture
+def content_with_no_link_alternate_but_a_href_relative(content_placeholder: str, ahref_rss_relative):
+    return content_placeholder.replace("%LINK%", "").replace("%AHREF%", ahref_rss_relative)
+
+@pytest.fixture
+def content_with_both_link_alternate_and_a_href_relative(content_placeholder: str, link_rss_relative, ahref_rss_relative):
+    return content_placeholder.replace("%LINK%", link_rss_relative).replace("%AHREF%", ahref_rss_relative)
+
+@pytest.fixture
+def rss_feed():
+    feed = """
+<?xml version="1.0" encoding="utf-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Xavier Arnaus&#039; Blog</title>
+        <link>https://xavier.arnaus.net/blog</link>
+        <atom:link href="https://xavier.arnaus.net/blog.rss/tag:english" rel="self" type="application/rss+xml"/>
+        <description>Feed from my Blog</description>
+        <language>en</language>
+        <lastBuildDate>Wed, 14 Feb 2024 22:30:03 +0100</lastBuildDate>
+        <item>
+            <title>Migrate the firefish admin account to another instance</title>
+            <link>https://xavier.arnaus.net/blog/migrate-the-firefish-admin-account-to-another-instance</link>
+            <guid>https://xavier.arnaus.net/blog/migrate-the-firefish-admin-account-to-another-instance</guid>
+            <pubDate>Mon, 05 Feb 2024 16:30:04 +0100</pubDate>
+            <description>
+                <![CDATA[
+                    <img alt="" src="https://xavier.arnaus.net/user/pages/02.blog/51.migrate-the-firefish-admin-account-to-another-instance/mastodon_migration.jpeg" />
+                    <p>In a <a href="/blog/install-mastodon-glitch-edition-on-a-raspberry-pi-4">previous article</a> I installed a #Mastodon #Glitch Edition intended to become my techie instance, moving there my bots from the previous #Firefish instance. The final step was to migrate my personal nerd account and this article was supposed to be a walk through… just that it’s not. It is a log about my adventure and failures to move an <em>admin</em> account away from Firefish, to execute a successful #fediverse account #migration against all odds.</p>
+                    <p>So bear with me, grab a sit and a drink, and let me explain you how (not) to do a migration between fediverse instances.</p>
+                    ]]>
+            </description>
+            <category>english</category>
+        </item>
+        <item>
+            <title>Update Mastodon to v4.2.5 and keeping customisations</title>
+            <link>https://xavier.arnaus.net/blog/update-mastodon-to-v4-2-5-and-keeping-customisations</link>
+            <guid>https://xavier.arnaus.net/blog/update-mastodon-to-v4-2-5-and-keeping-customisations</guid>
+            <pubDate>Wed, 14 Feb 2024 22:30:03 +0100</pubDate>
+            <description>
+                <![CDATA[
+                    <img alt="" src="https://xavier.arnaus.net/user/pages/02.blog/50.update-mastodon-to-v4-2-5-and-keeping-customisations/Mastodon 4.2.5.png" />
+                    <p>Recently the new #Mastodon v4.2.5 was announced and with it the urge of a security fix. In a previous article I explained a strategy to keep the code customised and up to date, and even working with #git is part of my daily work, I feel like explaining in detail the process so that I will remember it for future references and also may help anybody that has the instance somewhat customised.</p>
+                ]]>
+            </description>
+            <category>english</category>
+        </item>
+    </channel>
+</rss>
+"""
+    return feedparser.parse(feed)
+
+@pytest.fixture
+def atom_feed():
+    feed = """
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title>Xavier Arnaus&#039; Blog</title>
+    <link href="https://xavier.arnaus.net/blog.atom/tag:english" rel="self" />
+    <subtitle>Feed from my Blog</subtitle>
+    <updated>2024-02-14T22:30:03+01:00</updated>
+    <author>
+        <name>Xavi</name>
+    </author>
+    <id>https://xavier.arnaus.net/blog</id>
+    <entry>
+        <title>Migrate the firefish admin account to another instance</title>
+        <id>https://xavier.arnaus.net/blog/migrate-the-firefish-admin-account-to-another-instance</id>
+        <updated>2024-02-05T16:30:04+01:00</updated>
+        <published>2024-02-05T16:30:04+01:00</published>
+        <link href="https://xavier.arnaus.net/blog/migrate-the-firefish-admin-account-to-another-instance"/>
+        <category term="english" />
+            <![CDATA[
+                <img alt="" src="https://xavier.arnaus.net/user/pages/02.blog/51.migrate-the-firefish-admin-account-to-another-instance/mastodon_migration.jpeg" />
+                <p>In a <a href="/blog/install-mastodon-glitch-edition-on-a-raspberry-pi-4">previous article</a> I installed a #Mastodon #Glitch Edition intended to become my techie instance, moving there my bots from the previous #Firefish instance. The final step was to migrate my personal nerd account and this article was supposed to be a walk through… just that it’s not. It is a log about my adventure and failures to move an <em>admin</em> account away from Firefish, to execute a successful #fediverse account #migration against all odds.</p>
+                <p>So bear with me, grab a sit and a drink, and let me explain you how (not) to do a migration between fediverse instances.</p>
+            ]]>
+        </content>
+    </entry>
+    <entry>
+        <title>Update Mastodon to v4.2.5 and keeping customisations</title>
+        <id>https://xavier.arnaus.net/blog/update-mastodon-to-v4-2-5-and-keeping-customisations</id>
+        <updated>2024-02-14T22:30:03+01:00</updated>
+        <published>2024-02-14T22:30:03+01:00</published>
+        <link href="https://xavier.arnaus.net/blog/update-mastodon-to-v4-2-5-and-keeping-customisations"/>
+        <category term="english" />
+            <![CDATA[
+                <img alt="" src="https://xavier.arnaus.net/user/pages/02.blog/50.update-mastodon-to-v4-2-5-and-keeping-customisations/Mastodon 4.2.5.png" />
+                <p>Recently the new #Mastodon v4.2.5 was announced and with it the urge of a security fix. In a previous article I explained a strategy to keep the code customised and up to date, and even working with #git is part of my daily work, I feel like explaining in detail the process so that I will remember it for future references and also may help anybody that has the instance somewhat customised.</p>
+            ]]>
+        </content>
+    </entry>
+</feed>
+"""
+    return feedparser.parse(feed)
+
+
+@pytest.mark.parametrize(
+    argnames=('content_test', 'expected_result_fixtures'),
+    argvalues=[
+        ("content_with_no_link_alternate_nor_a_href", []),
+        ("content_with_link_alternate_but_not_a_href_absolute", ["rss_url"]),
+        ("content_with_no_link_alternate_but_a_href_absolute", ["rss_url"]),
+        ("content_with_both_link_alternate_and_a_href_absolute", ["rss_url"]),
+        ("content_with_link_alternate_but_not_a_href_relative", ["rss_url"]),
+        ("content_with_no_link_alternate_but_a_href_relative", ["rss_url"]),
+        ("content_with_both_link_alternate_and_a_href_relative", ["rss_url"]),
+    ],
+)
+def test_findfeeds(content_test, expected_result_fixtures, base_url, rss_feed, atom_feed, request):
+
+    content_to_return = request.getfixturevalue(content_test)
+    url = base_url + "/fake_url.html"
+    expected_result = []
+    for fixture in expected_result_fixtures:
+        expected_result.append(base_url + request.getfixturevalue(fixture))
+    
+    class FakeRequest:
+        url: str
+        text: str
+        def __init__(self, url, text) -> None:
+            self.url = url
+            self.text = text
+    
+    def mocked_feedparse(url):
+        return rss_feed if "rss" in url else atom_feed
+
+    mocked_requests_head = Mock()
+    mocked_requests_head.return_value = FakeRequest(url=url, text="")
+    mocked_requests_get = Mock()
+    mocked_requests_get.return_value = FakeRequest(url=url, text=content_to_return)
+    with patch.object(requests, "head", new=mocked_requests_head):
+        with patch.object(requests, "get", new=mocked_requests_get):
+            with patch.object(feedparser, "parse", new=mocked_feedparse):
+                assert Url.findfeeds(url=url) == expected_result
