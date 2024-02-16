@@ -90,6 +90,8 @@ class Queue:
         output_queue = []
         for item in self._queue:
             unique = item.unique_value(param=param)
+            if unique is None:
+                raise RuntimeError("The unique value can't be None while deduplicating.")
             if unique not in uniques_queue:
                 output_queue.append(item)
                 uniques_queue.append(unique)
