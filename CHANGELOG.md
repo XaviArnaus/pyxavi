@@ -13,6 +13,7 @@
 - The `Queue` class now is able to work stateless ([#43](https://github.com/XaviArnaus/pyxavi/pull/43))
 - The `Config` class now is able to work without a file but a given dict ([#45](https://github.com/XaviArnaus/pyxavi/pull/45))
 - First iteration to support slugified keys ([#46](https://github.com/XaviArnaus/pyxavi/pull/46))
+- Added URL validation ([#47](https://github.com/XaviArnaus/pyxavi/pull/47))
 
 ### Changed
 
