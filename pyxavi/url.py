@@ -118,7 +118,7 @@ class Url:
                 result.append(possible_feed)
 
         # Finally, apply sorting, as RSS are more prio than Atom...
-        sorted(result, key=by_priority, reverse=True)
+        sorted(result, key=by_priority)
 
         # Return the list found!
         return (result)

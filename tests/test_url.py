@@ -161,6 +161,16 @@ def content_with_both_link_alternate_and_a_href_relative(content_placeholder: st
     return content_placeholder.replace("%LINK%", link_rss_relative).replace("%AHREF%", ahref_rss_relative)
 
 @pytest.fixture
+def content_with_atom_and_rss_in_links(content_placeholder: str, link_rss_absolute, link_atom_relative):
+    links = link_atom_relative + "\n" + link_rss_absolute
+    return content_placeholder.replace("%LINK%", links).replace("%AHREF%", "")
+
+@pytest.fixture
+def content_with_rss_and_atom_in_links(content_placeholder: str, link_rss_absolute, link_atom_relative):
+    links = link_rss_absolute + "\n" + link_atom_relative
+    return content_placeholder.replace("%LINK%", links).replace("%AHREF%", "")
+
+@pytest.fixture
 def rss_feed():
     feed = """
 <?xml version="1.0" encoding="utf-8"?>
@@ -259,6 +269,9 @@ def atom_feed():
         ("content_with_link_alternate_but_not_a_href_relative", ["rss_url"]),
         ("content_with_no_link_alternate_but_a_href_relative", ["rss_url"]),
         ("content_with_both_link_alternate_and_a_href_relative", ["rss_url"]),
+        # Testing the sorting.
+        ("content_with_atom_and_rss_in_links", ["rss_url", "atom_url"]),
+        ("content_with_rss_and_atom_in_links", ["rss_url", "atom_url"]),
     ],
 )
 def test_findfeeds(content_test, expected_result_fixtures, base_url, rss_feed, atom_feed, request):
