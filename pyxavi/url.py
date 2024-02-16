@@ -37,6 +37,5 @@ class Url:
 
         return parsed.geturl()
 
-
     def is_valid(url) -> bool:
         return True if validators.url(url) else False
