@@ -74,45 +74,56 @@ def test_is_valid(url, expected_result):
 def base_url():
     return "https://example.com"
 
+
 @pytest.fixture
 def rss_url():
     return "/feed.rss"
+
 
 @pytest.fixture
 def atom_url():
     return "/feed.atom"
 
+
 @pytest.fixture
 def link_rss_absolute(base_url, rss_url):
     return f"<link rel=\"alternate\" type=\"application/rss+xml\" href=\"{base_url}{rss_url}\">"
 
+
 @pytest.fixture
 def link_atom_absolute(base_url, atom_url):
-    return f"<link rel=\"alternate\" type=\"application/atom+xml\" href=\"{base_url}{atom_url}\">"
+    return f"<link rel=\"alternate\" type=\"application/atom+xml\" href=\"{base_url}{atom_url}\">"  # noqa: E501
+
 
 @pytest.fixture
 def link_rss_relative(rss_url):
     return f"<link rel=\"alternate\" type=\"application/rss+xml\" href=\"{rss_url}\">"
 
+
 @pytest.fixture
 def link_atom_relative(atom_url):
     return f"<link rel=\"alternate\" type=\"application/atom+xml\" href=\"{atom_url}\">"
+
 
 @pytest.fixture
 def ahref_rss_absolute(base_url, rss_url):
     return f"<a href=\"{base_url}{rss_url}\"><i class=\"fa\"></i> RSS</a>"
 
+
 @pytest.fixture
 def ahref_atom_absolute(base_url, atom_url):
     return f"<a href=\"{base_url}{atom_url}\"><i class=\"fa\"></i> Atom</a>"
+
 
 @pytest.fixture
 def ahref_rss_relative(rss_url):
     return f"<a href=\"{rss_url}\"><i class=\"fa\"></i> RSS</a>"
 
+
 @pytest.fixture
 def ahref_atom_relative(atom_url):
     return f"<a href=\"{atom_url}h\"><i class=\"fa\"></i> Atom</a>"
+
 
 @pytest.fixture
 def content_placeholder():
@@ -129,46 +140,74 @@ def content_placeholder():
         %AHREF%
     </div>
   </body>
-</html>  
+</html>
 """
+
 
 @pytest.fixture
 def content_with_no_link_alternate_nor_a_href(content_placeholder: str):
     return content_placeholder.replace("%LINK%", "").replace("%AHREF%", "")
 
+
 @pytest.fixture
-def content_with_link_alternate_but_not_a_href_absolute(content_placeholder: str, link_rss_absolute):
+def content_with_link_alternate_but_not_a_href_absolute(
+    content_placeholder: str, link_rss_absolute
+):
     return content_placeholder.replace("%LINK%", link_rss_absolute).replace("%AHREF%", "")
 
+
 @pytest.fixture
-def content_with_no_link_alternate_but_a_href_absolute(content_placeholder: str, ahref_rss_absolute):
+def content_with_no_link_alternate_but_a_href_absolute(
+    content_placeholder: str, ahref_rss_absolute
+):
     return content_placeholder.replace("%LINK%", "").replace("%AHREF%", ahref_rss_absolute)
 
-@pytest.fixture
-def content_with_both_link_alternate_and_a_href_absolute(content_placeholder: str, link_rss_absolute, ahref_rss_absolute):
-    return content_placeholder.replace("%LINK%", link_rss_absolute).replace("%AHREF%", ahref_rss_absolute)
 
 @pytest.fixture
-def content_with_link_alternate_but_not_a_href_relative(content_placeholder: str, link_rss_relative):
+def content_with_both_link_alternate_and_a_href_absolute(
+    content_placeholder: str, link_rss_absolute, ahref_rss_absolute
+):
+    return content_placeholder.replace("%LINK%", link_rss_absolute
+                                       ).replace("%AHREF%", ahref_rss_absolute)
+
+
+@pytest.fixture
+def content_with_link_alternate_but_not_a_href_relative(
+    content_placeholder: str, link_rss_relative
+):
     return content_placeholder.replace("%LINK%", link_rss_relative).replace("%AHREF%", "")
 
+
 @pytest.fixture
-def content_with_no_link_alternate_but_a_href_relative(content_placeholder: str, ahref_rss_relative):
+def content_with_no_link_alternate_but_a_href_relative(
+    content_placeholder: str, ahref_rss_relative
+):
     return content_placeholder.replace("%LINK%", "").replace("%AHREF%", ahref_rss_relative)
 
-@pytest.fixture
-def content_with_both_link_alternate_and_a_href_relative(content_placeholder: str, link_rss_relative, ahref_rss_relative):
-    return content_placeholder.replace("%LINK%", link_rss_relative).replace("%AHREF%", ahref_rss_relative)
 
 @pytest.fixture
-def content_with_atom_and_rss_in_links(content_placeholder: str, link_rss_absolute, link_atom_relative):
+def content_with_both_link_alternate_and_a_href_relative(
+    content_placeholder: str, link_rss_relative, ahref_rss_relative
+):
+    return content_placeholder.replace("%LINK%", link_rss_relative
+                                       ).replace("%AHREF%", ahref_rss_relative)
+
+
+@pytest.fixture
+def content_with_atom_and_rss_in_links(
+    content_placeholder: str, link_rss_absolute, link_atom_relative
+):
     links = link_atom_relative + "\n" + link_rss_absolute
     return content_placeholder.replace("%LINK%", links).replace("%AHREF%", "")
 
+
 @pytest.fixture
-def content_with_rss_and_atom_in_links(content_placeholder: str, link_rss_absolute, link_atom_relative):
+def content_with_rss_and_atom_in_links(
+    content_placeholder: str, link_rss_absolute, link_atom_relative
+):
     links = link_rss_absolute + "\n" + link_atom_relative
     return content_placeholder.replace("%LINK%", links).replace("%AHREF%", "")
+
 
 @pytest.fixture
 def case_maho_dev():
@@ -184,8 +223,9 @@ def case_maho_dev():
         <h2>hello</2>
     </div>
   </body>
-</html>  
-"""
+</html>
+"""  # noqa: E501
+
 
 @pytest.fixture
 def case_garrigos_cat():
@@ -201,8 +241,9 @@ def case_garrigos_cat():
         <a href="https://mastodont.cat/@robertgarrigos" rel="me" class="pr-3"><i class="fab fa-mastodon fa-2x"></i></a>
     </div>
   </body>
-</html>  
-"""
+</html>
+"""  # noqa: E501
+
 
 @pytest.fixture
 def case_retiolus_net():
@@ -218,8 +259,9 @@ def case_retiolus_net():
         <h2>hello</2>
     </div>
   </body>
-</html>  
-"""
+</html>
+"""  # noqa: E501
+
 
 @pytest.fixture
 def case_world_hey_com():
@@ -236,8 +278,9 @@ def case_world_hey_com():
         <h2>hello</2>
     </div>
   </body>
-</html>  
-"""
+</html>
+"""  # noqa: E501
+
 
 @pytest.fixture
 def case_xavier_arnaus_net():
@@ -245,11 +288,15 @@ def case_xavier_arnaus_net():
 <html lang="en">
     <head>
         <title>Home | Xavier.Arnaus.net</title>
-        <link rel="alternate" type="application/atom+xml" title="Xavi's blog" href=".atom" />
-        <link rel="alternate" type="application/rss+xml" title="Xavi's blog" href=".rss" />
+        <link rel="alternate" type="application/atom+xml" title="Xavi's blog" href="https://xavier.arnaus.net/blog.atom" />
+        <link rel="alternate" type="application/rss+xml" title="Xavi's blog" href="https://xavier.arnaus.net/blog.rss" />
   </head>
   <body>
    <h1>I am a title</h1>
+       <div class="btn-group">
+        <a class="btn btn-warning" href="/blog.atom"><i class="fa fa-rss-square"></i> Atom 1.0</a>
+        <a class="btn btn-warning" href="/blog.rss"><i class="fa fa-rss-square"></i> RSS</a>
+    </div>
     <div class="btn-group">
         <a class="btn btn-warning" href="/blog.atom/tag:english"><i class="fa fa-rss-square"></i> Atom 1.0</a>
         <a class="btn btn-warning" href="/blog.rss/tag:english"><i class="fa fa-rss-square"></i> RSS</a>
@@ -259,8 +306,9 @@ def case_xavier_arnaus_net():
         <a class="btn btn-warning" href="/blog.rss/tag:català"><i class="fa fa-rss-square"></i> RSS</a>
     </div>
   </body>
-</html>  
-"""
+</html>
+"""  # noqa: E501
+
 
 @pytest.fixture
 def rss_feed():
@@ -303,8 +351,9 @@ def rss_feed():
         </item>
     </channel>
 </rss>
-"""
+"""  # noqa: E501
     return feedparser.parse(feed)
+
 
 @pytest.fixture
 def atom_feed():
@@ -347,7 +396,7 @@ def atom_feed():
         </content>
     </entry>
 </feed>
-"""
+"""   # noqa: E501
     return feedparser.parse(feed)
 
 
@@ -368,17 +417,27 @@ def atom_feed():
         # Specific cases (failures saw online)
         ("case_maho_dev", None, ["https://maho.dev/index.xml"]),
         ("case_garrigos_cat", None, ["https://www.garrigos.cat/rss.xml"]),
-        ("case_retiolus_net", "https://retiolus.net/", ["https://retiolus.net/posts/index.xml"]),
+        (
+            "case_retiolus_net",
+            "https://retiolus.net/", ["https://retiolus.net/posts/index.xml"]
+        ),
         ("case_world_hey_com", None, ["https://world.hey.com/dhh/feed.atom"]),
-        ("case_xavier_arnaus_net", "https://xavier.arnaus.net/blog", [
-            'https://xavier.arnaus.net/blog.rss',
-            'https://xavier.arnaus.net/blog.rss/tag:català',
-            'https://xavier.arnaus.net/blog.rss/tag:english',
-            'https://xavier.arnaus.net/blog.atom'
-        ]),
+        (
+            "case_xavier_arnaus_net",
+            "https://xavier.arnaus.net/blog",
+            ['https://xavier.arnaus.net/blog.rss', 'https://xavier.arnaus.net/blog.atom']
+        ),
     ],
 )
-def test_findfeeds(content_test, specific_base_url, expected_result_fixtures, base_url, rss_feed, atom_feed, request):
+def test_findfeeds(
+    content_test,
+    specific_base_url,
+    expected_result_fixtures,
+    base_url,
+    rss_feed,
+    atom_feed,
+    request
+):
 
     content_to_return = request.getfixturevalue(content_test)
     base_url = specific_base_url if specific_base_url else base_url
@@ -389,14 +448,15 @@ def test_findfeeds(content_test, specific_base_url, expected_result_fixtures, ba
             expected_result.append(fixture)
         else:
             expected_result.append(base_url + request.getfixturevalue(fixture))
-    
+
     class FakeRequest:
         url: str
         text: str
+
         def __init__(self, url, text) -> None:
             self.url = url
             self.text = text
-    
+
     def mocked_feedparse(url):
         return rss_feed if "rss" in url else atom_feed
 
