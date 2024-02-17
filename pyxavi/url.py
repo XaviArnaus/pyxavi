@@ -95,6 +95,7 @@ class Url:
 
         # The "link" tags that are rel="alternate" may contain the feed
         feed_urls = html.findAll("link", rel="alternate")
+        print(feed_urls)
         if len(feed_urls) >= 1:
             for f in feed_urls:
                 # They have to have a "type" attribute
@@ -104,9 +105,12 @@ class Url:
                     href = f.get("href", None)
                     # If we have an url and it's a valid feed
                     #   we add it into the resulting list if not there yet
-                    if href and Url.is_a_valid_feed(href) and href not in result:
+                    if href:
                         href = Url.ensure_absolute(url=href, base=base)
-                        result.append(href)
+                        # If it's a valid feed and not there yet
+                        #   we add it into the resulting list
+                        if Url.is_a_valid_feed(href) and href not in result:
+                            result.append(href)
 
         # We continue throug the BODY only if we didn't find any feed yet
         if len(result) == 0:
@@ -118,10 +122,12 @@ class Url:
                 href = a.get("href", None)
                 # If we have a href and contains any "feed" text and
                 #   we add it into the resulting list if not there yet
-                if href and ("xml" in href or "rss" in href or "feed" in href) and\
-                   Url.is_a_valid_feed(href) and href not in result:
+                if href and ("xml" in href or "rss" in href or "feed" in href):
                     href = Url.ensure_absolute(url=href, base=base)
-                    result.append(href)
+                    # If it's a valid feed and not there yet
+                    #   we add it into the resulting list
+                    if Url.is_a_valid_feed(href) and href not in result:
+                        result.append(href)
 
         # Finally, apply sorting, as RSS are more prio than Atom...
         result = sorted(result, key=by_priority)
