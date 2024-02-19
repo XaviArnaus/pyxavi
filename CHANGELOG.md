@@ -14,6 +14,7 @@
 - The `Config` class now is able to work without a file but a given dict ([#45](https://github.com/XaviArnaus/pyxavi/pull/45))
 - First iteration to support slugified keys ([#46](https://github.com/XaviArnaus/pyxavi/pull/46))
 - Added URL validation ([#47](https://github.com/XaviArnaus/pyxavi/pull/47))
+- Discover the Feed URL from a given Site URL ([#48](https://github.com/XaviArnaus/pyxavi/pull/48))
 
 ### Changed
 
