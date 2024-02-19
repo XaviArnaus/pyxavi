@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased](https://github.com/XaviArnaus/pyxavi/)
+## [v0.8.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.8.0) - 2024-02-19
 
 ### Added
 
