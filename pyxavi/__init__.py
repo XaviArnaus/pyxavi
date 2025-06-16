@@ -9,3 +9,5 @@ from .queue_stack import Queue, QueueItemProtocol, SimpleQueueItem
 from .janitor import Janitor
 from .network import Network, EXTERNAL_SERVICE_IPv4, EXTERNAL_SERVICE_IPv6
 from .url import Url
+from .stopwatch import Stopwatch
+from .text import Text
