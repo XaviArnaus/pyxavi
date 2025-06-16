@@ -1,4 +1,4 @@
-from pyxavi.dictionary import Dictionary
+from pyxavi import Dictionary
 from unittest import TestCase
 import pytest
 import copy

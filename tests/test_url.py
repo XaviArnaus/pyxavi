@@ -1,4 +1,4 @@
-from pyxavi.url import Url
+from pyxavi import Url
 from unittest.mock import patch, Mock
 import pytest
 import requests

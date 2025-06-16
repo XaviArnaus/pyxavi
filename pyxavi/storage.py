@@ -1,4 +1,4 @@
-from pyxavi.dictionary import Dictionary
+from pyxavi import Dictionary
 from hashlib import sha256
 from slugify import slugify
 from pathlib import Path

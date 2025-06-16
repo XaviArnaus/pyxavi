@@ -1,6 +1,5 @@
 from __future__ import annotations
-from pyxavi.storage import Storage
-from pyxavi.dictionary import Dictionary
+from pyxavi import Storage, Dictionary
 from typing import Protocol
 import logging
 

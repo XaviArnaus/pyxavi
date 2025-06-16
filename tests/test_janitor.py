@@ -1,4 +1,4 @@
-from pyxavi.janitor import Janitor
+from pyxavi import Janitor
 from unittest.mock import Mock, patch
 import pytest
 import requests

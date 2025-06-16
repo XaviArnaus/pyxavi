@@ -1,6 +1,4 @@
-from pyxavi.config import Config
-from pyxavi.dictionary import Dictionary
-from pyxavi.terminal_color import TerminalColor
+from pyxavi import Config, Dictionary, TerminalColor
 from logging.handlers import TimedRotatingFileHandler
 from datetime import datetime
 from logging import Logger as OriginalLogger
