@@ -1,6 +1,5 @@
 from unittest.mock import patch, Mock
-from pyxavi.config import Config
-from pyxavi.logger import Logger
+from pyxavi import Config, Logger
 from logging.handlers import TimedRotatingFileHandler
 from datetime import datetime, time
 import logging

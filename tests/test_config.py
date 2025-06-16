@@ -1,6 +1,5 @@
 from unittest.mock import Mock, patch, call, mock_open
-from pyxavi.config import Config
-from pyxavi.storage import Storage
+from pyxavi import Config, Storage
 from unittest import TestCase
 import os
 

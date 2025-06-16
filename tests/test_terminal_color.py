@@ -1,4 +1,4 @@
-from pyxavi.terminal_color import TerminalColor
+from pyxavi import TerminalColor
 import pytest
 
 

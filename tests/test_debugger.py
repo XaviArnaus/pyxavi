@@ -1,4 +1,4 @@
-from pyxavi.debugger import dd
+from pyxavi import dd
 from collections import deque
 import pytest
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## [v1.0.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.0.0) - 2025-06-16
+
+### Added
+
+- Ability to import directly from the `pyxavi` package without specifying the file ([#51](https://github.com/XaviArnaus/pyxavi/pull/51))
+
+### Changed
+
+- ⚠️ Breaking Change: Abstracting ActivityPub classes to the `pyxavi-activitypub` package ([#51](https://github.com/XaviArnaus/pyxavi/pull/51))
+
+### Fixed
+
+- Solved a DeprecationWarning from BeautifulSoap4 ([#51](https://github.com/XaviArnaus/pyxavi/pull/51))
+
 ## [v0.8.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v0.8.0) - 2024-02-19
 
 ### Added

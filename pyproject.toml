@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyxavi"
-version = "0.8.0"
+version = "1.0.0"
 description = "Set of utilities to assist on simple Python projects"
 authors = ["Xavier Arnaus <xavi@arnaus.net>"]
 readme = "README.md"
@@ -22,7 +22,6 @@ python = "^3.9"
 pyyaml = "^6.0.1"
 beautifulsoup4 = "^4.11"
 requests =  "^2.28.0"
-"Mastodon.py" = "1.8.1"
 python-slugify = "^7.0.0"
 validators = "^0.22.0"
 feedparser = "^6.0.10"

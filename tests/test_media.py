@@ -1,4 +1,4 @@
-from pyxavi.media import Media
+from pyxavi import Media
 
 FIXTURES = [
     ["<a><p src=\"image_1.png\">whatever</p>", None, None],

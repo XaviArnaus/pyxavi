@@ -1,4 +1,4 @@
-from pyxavi.network import Network, EXTERNAL_SERVICE_IPv4, EXTERNAL_SERVICE_IPv6
+from pyxavi import Network, EXTERNAL_SERVICE_IPv4, EXTERNAL_SERVICE_IPv6
 from unittest.mock import Mock, patch, call
 import pytest
 import logging

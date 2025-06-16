@@ -94,7 +94,7 @@ class Url:
         html = bs4(raw, features="html.parser")
 
         # The "link" tags that are rel="alternate" may contain the feed
-        feed_urls = html.findAll("link", rel="alternate")
+        feed_urls = html.find_all("link", rel="alternate")
         print(feed_urls)
         if len(feed_urls) >= 1:
             for f in feed_urls:
@@ -117,7 +117,7 @@ class Url:
             # In case we don't
             #
             # Search for "a" tags in the body
-            atags = html.findAll("a")
+            atags = html.find_all("a")
             for a in atags:
                 href = a.get("href", None)
                 # If we have a href and contains any "feed" text and

@@ -1,5 +1,4 @@
-from pyxavi.storage import Storage
-from pyxavi.dictionary import Dictionary
+from pyxavi import Dictionary, Storage
 import os
 
 
