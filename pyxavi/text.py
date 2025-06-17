@@ -1,6 +1,7 @@
 import emoji
 import re
 
+
 class Text:
 
     def remove_emojis(text: str) -> str:
