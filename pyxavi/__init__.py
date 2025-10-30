@@ -11,3 +11,5 @@ from .queue_stack import Queue, QueueItemProtocol, SimpleQueueItem  # noqa: F401
 from .janitor import Janitor  # noqa: F401
 from .network import Network, EXTERNAL_SERVICE_IPv4, EXTERNAL_SERVICE_IPv6  # noqa: F401
 from .url import Url  # noqa: F401
+from .stopwatch import Stopwatch  # noqa: F401
+from .text import Text  # noqa: F401
