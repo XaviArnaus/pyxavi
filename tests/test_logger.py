@@ -38,8 +38,7 @@ CONFIG = {
             }
         },
         "stdout": {
-            "active": True,
-            "multiprocess": False
+            "active": True, "multiprocess": False
         }
     }
 }
@@ -218,6 +217,7 @@ def test_logger_both_stdout_and_file_default_no_rotate():
         encoding=CONFIG["logger"]["file"]["encoding"]
     )
 
+
 def test_logger_both_stdout_and_file_default_no_rotate_with_multiprocess(monkeypatch):
 
     CONFIG["logger"]["stdout"]["active"] = True
@@ -234,7 +234,9 @@ def test_logger_both_stdout_and_file_default_no_rotate_with_multiprocess(monkeyp
     mock_install_mp_handler = Mock()
     with patch.object(logging, "basicConfig", new=mock_logging_basic_config):
         with patch.object(PIDFileHandler, "__init__", new=mock_file_handler_init):
-            with patch.object(multiprocessing_logging, "install_mp_handler", new=mock_install_mp_handler):
+            with patch.object(multiprocessing_logging,
+                              "install_mp_handler",
+                              new=mock_install_mp_handler):
                 _ = Logger(config)
 
     call_arguments = mock_logging_basic_config.mock_calls[0][2]
@@ -277,6 +279,7 @@ def test_logger_file_default_with_rotate():
                                  "%H:%M:%S").time(),
     )
 
+
 def test_logger_file_default_with_rotate_and_multiprocess():
 
     CONFIG["logger"]["stdout"]["active"] = False
@@ -306,6 +309,7 @@ def test_logger_file_default_with_rotate_and_multiprocess():
         atTime=datetime.strptime(CONFIG["logger"]["file"]["rotate"]["at_time"],
                                  "%H:%M:%S").time(),
     )
+
 
 def test_logger_file_default_with_rotate_UTC():
 

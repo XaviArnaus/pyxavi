@@ -289,7 +289,7 @@ class Logger:
             if self._logger_config.get("file.rotate.active"):
                 class_handler = PIDTimedRotateFileHandler \
                     if self._logger_config.get("file.multiprocess") \
-                        else TimedRotatingFileHandler
+                    else TimedRotatingFileHandler
                 self._handlers.append(
                     class_handler(
                         filename=self._logger_config.get("file.filename"),
@@ -303,7 +303,7 @@ class Logger:
             else:
                 class_handler = PIDFileHandler \
                     if self._logger_config.get("file.multiprocess") \
-                        else logging.FileHandler
+                    else logging.FileHandler
                 self._handlers.append(
                     class_handler(
                         filename=self._logger_config.get("file.filename"),
@@ -324,24 +324,36 @@ class Logger:
     def get_logger(self) -> OriginalLogger:
         return self._logger
 
+
 class PIDTimedRotateFileHandler(TimedRotatingFileHandler):
 
-    def __init__(self, filename, when='h', interval=1, backupCount=0,
-                 encoding=None, delay=False, utc=False, atTime=None,
-                 errors=None):
+    def __init__(
+        self,
+        filename,
+        when='h',
+        interval=1,
+        backupCount=0,
+        encoding=None,
+        delay=False,
+        utc=False,
+        atTime=None,
+        errors=None
+    ):
         filename = self._append_pid_to_filename(filename)
         super(PIDTimedRotateFileHandler, self).__init__(
-                        filename=filename,
-                        when=when,
-                        backupCount=backupCount,
-                        encoding=encoding,
-                        utc=utc,
-                        atTime=atTime)
+            filename=filename,
+            when=when,
+            backupCount=backupCount,
+            encoding=encoding,
+            utc=utc,
+            atTime=atTime
+        )
 
     def _append_pid_to_filename(self, filename):
         pid = os.getpid()
         path, extension = os.path.splitext(filename)
         return '{0}-{1}{2}'.format(path, pid, extension)
+
 
 class PIDFileHandler(logging.FileHandler):
 
