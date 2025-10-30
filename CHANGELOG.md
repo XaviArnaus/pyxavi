@@ -1,10 +1,15 @@
 # Changelog
 
-## [v1.1.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.1.0) - 2025-06-16
+## [v1.1.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.1.0) - 2025-10-30
 
 ### Added
 
 - New `Stopwatch` and `Text` classes ([#52](https://github.com/XaviArnaus/pyxavi/pull/52))
+
+### Changed
+
+- Added multiprocess support for Logger into file and stdout ([#53](https://github.com/XaviArnaus/pyxavi/pull/53))
+- Update some tooling version
 
 ## [v1.0.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.0.0) - 2025-06-16
 
