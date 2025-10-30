@@ -1,11 +1,12 @@
 from unittest.mock import patch, Mock
-from pyxavi import Config, Logger
+from pyxavi import Config, Logger, PIDFileHandler, PIDTimedRotateFileHandler
 from logging.handlers import TimedRotatingFileHandler
 from datetime import datetime, time
 import logging
 import copy
 import pytest
 import yaml
+import multiprocessing_logging
 
 CONFIG_OLD = {
     "logger": {
@@ -25,6 +26,7 @@ CONFIG = {
         "name": "logger_test",
         "file": {
             "active": False,
+            "multiprocess": False,
             "filename": "test.log",
             "encoding": "UTF-8",
             "rotate": {
@@ -36,7 +38,7 @@ CONFIG = {
             }
         },
         "stdout": {
-            "active": True
+            "active": True, "multiprocess": False
         }
     }
 }
@@ -216,6 +218,38 @@ def test_logger_both_stdout_and_file_default_no_rotate():
     )
 
 
+def test_logger_both_stdout_and_file_default_no_rotate_with_multiprocess(monkeypatch):
+
+    CONFIG["logger"]["stdout"]["active"] = True
+    CONFIG["logger"]["stdout"]["multiprocess"] = True
+    CONFIG["logger"]["file"]["active"] = True
+    CONFIG["logger"]["file"]["multiprocess"] = True
+    config = Config(params=CONFIG)
+
+    mock_logging_basic_config = Mock()
+    mock_file_handler = Mock()
+    mock_file_handler.__class__ = PIDFileHandler
+    mock_file_handler_init = Mock()
+    mock_file_handler_init.return_value = None
+    mock_install_mp_handler = Mock()
+    with patch.object(logging, "basicConfig", new=mock_logging_basic_config):
+        with patch.object(PIDFileHandler, "__init__", new=mock_file_handler_init):
+            with patch.object(multiprocessing_logging,
+                              "install_mp_handler",
+                              new=mock_install_mp_handler):
+                _ = Logger(config)
+
+    call_arguments = mock_logging_basic_config.mock_calls[0][2]
+    assert len(call_arguments["handlers"]) == 2
+    assert isinstance(call_arguments["handlers"][0], PIDFileHandler)
+    mock_file_handler_init.assert_called_once_with(
+        filename=CONFIG["logger"]["file"]["filename"],
+        mode="a",
+        encoding=CONFIG["logger"]["file"]["encoding"]
+    )
+    mock_install_mp_handler.assert_called_once()
+
+
 def test_logger_file_default_with_rotate():
 
     CONFIG["logger"]["stdout"]["active"] = False
@@ -235,6 +269,37 @@ def test_logger_file_default_with_rotate():
     call_arguments = mock_logging_basic_config.mock_calls[0][2]
     assert len(call_arguments["handlers"]) == 1
     assert isinstance(call_arguments["handlers"][0], TimedRotatingFileHandler)
+    mock_file_handler_init.assert_called_once_with(
+        filename=CONFIG["logger"]["file"]["filename"],
+        when=CONFIG["logger"]["file"]["rotate"]["when"],
+        backupCount=CONFIG["logger"]["file"]["rotate"]["backup_count"],
+        encoding=CONFIG["logger"]["file"]["encoding"],
+        utc=False,
+        atTime=datetime.strptime(CONFIG["logger"]["file"]["rotate"]["at_time"],
+                                 "%H:%M:%S").time(),
+    )
+
+
+def test_logger_file_default_with_rotate_and_multiprocess():
+
+    CONFIG["logger"]["stdout"]["active"] = False
+    CONFIG["logger"]["file"]["active"] = True
+    CONFIG["logger"]["file"]["multiprocess"] = True
+    CONFIG["logger"]["file"]["rotate"]["active"] = True
+    config = Config(params=CONFIG)
+
+    mock_logging_basic_config = Mock()
+    mock_file_handler = Mock()
+    mock_file_handler.__class__ = PIDTimedRotateFileHandler
+    mock_file_handler_init = Mock()
+    mock_file_handler_init.return_value = None
+    with patch.object(logging, "basicConfig", new=mock_logging_basic_config):
+        with patch.object(PIDTimedRotateFileHandler, "__init__", new=mock_file_handler_init):
+            _ = Logger(config)
+
+    call_arguments = mock_logging_basic_config.mock_calls[0][2]
+    assert len(call_arguments["handlers"]) == 1
+    assert isinstance(call_arguments["handlers"][0], PIDTimedRotateFileHandler)
     mock_file_handler_init.assert_called_once_with(
         filename=CONFIG["logger"]["file"]["filename"],
         when=CONFIG["logger"]["file"]["rotate"]["when"],

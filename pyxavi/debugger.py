@@ -92,7 +92,7 @@ def dump(
 
     # The "primitives" dump
     if not needs_recursivity(what):
-        if type(what) == str:
+        if type(what) is str:
             value = f"{COLOR.STR}\"{what}\"{COLOR.END}"
         elif type(what) in (int, float):
             value = f"{COLOR.INT}{what}{COLOR.END}"

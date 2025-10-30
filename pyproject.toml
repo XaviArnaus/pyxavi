@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyxavi"
-version = "1.0.0"
+version = "1.1.0"
 description = "Set of utilities to assist on simple Python projects"
 authors = ["Xavier Arnaus <xavi@arnaus.net>"]
 readme = "README.md"
@@ -25,13 +25,14 @@ requests =  "^2.28.0"
 python-slugify = "^7.0.0"
 validators = "^0.22.0"
 feedparser = "^6.0.10"
+multiprocessing-logging = "^0.3.4"
 emoji = "^2.14.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0"
-yapf = "^0.32.0"
+yapf = "^0.43.0"
 toml = "^0.10.2"
-flake8 = "^4.0.1"
+flake8 = "^7.3.0"
 pytest-cov = "^3.0.0"
 freezegun = "^1.2.1"
 
