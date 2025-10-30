@@ -1,9 +1,11 @@
+# Be careful. Because we internally reuse classes (terminal color, dd, dictionary)
+# The order matters, otherwise we're introducing circular import bugs
 from .terminal_color import TerminalColor
+from .debugger import dd, traceback, full_stack
 from .dictionary import Dictionary
 from .storage import Storage
 from .config import Config
-from .logger import Logger
-from .debugger import dd, traceback, full_stack
+from .logger import Logger, PIDTimedRotateFileHandler, PIDFileHandler
 from .media import Media
 from .queue_stack import Queue, QueueItemProtocol, SimpleQueueItem
 from .janitor import Janitor

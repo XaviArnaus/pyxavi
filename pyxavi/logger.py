@@ -3,6 +3,7 @@ from logging.handlers import TimedRotatingFileHandler
 from datetime import datetime
 from logging import Logger as OriginalLogger
 import logging
+import multiprocessing_logging
 import sys
 import os
 
@@ -32,6 +33,7 @@ class Logger:
         "format": "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s",
         "file": {
             "active": False,
+            "multiprocess": False,
             "filename": "debug.log",
             "encoding": "UTF-8",
             "rotate": {
@@ -43,7 +45,8 @@ class Logger:
             },
         },
         "stdout": {
-            "active": False
+            "active": False,
+            "multiprocess": False,
         }
     }
 
@@ -71,6 +74,10 @@ class Logger:
             # Declare handlers
             handlers=self._handlers
         )
+        # Make it available for multiprocessing
+        if self._logger_config.get("stdout.multiprocess"):
+            multiprocessing_logging.install_mp_handler()
+
         # Define your own logger name
         self._logger = logging.getLogger(self._logger_config.get("name"))
 
@@ -108,11 +115,12 @@ class Logger:
                     ),
                     "format": new_config_values.get(
                         "logger.format", old_config_values.get("logger.format")
-                    ),  # File logging
+                    ),
                     "file": {
                         "active": new_config_values.get(
                             "logger.file.active", old_config_values.get("logger.file.active")
                         ),
+                        "multiprocess": new_config_values.get("logger.file.multiprocess"),
                         "filename": new_config_values.get(
                             "logger.file.filename",
                             old_config_values.get("logger.file.filename")
@@ -131,7 +139,8 @@ class Logger:
                         "active": new_config_values.get(
                             "logger.stdout.active",
                             old_config_values.get("logger.stdout.active")
-                        )
+                        ),
+                        "multiprocess": new_config_values.get("logger.stdout.multiprocess"),
                     }
                 }
             }
@@ -256,6 +265,7 @@ class Logger:
                     "format": config.get("logger.format"),  # File logging
                     "file": {
                         "active": config.get("logger.file.active"),
+                        "multiprocess": config.get("logger.file.multiprocess"),
                         "filename": filename,
                         "encoding": config.get("logger.file.encoding"),
                         "rotate": {
@@ -267,7 +277,8 @@ class Logger:
                         },
                     },  # Standard output logging
                     "stdout": {
-                        "active": config.get("logger.stdout.active")
+                        "active": config.get("logger.stdout.active"),
+                        "multiprocess": config.get("logger.stdout.multiprocess"),
                     }
                 }
             }
@@ -276,8 +287,11 @@ class Logger:
     def _set_handlers(self) -> None:
         if self._logger_config.get("file.active"):
             if self._logger_config.get("file.rotate.active"):
+                class_handler = PIDTimedRotateFileHandler \
+                    if self._logger_config.get("file.multiprocess") \
+                        else TimedRotatingFileHandler
                 self._handlers.append(
-                    TimedRotatingFileHandler(
+                    class_handler(
                         filename=self._logger_config.get("file.filename"),
                         when=self._logger_config.get("file.rotate.when"),
                         backupCount=self._logger_config.get("file.rotate.backup_count"),
@@ -287,8 +301,11 @@ class Logger:
                     )
                 )
             else:
+                class_handler = PIDFileHandler \
+                    if self._logger_config.get("file.multiprocess") \
+                        else logging.FileHandler
                 self._handlers.append(
-                    logging.FileHandler(
+                    class_handler(
                         filename=self._logger_config.get("file.filename"),
                         mode='a',
                         encoding=self._logger_config.get("file.encoding")
@@ -306,3 +323,33 @@ class Logger:
 
     def get_logger(self) -> OriginalLogger:
         return self._logger
+
+class PIDTimedRotateFileHandler(TimedRotatingFileHandler):
+
+    def __init__(self, filename, when='h', interval=1, backupCount=0,
+                 encoding=None, delay=False, utc=False, atTime=None,
+                 errors=None):
+        filename = self._append_pid_to_filename(filename)
+        super(PIDTimedRotateFileHandler, self).__init__(
+                        filename=filename,
+                        when=when,
+                        backupCount=backupCount,
+                        encoding=encoding,
+                        utc=utc,
+                        atTime=atTime)
+
+    def _append_pid_to_filename(self, filename):
+        pid = os.getpid()
+        path, extension = os.path.splitext(filename)
+        return '{0}-{1}{2}'.format(path, pid, extension)
+
+class PIDFileHandler(logging.FileHandler):
+
+    def __init__(self, filename, mode='a', encoding=None, delay=0):
+        filename = self._append_pid_to_filename(filename)
+        super(PIDFileHandler, self).__init__(filename, mode, encoding, delay)
+
+    def _append_pid_to_filename(self, filename):
+        pid = os.getpid()
+        path, extension = os.path.splitext(filename)
+        return '{0}-{1}{2}'.format(path, pid, extension)
