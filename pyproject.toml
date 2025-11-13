@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyxavi"
-version = "1.1.0"
+version = "1.2.0"
 description = "Set of utilities to assist on simple Python projects"
 authors = ["Xavier Arnaus <xavi@arnaus.net>"]
 readme = "README.md"
