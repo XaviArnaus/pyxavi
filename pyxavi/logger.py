@@ -120,7 +120,7 @@ class Logger:
             # Declare handlers
             handlers=self._handlers
         )
-        
+
         # Define your own logger name
         self._logger = logging.getLogger(self._logger_config.get("name"))
 
@@ -190,11 +190,15 @@ class Logger:
                         "multiprocess": new_config_values.get("logger.stdout.multiprocess"),
                         "colorize": {
                             "active": new_config_values.get("logger.stdout.colorize.active"),
-                            "only_the_field": new_config_values.get("logger.stdout.colorize.only_the_field"),
+                            "only_the_field": new_config_values.
+                            get("logger.stdout.colorize.only_the_field"),
                             "profile": new_config_values.get("logger.stdout.colorize.profile"),
-                            "by_level": new_config_values.get("logger.stdout.colorize.by_level"),
-                            "by_process": new_config_values.get("logger.stdout.colorize.by_process"),
-                            "by_thread": new_config_values.get("logger.stdout.colorize.by_thread"),
+                            "by_level": new_config_values.
+                            get("logger.stdout.colorize.by_level"),
+                            "by_process": new_config_values.
+                            get("logger.stdout.colorize.by_process"),
+                            "by_thread": new_config_values.
+                            get("logger.stdout.colorize.by_thread"),
                             "support": new_config_values.get("logger.stdout.colorize.support"),
                             "colors": new_config_values.get("logger.stdout.colorize.colors")
                         },
@@ -320,8 +324,7 @@ class Logger:
                     # Common parameters
                     "name": config.get("logger.name"),
                     "loglevel": config.get("logger.loglevel"),
-                    "format": config.get("logger.format"),
-                    # File logging
+                    "format": config.get("logger.format"),  # File logging
                     "file": {
                         "active": config.get("logger.file.active"),
                         "multiprocess": config.get("logger.file.multiprocess"),
@@ -334,14 +337,14 @@ class Logger:
                             "utc": config.get("logger.file.rotate.utc"),
                             "at_time": config.get("logger.file.rotate.at_time")
                         },
-                    },
-                    # Standard output logging
+                    },  # Standard output logging
                     "stdout": {
                         "active": config.get("logger.stdout.active"),
                         "multiprocess": config.get("logger.stdout.multiprocess"),
                         "colorize": {
                             "active": config.get("logger.stdout.colorize.active"),
-                            "only_the_field": config.get("logger.stdout.colorize.only_the_field"),
+                            "only_the_field": config.
+                            get("logger.stdout.colorize.only_the_field"),
                             "profile": config.get("logger.stdout.colorize.profile"),
                             "by_level": config.get("logger.stdout.colorize.by_level"),
                             "by_process": config.get("logger.stdout.colorize.by_process"),
@@ -360,17 +363,27 @@ class Logger:
                                 "CYAN": config.get("logger.stdout.colorize.colors.CYAN"),
                                 "WHITE": config.get("logger.stdout.colorize.colors.WHITE"),
                                 "ORANGE": config.get("logger.stdout.colorize.colors.ORANGE"),
-                                "BLACK_BRIGHT": config.get("logger.stdout.colorize.colors.BLACK_BRIGHT"),
-                                "RED_BRIGHT": config.get("logger.stdout.colorize.colors.RED_BRIGHT"),
-                                "GREEN_BRIGHT": config.get("logger.stdout.colorize.colors.GREEN_BRIGHT"),
-                                "YELLOW_BRIGHT": config.get("logger.stdout.colorize.colors.YELLOW_BRIGHT"),
-                                "BLUE_BRIGHT": config.get("logger.stdout.colorize.colors.BLUE_BRIGHT"),
-                                "MAGENTA_BRIGHT": config.get("logger.stdout.colorize.colors.MAGENTA_BRIGHT"),
-                                "CYAN_BRIGHT": config.get("logger.stdout.colorize.colors.CYAN_BRIGHT"),
-                                "WHITE_BRIGHT": config.get("logger.stdout.colorize.colors.WHITE_BRIGHT"),
-                                "ORANGE_BRIGHT": config.get("logger.stdout.colorize.colors.ORANGE_BRIGHT"),
+                                "BLACK_BRIGHT": config.
+                                get("logger.stdout.colorize.colors.BLACK_BRIGHT"),
+                                "RED_BRIGHT": config.
+                                get("logger.stdout.colorize.colors.RED_BRIGHT"),
+                                "GREEN_BRIGHT": config.
+                                get("logger.stdout.colorize.colors.GREEN_BRIGHT"),
+                                "YELLOW_BRIGHT": config.
+                                get("logger.stdout.colorize.colors.YELLOW_BRIGHT"),
+                                "BLUE_BRIGHT": config.
+                                get("logger.stdout.colorize.colors.BLUE_BRIGHT"),
+                                "MAGENTA_BRIGHT": config.
+                                get("logger.stdout.colorize.colors.MAGENTA_BRIGHT"),
+                                "CYAN_BRIGHT": config.
+                                get("logger.stdout.colorize.colors.CYAN_BRIGHT"),
+                                "WHITE_BRIGHT": config.
+                                get("logger.stdout.colorize.colors.WHITE_BRIGHT"),
+                                "ORANGE_BRIGHT": config.
+                                get("logger.stdout.colorize.colors.ORANGE_BRIGHT"),
                                 "BOLD": config.get("logger.stdout.colorize.colors.BOLD"),
-                                "UNDERLINE": config.get("logger.stdout.colorize.colors.UNDERLINE"),
+                                "UNDERLINE": config.
+                                get("logger.stdout.colorize.colors.UNDERLINE"),
                                 "END": config.get("logger.stdout.colorize.colors.END"),
                             }
                         },
@@ -422,6 +435,7 @@ class Logger:
     def get_logger(self) -> OriginalLogger:
         return self._logger
 
+
 class ColorFormatter(logging.Formatter):
 
     colors = Logger.DEFAULTS["stdout"]["colorize"]["colors"]
@@ -452,13 +466,13 @@ class ColorFormatter(logging.Formatter):
             self.profile = config.get("stdout.colorize.profile", self.profile)
             self.only_the_field = config.get("stdout.colorize.only_the_field", True)
             self.alter_format_by_profile(config)
-    
+
     def load_colors_from_config(self, config: Config):
         colors: dict = config.get("stdout.colorize.colors", self.colors)
         for name, color in colors.items():
             colors[name] = color.encode('utf-8').decode('unicode-escape')
         return colors
-    
+
     def alter_format_by_profile(self, config: Config):
 
         profile = config.get("stdout.colorize.profile", "by_level")
@@ -467,27 +481,36 @@ class ColorFormatter(logging.Formatter):
         if profile == "by_level":
             self.FORMATS = {
                 logging.DEBUG: self.fmt.format(
-                    self.colors[config.get("stdout.colorize.by_level.DEBUG", "WHITE")], self.colors["END"]
+                    self.colors[config.get("stdout.colorize.by_level.DEBUG", "WHITE")],
+                    self.colors["END"]
                 ),
                 logging.INFO: self.fmt.format(
-                    self.colors[config.get("stdout.colorize.by_level.INFO", "BLUE")], self.colors["END"]
+                    self.colors[config.get("stdout.colorize.by_level.INFO", "BLUE")],
+                    self.colors["END"]
                 ),
                 logging.WARNING: self.fmt.format(
-                    self.colors[config.get("stdout.colorize.by_level.WARNING", "ORANGE")], self.colors["END"]
+                    self.colors[config.get("stdout.colorize.by_level.WARNING", "ORANGE")],
+                    self.colors["END"]
                 ),
                 logging.ERROR: self.fmt.format(
-                    self.colors[config.get("stdout.colorize.by_level.ERROR", "RED")], self.colors["END"]
+                    self.colors[config.get("stdout.colorize.by_level.ERROR", "RED")],
+                    self.colors["END"]
                 ),
                 logging.CRITICAL: self.fmt.format(
-                    self.colors[config.get("stdout.colorize.by_level.CRITICAL", "RED_BRIGHT")], self.colors["END"]
+                    self.colors[config.get("stdout.colorize.by_level.CRITICAL", "RED_BRIGHT")],
+                    self.colors["END"]
                 ),
             }
         elif profile == "by_process":
-            for process_name, color in config.get("stdout.colorize.by_process",{}).items():
-                self.FORMATS[process_name] = self.fmt.format(self.colors[color], self.colors["END"])
+            for process_name, color in config.get("stdout.colorize.by_process", {}).items():
+                self.FORMATS[process_name] = self.fmt.format(
+                    self.colors[color], self.colors["END"]
+                )
         elif profile == "by_thread":
-            for thread_name, color in config.get("stdout.colorize.by_thread",{}).items():
-                self.FORMATS[thread_name] = self.fmt.format(self.colors[color], self.colors["END"])
+            for thread_name, color in config.get("stdout.colorize.by_thread", {}).items():
+                self.FORMATS[thread_name] = self.fmt.format(
+                    self.colors[color], self.colors["END"]
+                )
 
     def replace_format_string_with_placeholders(self, profile: str):
         if self.only_the_field:
@@ -495,7 +518,7 @@ class ColorFormatter(logging.Formatter):
         else:
             pattern = self.pattern_whole_line
         self.fmt = pattern.sub(r"{}\1{}", self.fmt)
-    
+
     def clean_process_or_thread_name(self, name: str) -> str:
         return re.sub(r'[^a-zA-Z0-9](.)*', '', name)
 
