@@ -1,5 +1,12 @@
 # Changelog
 
+## [v1.2.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.2.0) - 2025-11-13
+
+### Changed
+
+- Added color support for Logger into stdout ([#54](https://github.com/XaviArnaus/pyxavi/pull/54)). Missing Unit Tests for it.
+
+
 ## [v1.1.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.1.0) - 2025-10-30
 
 ### Added
