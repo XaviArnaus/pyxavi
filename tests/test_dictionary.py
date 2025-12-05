@@ -79,11 +79,9 @@ TEST_CASES = {
         },
     ],
     "2025-01-01": {
-        "00-00": "New Year",
-        "01:00": [
-            "New Year Party",
-            {"Fireworks": "Yes"}
-        ]
+        "00-00": "New Year", "01:00": ["New Year Party", {
+            "Fireworks": "Yes"
+        }]
     }
 }
 
@@ -245,7 +243,9 @@ def test_get(param_name, expected_result, slugify_param_name):
                 }, {
                     "g1": "x", "g2": "G2c", "g3": "G3c"
                 }
-            ], False),
+            ],
+            False
+        ),
         # Wildcards in the second and fourth level, which are a lists of dicts
         ("hhh.#.h3.#.hh3", "x", [{
             "hh3": "x"
@@ -263,7 +263,9 @@ def test_get(param_name, expected_result, slugify_param_name):
             "ii3": "x"
         }], False),
         # Slugified param name
-        ("2025/12/31.00:00", "Silvester", {"00-00": "Silvester"}, True)
+        ("2025/12/31.00:00", "Silvester", {
+            "00-00": "Silvester"
+        }, True)
     ]
 )
 def test_set(param_name, value, expected_result_parent, slugify_param_name):
@@ -272,11 +274,15 @@ def test_set(param_name, value, expected_result_parent, slugify_param_name):
 
     if expected_result_parent is False:
         with TestCase.assertRaises(instance, RuntimeError):
-            instance.set(param_name=param_name, value=value, slugify_param_name=slugify_param_name)
+            instance.set(
+                param_name=param_name, value=value, slugify_param_name=slugify_param_name
+            )
     else:
         instance.set(param_name=param_name, value=value, slugify_param_name=slugify_param_name)
-        
-        result_parent = instance.get_parent(param_name=param_name, slugify_param_name=slugify_param_name)
+
+        result_parent = instance.get_parent(
+            param_name=param_name, slugify_param_name=slugify_param_name
+        )
         dd(result_parent)
         _compare_results(result_parent, expected_result_parent)
 
@@ -382,18 +388,26 @@ def test_merge(param_name, origin, expected_result_parent):
 @pytest.mark.parametrize(
     argnames=('param_name', 'expected_result', 'slugify_param_name'),
     argvalues=[
-        ("foo", True, False), ("foo.bar", True, False), ("foo.bar5", False, False), ("foo.foo2", True, False),
-        ("foo.foo2.bar2", True, False), ("foo.foo2.bar2.nope", False, False),
-        ("foo.foo2.bar2.nope.nope2", False, False), ("food", False, False), ("void", True, False),
+        ("foo", True, False),
+        ("foo.bar", True, False),
+        ("foo.bar5", False, False),
+        ("foo.foo2", True, False),
+        ("foo.foo2.bar2", True, False),
+        ("foo.foo2.bar2.nope", False, False),
+        ("foo.foo2.bar2.nope.nope2", False, False),
+        ("food", False, False),
+        ("void", True, False),
         ("2025/01/01", True, True),
-        
     ]
 )
 def test_key_exists(param_name, expected_result, slugify_param_name):
 
     instance = initialize_instance()
 
-    assert instance.key_exists(param_name=param_name, slugify_param_name=slugify_param_name) == expected_result
+    assert instance.key_exists(
+        param_name=param_name, slugify_param_name=slugify_param_name
+    ) == expected_result
+
 
 @pytest.mark.parametrize(
     argnames=('param_name', 'expected_result', 'slugify_param_name'),
@@ -414,7 +428,9 @@ def test_get_parent(param_name, expected_result, slugify_param_name):
 
     instance = initialize_instance()
 
-    assert instance.get_parent(param_name=param_name, slugify_param_name=slugify_param_name) == expected_result
+    assert instance.get_parent(
+        param_name=param_name, slugify_param_name=slugify_param_name
+    ) == expected_result
 
 
 @pytest.mark.parametrize(
@@ -454,15 +470,21 @@ def test_delete(param_name, expected_delete, expected_result_parent, slugify_par
 
     instance = initialize_instance()
 
-    assert instance.delete(param_name=param_name, slugify_param_name=slugify_param_name) == expected_delete
+    assert instance.delete(
+        param_name=param_name, slugify_param_name=slugify_param_name
+    ) == expected_delete
 
     if expected_result_parent is not None:
         # One can't check if the item in the list is deleted by checking the key,
         #   as the rest of the items move in front.
         #   Deleting index 0 will not get rid of index 0, 1 becomes 0.
-        assert instance.get_parent(param_name=param_name, slugify_param_name=slugify_param_name) == expected_result_parent
+        assert instance.get_parent(
+            param_name=param_name, slugify_param_name=slugify_param_name
+        ) == expected_result_parent
     else:
-        assert instance.key_exists(param_name=param_name, slugify_param_name=slugify_param_name) is False
+        assert instance.key_exists(
+            param_name=param_name, slugify_param_name=slugify_param_name
+        ) is False
 
 
 @pytest.mark.parametrize(
@@ -522,7 +544,8 @@ def test_initialise_recursive(param_name, is_exception):
     argnames=('param_name', 'expected_result', 'slugify_param_name'),
     argvalues=[
         (
-            None, [
+            None,
+            [
                 "foo",
                 "que",
                 "void",
@@ -536,18 +559,31 @@ def test_initialise_recursive(param_name, is_exception):
                 "hhh",
                 "iii",
                 "2025-01-01"
-            ], False
-        ), ("ccc", ["ccc1", "ccc2", "ccc3"], False), ("ddd", ["ddd1", "ddd2", "ddd3"], False),
-        ("eee.e_set", [0, 1, 2], False), ("eee.e_tuple", [0, 1, 2], False), ("eee.e_list", [0, 1, 2], False),
-        ("fff.fff", [0, 1, 2], False), ("aaa", [0, 1, 2], False), ("aaa.0", None, False), ("aaa.5", None, False),
-        ("bbb.b2.1", ["bb2b1"], False), ("bbb.b2.5.bb2b1", None, False), ("2025/01/01", ["00-00", "01:00"], True),
+            ],
+            False
+        ),
+        ("ccc", ["ccc1", "ccc2", "ccc3"], False),
+        ("ddd", ["ddd1", "ddd2", "ddd3"], False),
+        ("eee.e_set", [0, 1, 2], False),
+        ("eee.e_tuple", [0, 1, 2], False),
+        ("eee.e_list", [0, 1, 2], False),
+        ("fff.fff", [0, 1, 2], False),
+        ("aaa", [0, 1, 2], False),
+        ("aaa.0", None, False),
+        ("aaa.5", None, False),
+        ("bbb.b2.1", ["bb2b1"], False),
+        ("bbb.b2.5.bb2b1", None, False),
+        ("2025/01/01", ["00-00", "01:00"], True),
     ]
 )
 def test_get_keys_in(param_name, expected_result, slugify_param_name):
 
     instance = initialize_instance()
 
-    assert instance.get_keys_in(param_name=param_name, slugify_param_name=slugify_param_name) == expected_result
+    assert instance.get_keys_in(
+        param_name=param_name, slugify_param_name=slugify_param_name
+    ) == expected_result
+
 
 def test_to_dict():
 
@@ -588,7 +624,10 @@ def test_resolve_wildcards(param_name, expected_result, slugify_param_name):
 
     instance = initialize_instance()
 
-    assert instance.resolve_wildcards(param_name=param_name, slugify_param_name=slugify_param_name) == expected_result
+    assert instance.resolve_wildcards(
+        param_name=param_name, slugify_param_name=slugify_param_name
+    ) == expected_result
+
 
 @pytest.mark.parametrize(
     argnames=('param_name', 'expected_result', 'slugify_param_name'),
@@ -606,7 +645,9 @@ def test_last_key(param_name, expected_result, slugify_param_name):
 
     instance = initialize_instance()
 
-    assert instance.get_last_key(param_name=param_name, slugify_param_name=slugify_param_name) == expected_result
+    assert instance.get_last_key(
+        param_name=param_name, slugify_param_name=slugify_param_name
+    ) == expected_result
 
 
 @pytest.mark.parametrize(

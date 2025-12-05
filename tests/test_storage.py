@@ -1,6 +1,5 @@
 from unittest.mock import patch, mock_open
 from pyxavi import Storage
-from unittest import TestCase
 import pytest
 
 FILE = {

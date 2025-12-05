@@ -2,8 +2,6 @@ from __future__ import annotations
 from slugify import slugify
 import copy
 
-from pyxavi.debugger import dd
-
 PATH_SEPARATOR_CHAR = "."
 LIST_HORIZONTAL_RESOLVING_CHAR = "#"
 
@@ -50,7 +48,9 @@ class Dictionary:
             return element[1:].isdecimal()
         return element.isdecimal()
 
-    def get(self, param_name: str = "", default_value: any = None, slugify_param_name=False) -> any:
+    def get(
+        self, param_name: str = "", default_value: any = None, slugify_param_name=False
+    ) -> any:
         """
         Returns the value found in the given param_name path,
         otherwise default_value is returned
@@ -139,7 +139,7 @@ class Dictionary:
                     )
             elif isinstance(dictionary, dict):
                 # The dictionary argument is a dict
-                
+
                 # Now, the key may not exists.
                 if pieces[0] not in dictionary:
                     # This is a set(), if the key doesn't exist, we create it as an empty dict
@@ -205,7 +205,7 @@ class Dictionary:
         """
         if param_name is None:
             raise RuntimeError("Params must have a name")
-        
+
         param_name = self._slugify_param_name_if_needed(param_name, slugify_param_name)
 
         if Dictionary.needs_resolving(param_name=param_name):
@@ -242,7 +242,7 @@ class Dictionary:
         Returns the last key of the param_name
         """
         param_name = self._slugify_param_name_if_needed(param_name, slugify_param_name)
-        
+
         return param_name.split(self._separator)[-1]\
             if param_name.find(self._separator) > 0 else param_name
 
@@ -343,7 +343,9 @@ class Dictionary:
         """Shortcut to get_all()"""
         return self.get_all()
 
-    def merge(self, origin: Dictionary, param_name: str = None, slugify_param_name=False) -> None:
+    def merge(
+        self, origin: Dictionary, param_name: str = None, slugify_param_name=False
+    ) -> None:
         """
         Takes a given Dictionary object and merges it into the current object
             as the given param_name (or at root if None given)
@@ -527,8 +529,10 @@ class Dictionary:
             returning_stack.append(self.get_parent(param_name=path))
 
         return returning_stack
-    
-    def _slugify_param_name_if_needed(self, param_name: str, slugify_param_name: bool = False) -> str:
+
+    def _slugify_param_name_if_needed(
+        self, param_name: str, slugify_param_name: bool = False
+    ) -> str:
         """
         Slugifies all the parts from the parameter name.
 
@@ -537,10 +541,12 @@ class Dictionary:
         """
         if not slugify_param_name:
             return param_name
-        
+
         if not Dictionary.needs_resolving(param_name):
-            return self._separator.join([slugify(part) for part in param_name.split(self._separator)])
-        
+            return self._separator.join(
+                [slugify(part) for part in param_name.split(self._separator)]
+            )
+
         # We have horizontal resolving chars, so we need to respect them
         portions = param_name.split(LIST_HORIZONTAL_RESOLVING_CHAR)
         portions = [
@@ -548,5 +554,3 @@ class Dictionary:
             for portion in portions
         ]
         return LIST_HORIZONTAL_RESOLVING_CHAR.join(portions)
-
-        
