@@ -1,5 +1,15 @@
 # Changelog
 
+## [v1.3.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.3.0) - 2025-12-05
+
+### Added
+
+- Added slugified keys support in Dictionary ([#55](https://github.com/XaviArnaus/pyxavi/pull/55)).
+
+### Fixed
+
+- Fixed `set()` not creating defined missing keys ([#55](https://github.com/XaviArnaus/pyxavi/pull/55))
+
 ## [v1.2.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.2.0) - 2025-11-13
 
 ### Changed

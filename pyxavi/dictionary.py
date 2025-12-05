@@ -1,5 +1,8 @@
 from __future__ import annotations
+from slugify import slugify
 import copy
+
+from pyxavi.debugger import dd
 
 PATH_SEPARATOR_CHAR = "."
 LIST_HORIZONTAL_RESOLVING_CHAR = "#"
@@ -17,11 +20,18 @@ class Dictionary:
     - get_all
     - set
     - delete
+    - key_exists
 
     Plus some extra
     - get_keys
     - get_parent
+    - get_parent_path
+    - get_last_key
+    - to_dict
+    - merge
     - initialize_recursive
+    - resolve_wildcards
+    - needs_resolving
 
 
     :Authors:
@@ -40,13 +50,15 @@ class Dictionary:
             return element[1:].isdecimal()
         return element.isdecimal()
 
-    def get(self, param_name: str = "", default_value: any = None) -> any:
+    def get(self, param_name: str = "", default_value: any = None, slugify_param_name=False) -> any:
         """
         Returns the value found in the given param_name path,
         otherwise default_value is returned
 
         Accepts wildcards for the list indexes.
         """
+        param_name = self._slugify_param_name_if_needed(param_name, slugify_param_name)
+
         if Dictionary.needs_resolving(param_name=param_name):
             return self._get_horizontally(param_name=param_name, default_value=default_value)
 
@@ -105,7 +117,6 @@ class Dictionary:
         """
         if param_name.find(self._separator) > 0:
             pieces = param_name.split(self._separator)
-
             if self._is_int(pieces[0]):
                 item = int(pieces[0])
 
@@ -128,10 +139,17 @@ class Dictionary:
                     )
             elif isinstance(dictionary, dict):
                 # The dictionary argument is a dict
+                
+                # Now, the key may not exists.
                 if pieces[0] not in dictionary:
-                    raise RuntimeError(
-                        f"Dictionary key [{pieces[0]}] is unknown in [{dictionary}]"
-                    )
+                    # This is a set(), if the key doesn't exist, we create it as an empty dict
+                    # This should solve the issue of setting into non-existing root paths
+                    dictionary[pieces[0]] = {}
+
+                # if pieces[0] not in dictionary:
+                #     raise RuntimeError(
+                #         f"Dictionary key [{pieces[0]}] is unknown in [{dictionary}]"
+                #     )
 
                 self.__recursive_set(
                     param_name=self._separator.join(pieces[1:]),
@@ -170,7 +188,7 @@ class Dictionary:
                 else:
                     dictionary = {param_name: value}
 
-    def set(self, param_name: str, value: any = None) -> None:
+    def set(self, param_name: str, value: any = None, slugify_param_name=False) -> None:
         """
         Sets the given value into the given param_name path.
 
@@ -187,17 +205,21 @@ class Dictionary:
         """
         if param_name is None:
             raise RuntimeError("Params must have a name")
+        
+        param_name = self._slugify_param_name_if_needed(param_name, slugify_param_name)
 
         if Dictionary.needs_resolving(param_name=param_name):
             return self._set_horizontally(param_name=param_name, value=value)
 
         self.__recursive_set(param_name=param_name, value=value, dictionary=self._content)
 
-    def key_exists(self, param_name: str) -> bool:
+    def key_exists(self, param_name: str, slugify_param_name=False) -> bool:
         """
         Checks if the given param_name path exists,
         including the indexes inside the list ranges
         """
+        param_name = self._slugify_param_name_if_needed(param_name, slugify_param_name)
+
         key_to_search = self.get_last_key(param_name=param_name)
         parent_object = self.get_parent(param_name)
 
@@ -215,22 +237,33 @@ class Dictionary:
 
         return False
 
-    def get_last_key(self, param_name: str) -> str:
-        """Returns the last key of the param_name"""
+    def get_last_key(self, param_name: str, slugify_param_name=False) -> str:
+        """
+        Returns the last key of the param_name
+        """
+        param_name = self._slugify_param_name_if_needed(param_name, slugify_param_name)
+        
         return param_name.split(self._separator)[-1]\
             if param_name.find(self._separator) > 0 else param_name
 
-    def get_parent_path(self, param_name: str) -> str:
-        """Returns the all the path without the last key of the param_name"""
+    def get_parent_path(self, param_name: str, slugify_param_name=False) -> str:
+        """
+        Returns the all the path without the last key of the param_name
+        """
+        if slugify_param_name:
+            param_name = ".".join([slugify(part) for part in param_name.split(".")])
+
         return self._separator.join(param_name.split(self._separator)[:-1])\
             if param_name.find(self._separator) > 0 else None
 
-    def get_parent(self, param_name: str) -> dict:
+    def get_parent(self, param_name: str, slugify_param_name=False) -> dict:
         """
         Returns the parent object of the given param_name path
 
         Accepts wildcards for the list indexes.
         """
+        param_name = self._slugify_param_name_if_needed(param_name, slugify_param_name)
+
         if Dictionary.needs_resolving(param_name=param_name):
             return self._get_parent_horizontally(param_name=param_name)
 
@@ -241,8 +274,12 @@ class Dictionary:
         else:
             return self._content
 
-    def delete(self, param_name: str) -> None:
-        """Deletes the given param_name path key"""
+    def delete(self, param_name: str, slugify_param_name=False) -> None:
+        """
+        Deletes the given param_name path key
+        """
+        param_name = self._slugify_param_name_if_needed(param_name, slugify_param_name)
+
         if self.key_exists(param_name=param_name):
             parent = self.get_parent(param_name=param_name)
             key_to_delete = self.get_last_key(param_name=param_name)
@@ -255,13 +292,16 @@ class Dictionary:
         else:
             return False
 
-    def initialise_recursive(self, param_name: str) -> None:
+    def initialise_recursive(self, param_name: str, slugify_param_name=False) -> None:
         """
         Walks through the given param_name path and creates all missing keys and dicts.
 
         Raises RuntimeError if a key of the param_name path already exists and it's not
             a dictionary or a list (whatever expected), to avoid overwriting.
         """
+
+        param_name = self._slugify_param_name_if_needed(param_name, slugify_param_name)
+
         pieces = param_name.split(self._separator)
         parent_path = ""
         # We start assuming that self._content is already {}
@@ -284,9 +324,10 @@ class Dictionary:
 
             parent_path = f"{path}{self._separator}"
 
-    def get_keys_in(self, param_name: str = None) -> list:
+    def get_keys_in(self, param_name: str = None, slugify_param_name=False) -> list:
         """Returns the keys on the given param_name path dict"""
         if param_name is not None:
+            param_name = self._slugify_param_name_if_needed(param_name, slugify_param_name)
             obj = self.get(param_name=param_name)
         else:
             obj = self._content
@@ -302,7 +343,7 @@ class Dictionary:
         """Shortcut to get_all()"""
         return self.get_all()
 
-    def merge(self, origin: Dictionary, param_name: str = None) -> None:
+    def merge(self, origin: Dictionary, param_name: str = None, slugify_param_name=False) -> None:
         """
         Takes a given Dictionary object and merges it into the current object
             as the given param_name (or at root if None given)
@@ -318,6 +359,8 @@ class Dictionary:
             # self._content = {**self._content, **origin.get_all()}
             self._content = Dictionary._merge_complex_recursive(self._content, origin.get_all())
         else:
+            param_name = self._slugify_param_name_if_needed(param_name, slugify_param_name)
+
             if not self.key_exists(param_name=param_name):
                 raise RuntimeError(f"Dictionary path [{param_name}] unknown")
 
@@ -387,13 +430,15 @@ class Dictionary:
         """Checks if the param_name path indicates horizontal resoliving"""
         return True if param_name.find(LIST_HORIZONTAL_RESOLVING_CHAR) > -1 else False
 
-    def resolve_wildcards(self, param_name: str = "") -> list:
+    def resolve_wildcards(self, param_name: str = "", slugify_param_name: bool = False) -> list:
         """
         Resolves param_name paths with '#' wildcards
 
         Returns a list of all resolved paths.
         Non matching paths are ignored.
         """
+        param_name = self._slugify_param_name_if_needed(param_name, slugify_param_name)
+
         # do we actually need to do anything?
         if not Dictionary.needs_resolving(param_name):
             return [param_name]
@@ -482,3 +527,26 @@ class Dictionary:
             returning_stack.append(self.get_parent(param_name=path))
 
         return returning_stack
+    
+    def _slugify_param_name_if_needed(self, param_name: str, slugify_param_name: bool = False) -> str:
+        """
+        Slugifies all the parts from the parameter name.
+
+        The slugify respects dots as separators for nested keys.
+        It also respects "#" as horizontal list resolving characters.
+        """
+        if not slugify_param_name:
+            return param_name
+        
+        if not Dictionary.needs_resolving(param_name):
+            return self._separator.join([slugify(part) for part in param_name.split(self._separator)])
+        
+        # We have horizontal resolving chars, so we need to respect them
+        portions = param_name.split(LIST_HORIZONTAL_RESOLVING_CHAR)
+        portions = [
+            self._separator.join([slugify(part) for part in portion.split(self._separator)])
+            for portion in portions
+        ]
+        return LIST_HORIZONTAL_RESOLVING_CHAR.join(portions)
+
+        

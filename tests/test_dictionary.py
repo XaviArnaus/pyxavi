@@ -1,4 +1,4 @@
-from pyxavi import Dictionary
+from pyxavi import Dictionary, dd
 from unittest import TestCase
 import pytest
 import copy
@@ -77,7 +77,14 @@ TEST_CASES = {
                 "ii4": "II4c"
             }]
         },
-    ]
+    ],
+    "2025-01-01": {
+        "00-00": "New Year",
+        "01:00": [
+            "New Year Party",
+            {"Fireworks": "Yes"}
+        ]
+    }
 }
 
 
@@ -118,110 +125,114 @@ def test_get_all():
 
 
 @pytest.mark.parametrize(
-    argnames=('param_name', 'expected_result'),
+    argnames=('param_name', 'expected_result', 'slugify_param_name'),
     argvalues=[
         # First level
-        ("que", "tal"),
+        ("que", "tal", False),
         # Second level
-        ("foo.bar", "hola"),
+        ("foo.bar", "hola", False),
         # Third level
-        ("foo.foo2.bar2", "adeu"),
+        ("foo.foo2.bar2", "adeu", False),
         # First level, not exists
-        ("nope", None),
+        ("nope", None, False),
         # Second level, not exists
-        ("foo.nope", None),
+        ("foo.nope", None, False),
         # Third level, not exists
-        ("foo.foo2.nope", None),
+        ("foo.foo2.nope", None, False),
         # First level, returns a list
-        ("aaa", ["a1", "a2", "a3"]),
+        ("aaa", ["a1", "a2", "a3"], False),
         # Second level, it's the iteration of the list
-        ("aaa.1", "a2"),
+        ("aaa.1", "a2", False),
         # Second level, not exists
-        ("aaa.3", None),
+        ("aaa.3", None, False),
         # 4th level, one key in the path is an iteration.
-        ("bbb.b2.1.bb2b1", "bb2bb1"),
+        ("bbb.b2.1.bb2b1", "bb2bb1", False),
         # 4th level, one key in the path is an iteration, that does not exists
-        ("bbb.b2.5.bb2b1", None),
+        ("bbb.b2.5.bb2b1", None, False),
         # Wildcard in the second level, which is a very plane list
-        ("aaa.#", ["a1", "a2", "a3"]),
+        ("aaa.#", ["a1", "a2", "a3"], False),
         # Wildcard in the second level, which is a list of dicts
-        ("ggg.#.g1", ["G1a", "G1b", "G1c"]),
+        ("ggg.#.g1", ["G1a", "G1b", "G1c"], False),
         # Wildcards in the second and fourth level, which are a lists of dicts
-        ("hhh.#.h3.#.hh3", ["HH3a", "HH3b", "HH3c"]),
+        ("hhh.#.h3.#.hh3", ["HH3a", "HH3b", "HH3c"], False),
         # Wildcards in the second and fourth level,
         #   which first is a list of dicts and second does not exists
-        ("hhh.#.h1.#.hh3", []),
+        ("hhh.#.h1.#.hh3", [], False),
         # Wildcards in the second and fourth level
         #   which first is a list of dicts and second is diverse, matching only one
-        ("iii.#.i3.#.ii3", ["II3a"]),
+        ("iii.#.i3.#.ii3", ["II3a"], False),
+        # Slugified param name
+        ("2025/01/01.00:00", "New Year", True),
     ]
 )
-def test_get(param_name, expected_result):
+def test_get(param_name, expected_result, slugify_param_name):
 
     instance = initialize_instance()
 
-    result = instance.get(param_name=param_name)
+    result = instance.get(param_name=param_name, slugify_param_name=slugify_param_name)
 
     _compare_results(result, expected_result)
 
 
 @pytest.mark.parametrize(
-    argnames=('param_name', 'value', 'expected_result_parent'),
+    argnames=('param_name', 'value', 'expected_result_parent', 'slugify_param_name'),
     argvalues=[
         # First level, new value (the merge here is to avoid writting all the object)
         ("test", "value", {
             **TEST_CASES, **{
                 "test": "value"
             }
-        }),
+        }, False),
         # First level, old value (the merge here is to avoid writting all the object)
         ("que", "passa", {
             **TEST_CASES, **{
                 "que": "passa"
             }
-        }),
+        }, False),
         # Second level, new value (the merge here is to avoid writting all the object)
         ("foo.bar3", "value3", {
             **TEST_CASES["foo"], **{
                 "bar3": "value3"
             }
-        }),
+        }, False),
         # Second level, old value (the merge here is to avoid writting all the object)
         ("foo.bar", "hey", {
             **TEST_CASES["foo"], **{
                 "bar": "hey"
             }
-        }),
+        }, False),
         # Third level, new value (the merge here is to avoid writting all the object)
         ("foo.foo2.bar3", "value3", {
             **TEST_CASES["foo"]["foo2"], **{
                 "bar3": "value3"
             }
-        }),
+        }, False),
         # Third level, old value (the merge here is to avoid writting all the object)
         ("foo.foo2.bar2", "hey", {
             **TEST_CASES["foo"]["foo2"], **{
                 "bar2": "hey"
             }
-        }),
-        # Third level, the key in the middle of the path does not exists. Must raise.
-        ("foo.foo3.bar2", 99, False),
+        }, False),
+        # Third level, the key in the middle of the path does not exists. It gets created.
+        ("foo.foo3.bar2", 99, {
+            "bar2": 99
+        }, False),
         # Second level, old value, it's the iteration of a list
-        ("aaa.2", "x", ["a1", "a2", "x"]),
+        ("aaa.2", "x", ["a1", "a2", "x"], False),
         # Second level, new value, it's the iteration of a list out of the range by 1 position.
-        ("aaa.3", "x", ["a1", "a2", "a3", "x"]),
+        ("aaa.3", "x", ["a1", "a2", "a3", "x"], False),
         # Second level, new value, it's the iteration of a list out of the range by 2 positions.
-        ("aaa.4", "x", ["a1", "a2", "a3", None, "x"]),
+        ("aaa.4", "x", ["a1", "a2", "a3", None, "x"], False),
         # Second level, new value, it's the iteration of a list out of the range by 3 positions.
-        ("aaa.5", "x", ["a1", "a2", "a3", None, None, "x"]),
+        ("aaa.5", "x", ["a1", "a2", "a3", None, None, "x"], False),
         # Fourth level, a key in between is an iteration of a list that exists. Old value
         ("bbb.b2.1.bb2b1", "x", {
             "bb2b1": "x"
-        }),
+        }, False),
         # Fourth level, a key in between is an iteration of a list that not exists. Must raise.
-        ("bbb.b2.5.bb2b1", "x", False),
+        ("bbb.b2.5.bb2b1", "x", False, False),
         # Wildcard in the second level, which is a very plane list
-        ("aaa.#", "x", [["x", "x", "x"], ["x", "x", "x"], ["x", "x", "x"]]),
+        ("aaa.#", "x", [["x", "x", "x"], ["x", "x", "x"], ["x", "x", "x"]], False),
         # Wildcard in the second level, which is a list of dicts
         (
             "ggg.#.g1",
@@ -234,8 +245,7 @@ def test_get(param_name, expected_result):
                 }, {
                     "g1": "x", "g2": "G2c", "g3": "G3c"
                 }
-            ]
-        ),
+            ], False),
         # Wildcards in the second and fourth level, which are a lists of dicts
         ("hhh.#.h3.#.hh3", "x", [{
             "hh3": "x"
@@ -243,29 +253,31 @@ def test_get(param_name, expected_result):
             "hh3": "x"
         }, {
             "hh3": "x"
-        }]),
+        }], False),
         # Wildcards in the second and fourth level,
         #   which first is a list of dicts and second does not exists
-        ("hhh.#.h1.#.hh3", "x", []),
+        ("hhh.#.h1.#.hh3", "x", [], False),
         # Wildcards in the second and fourth level
         #   which first is a list of dicts and second is diverse, matching only one
         ("iii.#.i3.#.ii3", "x", [{
             "ii3": "x"
-        }]),
+        }], False),
+        # Slugified param name
+        ("2025/12/31.00:00", "Silvester", {"00-00": "Silvester"}, True)
     ]
 )
-def test_set(param_name, value, expected_result_parent):
+def test_set(param_name, value, expected_result_parent, slugify_param_name):
 
     instance = initialize_instance()
 
     if expected_result_parent is False:
         with TestCase.assertRaises(instance, RuntimeError):
-            instance.set(param_name=param_name, value=value)
+            instance.set(param_name=param_name, value=value, slugify_param_name=slugify_param_name)
     else:
-        instance.set(param_name=param_name, value=value)
-
-        result_parent = instance.get_parent(param_name=param_name)
-
+        instance.set(param_name=param_name, value=value, slugify_param_name=slugify_param_name)
+        
+        result_parent = instance.get_parent(param_name=param_name, slugify_param_name=slugify_param_name)
+        dd(result_parent)
         _compare_results(result_parent, expected_result_parent)
 
 
@@ -368,84 +380,89 @@ def test_merge(param_name, origin, expected_result_parent):
 
 
 @pytest.mark.parametrize(
-    argnames=('param_name', 'expected_result'),
+    argnames=('param_name', 'expected_result', 'slugify_param_name'),
     argvalues=[
-        ("foo", True), ("foo.bar", True), ("foo.bar5", False), ("foo.foo2", True),
-        ("foo.foo2.bar2", True), ("foo.foo2.bar2.nope", False),
-        ("foo.foo2.bar2.nope.nope2", False), ("food", False), ("void", True)
+        ("foo", True, False), ("foo.bar", True, False), ("foo.bar5", False, False), ("foo.foo2", True, False),
+        ("foo.foo2.bar2", True, False), ("foo.foo2.bar2.nope", False, False),
+        ("foo.foo2.bar2.nope.nope2", False, False), ("food", False, False), ("void", True, False),
+        ("2025/01/01", True, True),
+        
     ]
 )
-def test_key_exists(param_name, expected_result):
+def test_key_exists(param_name, expected_result, slugify_param_name):
 
     instance = initialize_instance()
 
-    assert instance.key_exists(param_name=param_name) == expected_result
-
+    assert instance.key_exists(param_name=param_name, slugify_param_name=slugify_param_name) == expected_result
 
 @pytest.mark.parametrize(
-    argnames=('param_name', 'expected_result'),
+    argnames=('param_name', 'expected_result', 'slugify_param_name'),
     argvalues=[
-        ("foo", TEST_CASES),
-        ("foo.bar", TEST_CASES["foo"]),
-        ("foo.bar5", TEST_CASES["foo"]),
-        ("foo.foo2", TEST_CASES["foo"]),
-        ("foo.foo2.bar2", TEST_CASES["foo"]["foo2"]),
-        ("foo.foo2.bar2.nope", TEST_CASES["foo"]["foo2"]["bar2"]),
-        ("foo.foo2.bar2.nope.nope2", None),
-        ("food", TEST_CASES),
+        ("foo", TEST_CASES, False),
+        ("foo.bar", TEST_CASES["foo"], False),
+        ("foo.bar5", TEST_CASES["foo"], False),
+        ("foo.foo2", TEST_CASES["foo"], False),
+        ("foo.foo2.bar2", TEST_CASES["foo"]["foo2"], False),
+        ("foo.foo2.bar2.nope", TEST_CASES["foo"]["foo2"]["bar2"], False),
+        ("foo.foo2.bar2.nope.nope2", None, False),
+        ("food", TEST_CASES, False),
+        ("2025/01/01", TEST_CASES, True),
+        ("2025/01/01.00:00", TEST_CASES["2025-01-01"], True),
     ]
 )
-def test_get_parent(param_name, expected_result):
+def test_get_parent(param_name, expected_result, slugify_param_name):
 
     instance = initialize_instance()
 
-    assert instance.get_parent(param_name=param_name) == expected_result
+    assert instance.get_parent(param_name=param_name, slugify_param_name=slugify_param_name) == expected_result
 
 
 @pytest.mark.parametrize(
-    argnames=('param_name', 'expected_delete', 'expected_result_parent'),
+    argnames=('param_name', 'expected_delete', 'expected_result_parent', 'slugify_param_name'),
     argvalues=[
         # First level, exists
-        ("foo", True, None),
+        ("foo", True, None, False),
         # Second level, exists
-        ("foo.bar", True, None),
+        ("foo.bar", True, None, False),
         # Second level, doesn't exist
-        ("foo.bar5", False, None),
+        ("foo.bar5", False, None, False),
         # Second level, exists and it's a dict
-        ("foo.foo2", True, None),
+        ("foo.foo2", True, None, False),
         # Third level, exists
-        ("foo.foo2.bar2", True, None),
+        ("foo.foo2.bar2", True, None, False),
         # Fourth level, doesn't exist
-        ("foo.foo2.bar2.nope", False, None),
+        ("foo.foo2.bar2.nope", False, None, False),
         # Fifth level, doesn't exist one in between nor the item
-        ("foo.foo2.bar2.nope.nope2", False, None),
+        ("foo.foo2.bar2.nope.nope2", False, None, False),
         # First level, doesn't exist
-        ("food", False, None),
+        ("food", False, None, False),
         # Second level, it's the last iteration of a list, exists
-        ("aaa.2", True, ["a1", "a2"]),
+        ("aaa.2", True, ["a1", "a2"], False),
         # Second level, it's the first iteration of a list, exists
-        ("aaa.0", True, ["a2", "a3"]),
+        ("aaa.0", True, ["a2", "a3"], False),
         # Second level, it's an iteration of a list, doesn't exist
-        ("aaa.5", False, None),
+        ("aaa.5", False, None, False),
         # Fourth level, one key in between is an iteration of a list, exists
-        ("bbb.b2.1.bb2b1", True, {}),
+        ("bbb.b2.1.bb2b1", True, {}, False),
         # Fourth level, one key in between is an iteration of a list, doesn't exist
-        ("bbb.b2.5.bb2b1", False, None)
+        ("bbb.b2.5.bb2b1", False, None, False),
+        # Slugified param name, exists
+        ("2025/01/01.00:00", True, None, True),
     ]
 )
-def test_delete(param_name, expected_delete, expected_result_parent):
+def test_delete(param_name, expected_delete, expected_result_parent, slugify_param_name):
 
     instance = initialize_instance()
 
-    assert instance.delete(param_name=param_name) == expected_delete
+    assert instance.delete(param_name=param_name, slugify_param_name=slugify_param_name) == expected_delete
 
     if expected_result_parent is not None:
-        # One can't check if the item in the list is deleted by checking he key,
+        # One can't check if the item in the list is deleted by checking the key,
         #   as the rest of the items move in front.
         #   Deleting index 0 will not get rid of index 0, 1 becomes 0.
-        assert instance.get_parent(param_name=param_name) == expected_result_parent
+        assert instance.get_parent(param_name=param_name, slugify_param_name=slugify_param_name) == expected_result_parent
     else:
-        assert instance.key_exists(param_name=param_name) is False
+        assert instance.key_exists(param_name=param_name, slugify_param_name=slugify_param_name) is False
 
 
 @pytest.mark.parametrize(
@@ -502,7 +519,7 @@ def test_initialise_recursive(param_name, is_exception):
 
 
 @pytest.mark.parametrize(
-    argnames=('param_name', 'expected_result'),
+    argnames=('param_name', 'expected_result', 'slugify_param_name'),
     argvalues=[
         (
             None, [
@@ -517,20 +534,20 @@ def test_initialise_recursive(param_name, is_exception):
                 "fff",
                 "ggg",
                 "hhh",
-                "iii"
-            ]
-        ), ("ccc", ["ccc1", "ccc2", "ccc3"]), ("ddd", ["ddd1", "ddd2", "ddd3"]),
-        ("eee.e_set", [0, 1, 2]), ("eee.e_tuple", [0, 1, 2]), ("eee.e_list", [0, 1, 2]),
-        ("fff.fff", [0, 1, 2]), ("aaa", [0, 1, 2]), ("aaa.0", None), ("aaa.5", None),
-        ("bbb.b2.1", ["bb2b1"]), ("bbb.b2.5.bb2b1", None)
+                "iii",
+                "2025-01-01"
+            ], False
+        ), ("ccc", ["ccc1", "ccc2", "ccc3"], False), ("ddd", ["ddd1", "ddd2", "ddd3"], False),
+        ("eee.e_set", [0, 1, 2], False), ("eee.e_tuple", [0, 1, 2], False), ("eee.e_list", [0, 1, 2], False),
+        ("fff.fff", [0, 1, 2], False), ("aaa", [0, 1, 2], False), ("aaa.0", None, False), ("aaa.5", None, False),
+        ("bbb.b2.1", ["bb2b1"], False), ("bbb.b2.5.bb2b1", None, False), ("2025/01/01", ["00-00", "01:00"], True),
     ]
 )
-def test_get_keys_in(param_name, expected_result):
+def test_get_keys_in(param_name, expected_result, slugify_param_name):
 
     instance = initialize_instance()
 
-    assert instance.get_keys_in(param_name=param_name) == expected_result
-
+    assert instance.get_keys_in(param_name=param_name, slugify_param_name=slugify_param_name) == expected_result
 
 def test_to_dict():
 
@@ -556,39 +573,40 @@ def test_needs_resolving(param_name, expected_result):
 
 
 @pytest.mark.parametrize(
-    argnames=('param_name', 'expected_result'),
+    argnames=('param_name', 'expected_result', 'slugify_param_name'),
     argvalues=[
-        ("aaa", ["aaa"]),
-        ("aaa.#", ["aaa.0", "aaa.1", "aaa.2"]),
-        ("ggg.#.g1", ["ggg.0.g1", "ggg.1.g1", "ggg.2.g1"]),
-        ("hhh.#.h3.#.hh3", ["hhh.0.h3.0.hh3", "hhh.1.h3.0.hh3", "hhh.2.h3.0.hh3"]),
-        ("hhh.#.h1.#.hh3", []),
-        ("iii.#.i3.#.ii3", ['iii.0.i3.0.ii3']),
+        ("aaa", ["aaa"], False),
+        ("aaa.#", ["aaa.0", "aaa.1", "aaa.2"], False),
+        ("ggg.#.g1", ["ggg.0.g1", "ggg.1.g1", "ggg.2.g1"], False),
+        ("hhh.#.h3.#.hh3", ["hhh.0.h3.0.hh3", "hhh.1.h3.0.hh3", "hhh.2.h3.0.hh3"], False),
+        ("hhh.#.h1.#.hh3", [], False),
+        ("iii.#.i3.#.ii3", ['iii.0.i3.0.ii3'], False),
+        ("2025/01/01.#", ["2025-01-01.00-00", "2025-01-01.01:00"], True),
     ]
 )
-def test_resolve_wildcards(param_name, expected_result):
+def test_resolve_wildcards(param_name, expected_result, slugify_param_name):
 
     instance = initialize_instance()
 
-    assert instance.resolve_wildcards(param_name=param_name) == expected_result
-
+    assert instance.resolve_wildcards(param_name=param_name, slugify_param_name=slugify_param_name) == expected_result
 
 @pytest.mark.parametrize(
-    argnames=('param_name', 'expected_result'),
+    argnames=('param_name', 'expected_result', 'slugify_param_name'),
     argvalues=[
-        ("aaa", "aaa"),
-        ("aaa.#", "#"),
-        ("ggg.#.g1", "g1"),
-        ("hhh.#.h3.#.hh3", "hh3"),
-        ("hhh.#.h1.#.hh3", "hh3"),
-        ("iii.#.i3.#.ii3", "ii3"),
+        ("aaa", "aaa", False),
+        ("aaa.#", "#", False),
+        ("ggg.#.g1", "g1", False),
+        ("hhh.#.h3.#.hh3", "hh3", False),
+        ("hhh.#.h1.#.hh3", "hh3", False),
+        ("iii.#.i3.#.ii3", "ii3", False),
+        ("2025/01/01.#.pepe", "pepe", True),
     ]
 )
-def test_last_key(param_name, expected_result):
+def test_last_key(param_name, expected_result, slugify_param_name):
 
     instance = initialize_instance()
 
-    assert instance.get_last_key(param_name=param_name) == expected_result
+    assert instance.get_last_key(param_name=param_name, slugify_param_name=slugify_param_name) == expected_result
 
 
 @pytest.mark.parametrize(

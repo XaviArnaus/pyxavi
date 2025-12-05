@@ -179,10 +179,15 @@ def test_set_third_level_old_value():
 
 
 def test_set_bad_key():
+    # Behaviour changed in 1.3.0 -> now creates the missing keys
     instance = initialize()
 
-    with TestCase.assertRaises(instance, RuntimeError):
-        instance.set("foo.foo3.bar2", 99)
+    # `foo3` is a not existing key.
+    # with TestCase.assertRaises(instance, RuntimeError):
+    #     instance.set("foo.foo3.bar2", 99)
+
+    instance.set("foo.foo3.bar2", 99)
+    assert instance.get("foo.foo3.bar2") == 99
 
 
 def test_get_hashed():
