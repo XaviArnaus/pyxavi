@@ -5,6 +5,7 @@
 ### Added
 
 - Added slugified keys support in Dictionary ([#55](https://github.com/XaviArnaus/pyxavi/pull/55)).
+- Added a pull request template ([#55](https://github.com/XaviArnaus/pyxavi/pull/55)).
 
 ### Fixed
 
