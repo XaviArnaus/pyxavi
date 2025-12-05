@@ -46,31 +46,45 @@ class Storage(Dictionary):
             yaml.safe_dump(self._content, stream)
 
     def get_hashed(self, param_name: str = "", default_value: any = None) -> any:
-        # if param_name.find(".") > 0:
-        #     last = param_name[-1]
-        #     param_name = param_name[0:-1]
-        #     param_name = param_name + sha256(last.encode()).hexdigest()
-        # else:
+        """
+        Gets a hashed parameter from the storage.
+        It is meant only for first level keys.
+        """
         param_name = sha256(param_name.encode()).hexdigest()
 
         return self.get(param_name, default_value)
 
     def set_hashed(self, param_name: str, value: any = None):
-        # if param_name.find(".") > 0:
-        #     last = param_name[-1]
-        #     param_name = param_name[0:-1]
-        #     param_name = param_name + sha256(last.encode()).hexdigest()
-        # else:
+        """
+        Sets a hashed parameter from the storage.
+        It is meant only for first level keys.
+        """
         param_name = sha256(param_name.encode()).hexdigest()
 
         self.set(param_name, value)
 
     def get_slugged(self, param_name: str = "", default_value: any = None) -> any:
+        """
+        Gets a slugified parameter from the storage.
+
+        It is meant only for first level keys.
+        For deeper level keys, use get() with the slugify_param_name parameter,
+            but keep in mind that the separator "." (as per fefault) will be respected,
+            so an URL won't be slugified as a whole.
+        """
         param_name = slugify(param_name)
 
         return self.get(param_name, default_value)
 
     def set_slugged(self, param_name: str, value: any = None):
+        """
+        Sets a slugified parameter from the storage.
+
+        It is meant only for first level keys.
+        For deeper level keys, use get() with the slugify_param_name parameter,
+            but keep in mind that the separator "." (as per fefault) will be respected,
+            so an URL won't be slugified as a whole.
+        """
         param_name = slugify(param_name)
 
         self.set(param_name, value)
