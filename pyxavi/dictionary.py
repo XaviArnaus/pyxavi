@@ -344,7 +344,10 @@ class Dictionary:
         return self.get_all()
 
     def merge(
-        self, origin: Dictionary, param_name: str = None, slugify_param_name=False
+        self,
+        origin: Dictionary,
+        param_name: str = None,
+        slugify_param_name=False
     ) -> Dictionary:
         """
         Takes a given Dictionary object and merges it into the current object
@@ -380,7 +383,7 @@ class Dictionary:
                 self.set(param_name=param_name, value=current_value)
             else:
                 self.set(param_name=param_name, value=origin.get_all())
-            
+
         return self
 
     @staticmethod
