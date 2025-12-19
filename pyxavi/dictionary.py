@@ -344,8 +344,11 @@ class Dictionary:
         return self.get_all()
 
     def merge(
-        self, origin: Dictionary, param_name: str = None, slugify_param_name=False
-    ) -> None:
+        self,
+        origin: Dictionary,
+        param_name: str = None,
+        slugify_param_name=False
+    ) -> Dictionary:
         """
         Takes a given Dictionary object and merges it into the current object
             as the given param_name (or at root if None given)
@@ -354,6 +357,8 @@ class Dictionary:
             - It will be merged if it's a dict
             - It will be added if it's a list
             - It will be overwritten otherwise
+
+        Returns the merged Dictionary object.
 
         Raises a RuntimeError if any of the keys in the param_name does not exist
         """
@@ -378,6 +383,8 @@ class Dictionary:
                 self.set(param_name=param_name, value=current_value)
             else:
                 self.set(param_name=param_name, value=origin.get_all())
+
+        return self
 
     @staticmethod
     def _merge_simple_recursive(base_dict: dict, over_dict: dict) -> dict:

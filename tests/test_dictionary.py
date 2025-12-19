@@ -375,12 +375,12 @@ def test_merge(param_name, origin, expected_result_parent):
         with TestCase.assertRaises(instance, RuntimeError):
             instance.merge(origin=origin, param_name=param_name)
     else:
-        instance.merge(origin=origin, param_name=param_name)
+        result = instance.merge(origin=origin, param_name=param_name)
 
         if param_name is None:
-            result = instance._content
+            result = instance.get_all()
         else:
-            result = instance.get(param_name=param_name)
+            result = result.get(param_name=param_name)
 
         _compare_results(result, expected_result_parent)
 

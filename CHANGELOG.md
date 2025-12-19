@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.3.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.3.1) - 2025-12-19
+
+### Added
+
+- Dictionary.merge() returns itself ([#56](https://github.com/XaviArnaus/pyxavi/pull/56)).
+
 ## [v1.3.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.3.0) - 2025-12-05
 
 ### Added
