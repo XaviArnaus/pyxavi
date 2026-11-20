@@ -1,9 +1,12 @@
 from unittest.mock import patch, Mock
-from pyxavi import Config, Logger, PIDFileHandler, PIDTimedRotateFileHandler
+from pyxavi import Config, Logger, PIDFileHandler, PIDTimedRotateFileHandler, Dictionary
+from pyxavi.logger import ColorFormatter
 from logging.handlers import TimedRotatingFileHandler
 from datetime import datetime, time
 import logging
 import copy
+import os
+import tempfile
 import pytest
 import yaml
 import multiprocessing_logging
@@ -475,3 +478,140 @@ def test_loading_config_does_not_prints_deprecation_warning(caplog):
         "Read https://github.com/XaviArnaus/pyxavi/blob/main/docs/logger.md"
 
     assert expected_warning not in caplog.text
+
+
+# --- ColorFormatter fallbacks and the PID handlers ---
+
+
+def _record(name="n", level=logging.INFO, process="MainProcess", thread="MainThread"):
+    record = logging.LogRecord(name, level, __file__, 1, "the message", None, None)
+    record.processName = process
+    record.threadName = thread
+    return record
+
+
+def _formatter(profile: str) -> ColorFormatter:
+    config = Dictionary(
+        {
+            "format": "[%(levelname)s] %(processName)s %(threadName)s %(message)s",
+            "stdout": {
+                "colorize": {
+                    "profile": profile,
+                    "only_the_field": False,
+                    "by_process": {
+                        "MainProcess": "GREEN"
+                    },
+                    "by_thread": {
+                        "MainThread": "GREEN"
+                    },
+                    "support": {
+                        "UNKNOWN": "BOLD"
+                    },
+                    "colors": {
+                        "GREEN": "<g>",
+                        "BOLD": "<b>",
+                        "END": "<e>",
+                        "WHITE": "<w>",
+                        "BLUE": "<bl>",
+                        "ORANGE": "<o>",
+                        "RED": "<r>",
+                        "RED_BRIGHT": "<rb>"
+                    }
+                }
+            }
+        }
+    )
+    return ColorFormatter(config)
+
+
+@pytest.mark.parametrize(
+    argnames=("profile", "kwargs", "expected_color"),
+    argvalues=[
+        ("by_process", {
+            "process": "MainProcess"
+        }, "<g>"),
+        ("by_process", {
+            "process": "SomethingElse"
+        }, "<b>"),
+        ("by_thread", {
+            "thread": "MainThread"
+        }, "<g>"),
+        ("by_thread", {
+            "thread": "Thread-7"
+        }, "<b>"),
+        ("by_level", {
+            "level": logging.INFO
+        }, "<bl>"),
+        ("by_level", {
+            "level": 45
+        }, "<b>"),
+    ],
+)
+def test_color_formatter_unknown_names_and_levels_keep_the_full_line(
+    profile, kwargs, expected_color
+):
+    output = _formatter(profile).format(_record(**kwargs))
+
+    # The whole line is kept (not just the message), coloured with the expected color
+    assert output.startswith(expected_color + "[")
+    assert output.endswith("the message<e>")
+    assert "] " in output
+
+
+def test_color_formatter_without_config_formats_the_plain_line():
+    output = ColorFormatter().format(_record())
+
+    assert "INFO" in output
+    assert output.endswith("the message")
+
+
+def test_color_formatter_instances_do_not_share_formats():
+    first = _formatter("by_process")
+    second = _formatter("by_thread")
+
+    assert "MainProcess" in first.FORMATS
+    assert "MainProcess" not in second.FORMATS
+    assert "MainProcess" not in ColorFormatter.FORMATS
+
+
+def test_color_formatter_does_not_alter_the_given_colors():
+    colors = {"X": "\\033[1m", "END": "e"}
+    config = Dictionary({"stdout": {"colorize": {"colors": colors}}})
+
+    decoded = ColorFormatter().load_colors_from_config(config)
+
+    assert decoded["X"] == "\033[1m"
+    assert colors["X"] == "\\033[1m"
+
+
+def test_pid_file_handler_passes_the_delay_and_errors():
+    with tempfile.TemporaryDirectory() as folder:
+        handler = PIDFileHandler(os.path.join(folder, "a.log"), delay=True, errors="replace")
+        try:
+            assert handler.stream is None
+            assert handler.errors == "replace"
+            assert str(os.getpid()) in handler.baseFilename
+        finally:
+            handler.close()
+
+
+def test_pid_timed_rotate_handler_passes_interval_delay_and_errors():
+    with tempfile.TemporaryDirectory() as folder:
+        handler = PIDTimedRotateFileHandler(
+            os.path.join(folder, "a.log"), when="S", interval=5, delay=True, errors="replace"
+        )
+        try:
+            assert handler.interval == 5
+            assert handler.stream is None
+            assert handler.errors == "replace"
+            assert str(os.getpid()) in handler.baseFilename
+        finally:
+            handler.close()
+
+
+def test_loggers_do_not_share_the_list_of_handlers():
+    first = Logger(Config(params={"logger": {"stdout": {"active": True}}}))
+    second = Logger(Config(params={"logger": {"stdout": {"active": True}}}))
+
+    assert first._handlers is not second._handlers
+    assert Logger._handlers == []

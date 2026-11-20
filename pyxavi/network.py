@@ -1,4 +1,3 @@
-import requests
 import ipaddress
 import logging
 
@@ -11,6 +10,9 @@ EXTERNAL_SERVICE_IPv4 = {
 EXTERNAL_SERVICE_IPv6 = {
     "ident.me IPv6": "https://v6.ident.me/",
 }
+
+# Seconds to wait for an external service before trying with the next one
+DEFAULT_TIMEOUT = 10
 
 
 class Network:
@@ -36,10 +38,18 @@ class Network:
             return False
 
     @staticmethod
-    def _call(endpoint: str) -> str:
-        response = requests.get(endpoint)
+    def _call(endpoint: str, timeout: float = DEFAULT_TIMEOUT) -> str:
+        # Imported here: it is a heavy import that is only needed when calling.
+        import requests
+
+        try:
+            response = requests.get(endpoint, timeout=timeout)
+        except requests.RequestException as e:
+            # Timeouts and connection errors are reported as any other failure
+            raise RuntimeError(f"{endpoint} could not be reached -> {e}") from e
         if response.status_code == 200:
-            return response.text
+            # Some services end the address with a new line
+            return response.text.strip()
         else:
             raise RuntimeError(
                 f"{endpoint} answered with an error -> " +

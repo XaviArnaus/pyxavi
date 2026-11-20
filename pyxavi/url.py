@@ -1,8 +1,4 @@
-from urllib.parse import urlparse
-import validators
-import requests
-import feedparser
-from bs4 import BeautifulSoup as bs4
+from urllib.parse import urlparse, urljoin
 
 
 class Url:
@@ -28,7 +24,7 @@ class Url:
         if to_remove["scheme"] is True:
             parsed = parsed._replace(scheme="")
         if to_remove["netloc"] is True:
-            parsed._replace(netloc="")
+            parsed = parsed._replace(netloc="")
         if to_remove["path"] is True:
             parsed = parsed._replace(path="")
         if to_remove["params"] is True:
@@ -42,6 +38,9 @@ class Url:
 
     @staticmethod
     def is_valid(url: str) -> bool:
+        # Imported here: it is only needed when validating.
+        import validators
+
         return True if validators.url(url) else False
 
     @staticmethod
@@ -49,12 +48,12 @@ class Url:
         # Is this URL relative? then add the base
         parsed_url = urlparse(url)
         if not parsed_url.scheme or not parsed_url.hostname:
-            url = base + url
+            url = urljoin(base, url)
 
         return url
 
     @staticmethod
-    def findfeeds(url: str):
+    def findfeeds(url: str, timeout: float = 15):
         """
         It returns a list of URLs found in the given site's URL that have entries.
         so be prepared to receive an array.
@@ -71,6 +70,10 @@ class Url:
           5. HEAD wins, if present
         """
 
+        # Imported here: they are heavy imports that are only needed when searching.
+        import requests
+        from bs4 import BeautifulSoup as bs4
+
         def by_priority(element):
             prio_value = 9
             if "rss" in element:
@@ -80,22 +83,21 @@ class Url:
             return prio_value
 
         # Get the header first, so we know if there is a redirection
-        r = requests.head(url, allow_redirects=True)
+        r = requests.head(url, allow_redirects=True, timeout=timeout)
 
         # Now get the content from the real URL
-        raw = requests.get(r.url).text
+        raw = requests.get(r.url, timeout=timeout).text
         result = []
 
         # Prepare the base URL, as sometimes the Feed comes relative
         parsed_url = urlparse(url)
-        base = parsed_url.scheme + "://" + parsed_url.hostname
+        base = f"{parsed_url.scheme}://{parsed_url.netloc}"
 
         # We'll parse the HTML using beautifulsoup
         html = bs4(raw, features="html.parser")
 
         # The "link" tags that are rel="alternate" may contain the feed
         feed_urls = html.find_all("link", rel="alternate")
-        print(feed_urls)
         if len(feed_urls) >= 1:
             for f in feed_urls:
                 # They have to have a "type" attribute
@@ -137,5 +139,8 @@ class Url:
 
     @staticmethod
     def is_a_valid_feed(url) -> bool:
+        # Imported here: it is a heavy import that is only needed when parsing a feed.
+        import feedparser
+
         f = feedparser.parse(url)
         return len(f.entries) > 0

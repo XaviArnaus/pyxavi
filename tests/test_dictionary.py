@@ -779,3 +779,97 @@ def test_merge_complex():
     base.merge(over)
 
     assert base.get_all() == expected
+
+
+# --- Correctness fixes ---
+
+
+def test_default_content_is_not_shared_between_instances():
+    first = Dictionary()
+    first.set("a", 1)
+
+    assert Dictionary().get_all() == {}
+
+
+def test_empty_content_given_is_kept_as_it_is():
+    content = {}
+    instance = Dictionary(content)
+    instance.set("a", 1)
+
+    assert content == {"a": 1}
+
+
+def test_get_negative_index_out_of_range_gives_default():
+    instance = Dictionary({"l": [1, 2, 3]})
+
+    assert instance.get("l.-1") == 3
+    assert instance.get("l.-3") == 1
+    assert instance.get("l.-4", "nope") == "nope"
+    assert instance.get("l.3", "nope") == "nope"
+
+
+def test_get_on_something_that_is_not_a_dict_gives_default():
+    instance = Dictionary({"a": "text", "n": 5})
+
+    assert instance.get("a.b", "nope") == "nope"
+    assert instance.get("n.b", "nope") == "nope"
+
+
+def test_get_with_empty_key_part_does_not_break():
+    instance = Dictionary({"a": [1, 2]})
+
+    assert instance.get("a..", "nope") == "nope"
+
+
+def test_set_replaces_a_none_parent_with_a_dict():
+    instance = Dictionary({"void": None})
+
+    instance.set("void.child", 1)
+
+    assert instance.get("void.child") == 1
+
+
+def test_set_below_a_value_that_is_not_a_dict_raises():
+    instance = Dictionary({"a": "text"})
+
+    with pytest.raises(RuntimeError):
+        instance.set("a.b", 1)
+
+
+def test_set_negative_index_out_of_range_raises():
+    instance = Dictionary({"l": [1, 2, 3]})
+
+    instance.set("l.-1", 9)
+    assert instance.get("l") == [1, 2, 9]
+
+    with pytest.raises(RuntimeError):
+        instance.set("l.-4", 9)
+
+
+def test_get_parent_path_slugifies_with_a_custom_separator():
+    instance = Dictionary({}, path_separator_char="/")
+
+    assert instance.get_parent_path("Foo Bar/Baz Qux/Last One", True) == "foo-bar/baz-qux"
+
+
+def test_resolve_wildcards_with_a_custom_separator():
+    instance = Dictionary({"a": {"x": {"v": 1}, "y": {"v": 2}}}, path_separator_char="/")
+
+    assert sorted(instance.resolve_wildcards("a/#/v")) == ["a/x/v", "a/y/v"]
+
+
+def test_delete_returns_whether_it_deleted():
+    instance = Dictionary({"a": {"b": 1}})
+
+    assert instance.delete("a.b") is True
+    assert instance.delete("a.b") is False
+
+
+def test_merge_keeps_the_order_of_the_keys():
+    base = Dictionary({"z": 1, "a": 2, "m": 3})
+    over = Dictionary({"b": 4, "a": 5, "y": 6})
+
+    base.merge(over)
+
+    assert list(base.get_all().keys()) == ["z", "a", "m", "b", "y"]
+    assert base.get("a") == 5

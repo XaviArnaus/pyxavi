@@ -1,5 +1,43 @@
 # Changelog
 
+## [v1.4.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.4.0) - 2026-11-20
+
+### Fixed
+
+- `Storage.write_file()` is now atomic: the content is written to a temporary file that replaces the real one only when complete, so a crash or a power cut can't leave a half-written file that makes the next load fail. The permissions of the file are kept, and a symbolic link stays a link. The write also forces the content to the disk, which can be turned off with `Storage.FSYNC_ON_WRITE = False`.
+- `Storage` reads and writes files as UTF-8 and writes accents and other non-ASCII characters as they are, instead of as escape sequences (`"Això"` was written as `"Aix\xF2"`). Files already written with escapes are still read correctly.
+- `Config` no longer fails with an empty configuration file, neither loading it nor merging it (`merge_from_file()`): it is an empty configuration.
+- `Dictionary()` without content no longer shares one dict between instances: each one starts with its own empty content. An empty `{}` given as content is now kept as it is, not replaced.
+- `Dictionary.get()` gives the default value, instead of failing or returning a wrong item, for a negative list index out of range, for a path going below a value that is not a dict, and for an empty key part.
+- `Dictionary.set()` replaces a `None` parent with a dict when creating the missing keys, raises a `RuntimeError` when the parent is not a dict (it used to fail with a `TypeError`), and checks the bounds of negative list indexes.
+- `Dictionary.get_parent_path()` and `Dictionary.resolve_wildcards()` respect a custom path separator, instead of using `"."` in some places.
+- `Dictionary.merge()` gives a deterministic order of keys: the ones of the base, then the new ones. It used to change on every run.
+- `Dictionary.delete()` is annotated as returning a bool, which is what it returns.
+- `Stopwatch.stop_all()` no longer fails with "dictionary changed size during iteration" when there are running stopwatches, so `stop_and_report()` works.
+- `Stopwatch.reset()` (and so `start()` on an existing name) deleted the whole running stopwatches attribute instead of the one stopwatch, breaking the instance.
+- `Stopwatch.start()` without a name no longer fails: it uses a generated UUID as the name.
+- `Stopwatch` instances no longer share their stopwatches (they were class attributes): each instance has its own.
+- `Network.get_external_ipv4()` and `get_external_ipv6()` no longer crash on a timeout or a connection error: they try the next service and give `None` if all fail. The calls have a timeout (`DEFAULT_TIMEOUT`, 10 seconds) and the trailing new line of the answer is removed.
+- `Janitor` has a timeout when sending messages, so an unreachable Janitor can't block the caller forever. It is the new optional parameter `timeout` (10 seconds by default).
+- `Media.download_from_url()` works with absolute destination paths (the leading `/` was stripped), does not leave an empty or half downloaded file when the download fails, and has a timeout, the new optional parameter `timeout` (30 seconds by default).
+- `Media.get_image_url_from_text()` no longer fails with an `img` without `src`.
+- `Url.clean()` now removes the `netloc` when asked to (it did nothing). The result for `netloc` is e.g. `http:///a/path.html`.
+- `Url.ensure_absolute()` resolves the relative URL against the base properly (`feed.xml` gave `https://base.comfeed.xml`).
+- `Url.findfeeds()` has a timeout, the new optional parameter `timeout` (15 seconds by default), keeps the port of the site for relative feeds and does not print to the standard output.
+
+### Changed
+
+- The minimum Python version is now 3.11 (it was 3.9), as 3.9 is no longer supported by GitHub Actions.
+- `Storage` uses the libyaml based YAML loader and dumper (written in C) when PyYAML has them, and the pure Python ones otherwise. Loading and dumping a file of some hundreds of KB is about 10 times faster. The data read and written is the same.
+- `import pyxavi` is lighter and faster: `requests`, `beautifulsoup4`, `feedparser`, `validators`, `emoji` and `multiprocessing-logging` are imported the first time that the feature needs them, not when importing the library. Everything is still exported and the dependencies are the same. In a process that uses only `Config`, `Storage`, `Logger` and the like it saves tens of MB of memory and some tens of milliseconds at start.
+- `Text.remove_emojis()` builds its regular expression only once (it was built in every call, which is very slow), and the methods of `Text` are static, so they can be called also from an instance.
+- `Network` reports a timeout or a connection error as a `RuntimeError` to the caller of the internal `_call()`.
+- `ColorFormatter` keeps the full log line when the process, the thread or the level of a record has no color assigned (a custom level like 45, `Thread-7`...). It used to print just the message. It uses the color set in `support.UNKNOWN` (`BOLD` by default). The formats are now per instance, and the given colors are not altered while loading them.
+- `Logger` has its own list of handlers per instance instead of one shared by the class.
+- `PIDTimedRotateFileHandler` now respects `interval`, `delay` and `errors` (they were ignored), and `PIDFileHandler` accepts and respects `errors`.
+- `full_stack()` removes the traceback header with `removeprefix()` instead of `lstrip()`, which removes any of the chars of the header. The output is the same.
+- `Queue.deduplicate()` is no longer quadratic: it looks the unique values up in a set (values that are not hashable are still compared one by one). The result and the order are the same.
+
 ## [v1.3.1](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.3.1) - 2025-12-19
 
 ### Added

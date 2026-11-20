@@ -6,17 +6,21 @@ import logging
 class Stopwatch():
 
     _logger: logging
-    _stopwatches_running: dict = {}
-    _stopwatches_stopped: dict = {}
+    _stopwatches_running: dict
+    _stopwatches_stopped: dict
 
     FLOAT_ROUND_DECIMALS = 4
 
     def __init__(self):
         self._logger = logging.getLogger()
+        # Each instance has its own stopwatches. As class attributes they were
+        #   shared by all the instances.
+        self._stopwatches_running = {}
+        self._stopwatches_stopped = {}
 
     def start(self, name: str = None) -> str:
         if name is None:
-            name = uuid.UUID(uuid.uuid4)
+            name = str(uuid.uuid4())
 
         self.reset(name)
 
@@ -37,23 +41,24 @@ class Stopwatch():
             del self._stopwatches_running[name]
             return self.get(name)
         else:
-            self._logger.warning("[Stopwatch] No stopwatch named [" + name + "] to stop.")
+            self._logger.warning(f"[Stopwatch] No stopwatch named [{name}] to stop.")
             return None
 
     def stop_all(self):
-        for name in self._stopwatches_running.keys():
+        # stop() removes the stopwatch from the running ones: iterate over a copy
+        for name in list(self._stopwatches_running.keys()):
             self.stop(name)
 
     def get(self, name: str) -> float:
         if name in self._stopwatches_stopped:
             return round(self._stopwatches_stopped[name], self.FLOAT_ROUND_DECIMALS)
         else:
-            self._logger.warning("[Stopwatch] No stopwatch named [" + name + "] to get.")
+            self._logger.warning(f"[Stopwatch] No stopwatch named [{name}] to get.")
             return None
 
     def reset(self, name: str):
         if name in self._stopwatches_running:
-            del self._stopwatches_running
+            del self._stopwatches_running[name]
 
         if name in self._stopwatches_stopped:
             del self._stopwatches_stopped[name]
