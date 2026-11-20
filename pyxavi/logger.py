@@ -104,6 +104,8 @@ class Logger:
     def __init__(self, config: Config, base_path: str = None) -> None:
 
         self._base_path = base_path
+        # Own list of handlers, not the one shared by the class
+        self._handlers = []
         self._load_config(config=config)
 
         # Setting up the handlers straight away
@@ -462,6 +464,12 @@ class ColorFormatter(logging.Formatter):
     def __init__(self, config: Config = None):
         super(ColorFormatter, self).__init__()
 
+        # Own formats, not the dict shared by the class
+        self.FORMATS = {}
+        # The format for what has no color assigned: process, thread or level
+        #   that is not in the config. Without a config it is the plain format.
+        self.unknown_fmt = self.fmt
+
         if config is not None:
             self.colors = self.load_colors_from_config(config)
             self.fmt = config.get("format", self.fmt)
@@ -470,7 +478,8 @@ class ColorFormatter(logging.Formatter):
             self.alter_format_by_profile(config)
 
     def load_colors_from_config(self, config: Config):
-        colors: dict = config.get("stdout.colorize.colors", self.colors)
+        # A copy, to not alter the configuration (or the defaults) while decoding
+        colors: dict = dict(config.get("stdout.colorize.colors", self.colors))
         for name, color in colors.items():
             colors[name] = color.encode('utf-8').decode('unicode-escape')
         return colors
@@ -479,6 +488,12 @@ class ColorFormatter(logging.Formatter):
 
         profile = config.get("stdout.colorize.profile", "by_level")
         self.replace_format_string_with_placeholders(profile)
+
+        self.FORMATS = {}
+        unknown_color = self.colors.get(
+            config.get("stdout.colorize.support.UNKNOWN", "BOLD"), ""
+        )
+        self.unknown_fmt = self.fmt.format(unknown_color, self.colors["END"])
 
         if profile == "by_level":
             self.FORMATS = {
@@ -532,7 +547,8 @@ class ColorFormatter(logging.Formatter):
         else:
             log_fmt = self.FORMATS.get(record.levelno)
 
-        formatter = logging.Formatter(log_fmt)
+        # Names and levels that are not in the config keep the full format, not just the message
+        formatter = logging.Formatter(log_fmt if log_fmt is not None else self.unknown_fmt)
         return formatter.format(record)
 
 
@@ -554,10 +570,13 @@ class PIDTimedRotateFileHandler(TimedRotatingFileHandler):
         super(PIDTimedRotateFileHandler, self).__init__(
             filename=filename,
             when=when,
+            interval=interval,
             backupCount=backupCount,
             encoding=encoding,
+            delay=delay,
             utc=utc,
-            atTime=atTime
+            atTime=atTime,
+            errors=errors
         )
 
     def _append_pid_to_filename(self, filename):
@@ -568,9 +587,9 @@ class PIDTimedRotateFileHandler(TimedRotatingFileHandler):
 
 class PIDFileHandler(logging.FileHandler):
 
-    def __init__(self, filename, mode='a', encoding=None, delay=0):
+    def __init__(self, filename, mode='a', encoding=None, delay=0, errors=None):
         filename = self._append_pid_to_filename(filename)
-        super(PIDFileHandler, self).__init__(filename, mode, encoding, delay)
+        super(PIDFileHandler, self).__init__(filename, mode, encoding, delay, errors)
 
     def _append_pid_to_filename(self, filename):
         pid = os.getpid()

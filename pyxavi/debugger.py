@@ -242,5 +242,7 @@ def full_stack():
     trc = 'Traceback (most recent call last):\n'
     stackstr = trc + ''.join(traceback.format_list(stack))
     if exc is not None:
-        stackstr += '  ' + traceback.format_exc().lstrip(trc)
+        # Without the header, that we already have.
+        # Not lstrip(): it removes any char of the given set, not the prefix.
+        stackstr += traceback.format_exc().removeprefix(trc)
     return stackstr

@@ -32,6 +32,10 @@
 - `import pyxavi` is lighter and faster: `requests`, `beautifulsoup4`, `feedparser`, `validators`, `emoji` and `multiprocessing-logging` are imported the first time that the feature needs them, not when importing the library. Everything is still exported and the dependencies are the same. In a process that uses only `Config`, `Storage`, `Logger` and the like it saves tens of MB of memory and some tens of milliseconds at start.
 - `Text.remove_emojis()` builds its regular expression only once (it was built in every call, which is very slow), and the methods of `Text` are static, so they can be called also from an instance.
 - `Network` reports a timeout or a connection error as a `RuntimeError` to the caller of the internal `_call()`.
+- `ColorFormatter` keeps the full log line when the process, the thread or the level of a record has no color assigned (a custom level like 45, `Thread-7`...). It used to print just the message. It uses the color set in `support.UNKNOWN` (`BOLD` by default). The formats are now per instance, and the given colors are not altered while loading them.
+- `Logger` has its own list of handlers per instance instead of one shared by the class.
+- `PIDTimedRotateFileHandler` now respects `interval`, `delay` and `errors` (they were ignored), and `PIDFileHandler` accepts and respects `errors`.
+- `full_stack()` removes the traceback header with `removeprefix()` instead of `lstrip()`, which removes any of the chars of the header. The output is the same.
 
 ## [v1.3.1](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.3.1) - 2025-12-19
 
