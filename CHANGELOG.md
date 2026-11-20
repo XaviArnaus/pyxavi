@@ -1,6 +1,6 @@
 # Changelog
 
-## [v1.4.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.4.0) - Unreleased
+## [v1.4.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.4.0) - 2026-11-20
 
 ### Fixed
 
