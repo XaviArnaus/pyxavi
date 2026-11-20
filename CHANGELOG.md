@@ -13,6 +13,10 @@
 - `Dictionary.get_parent_path()` and `Dictionary.resolve_wildcards()` respect a custom path separator, instead of using `"."` in some places.
 - `Dictionary.merge()` gives a deterministic order of keys: the ones of the base, then the new ones. It used to change on every run.
 - `Dictionary.delete()` is annotated as returning a bool, which is what it returns.
+- `Stopwatch.stop_all()` no longer fails with "dictionary changed size during iteration" when there are running stopwatches, so `stop_and_report()` works.
+- `Stopwatch.reset()` (and so `start()` on an existing name) deleted the whole running stopwatches attribute instead of the one stopwatch, breaking the instance.
+- `Stopwatch.start()` without a name no longer fails: it uses a generated UUID as the name.
+- `Stopwatch` instances no longer share their stopwatches (they were class attributes): each instance has its own.
 
 ### Changed
 
