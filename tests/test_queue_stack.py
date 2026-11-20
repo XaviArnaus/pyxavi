@@ -251,9 +251,14 @@ def test_deduplicate_keeps_the_first_of_each_value_in_order():
 
     queue.deduplicate(param="text")
 
-    assert [i.to_dict() for i in queue.get_all()] == [
-        {"text": "b", "n": 0}, {"text": "a", "n": 1}, {"text": "c", "n": 3}
-    ]
+    assert [i.to_dict() for i in queue.get_all()
+            ] == [{
+                "text": "b", "n": 0
+            }, {
+                "text": "a", "n": 1
+            }, {
+                "text": "c", "n": 3
+            }]
 
 
 def test_deduplicate_supports_values_that_are_not_hashable():
