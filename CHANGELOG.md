@@ -29,6 +29,9 @@
 
 - The minimum Python version is now 3.11 (it was 3.9), as 3.9 is no longer supported by GitHub Actions.
 - `Storage` uses the libyaml based YAML loader and dumper (written in C) when PyYAML has them, and the pure Python ones otherwise. Loading and dumping a file of some hundreds of KB is about 10 times faster. The data read and written is the same.
+- `import pyxavi` is lighter and faster: `requests`, `beautifulsoup4`, `feedparser`, `validators`, `emoji` and `multiprocessing-logging` are imported the first time that the feature needs them, not when importing the library. Everything is still exported and the dependencies are the same. In a process that uses only `Config`, `Storage`, `Logger` and the like it saves tens of MB of memory and some tens of milliseconds at start.
+- `Text.remove_emojis()` builds its regular expression only once (it was built in every call, which is very slow), and the methods of `Text` are static, so they can be called also from an instance.
+- `Network` reports a timeout or a connection error as a `RuntimeError` to the caller of the internal `_call()`.
 
 ## [v1.3.1](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.3.1) - 2025-12-19
 

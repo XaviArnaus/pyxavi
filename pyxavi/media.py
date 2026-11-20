@@ -1,6 +1,4 @@
-from bs4 import BeautifulSoup
 from urllib.parse import urlparse
-import requests
 import os
 import mimetypes
 
@@ -14,6 +12,9 @@ class Media:
     """
 
     def get_image_url_from_text(self, text: str) -> str:
+        # Imported here: it is a heavy import that is only needed when parsing.
+        from bs4 import BeautifulSoup
+
         soup = BeautifulSoup(text, 'html.parser')
         img = soup.select('img')
         if img:
@@ -28,6 +29,9 @@ class Media:
             return None
 
     def download_from_url(self, url: str, destination_path: str, timeout: float = 30) -> dict:
+        # Imported here: it is a heavy import that is only needed when downloading.
+        import requests
+
         parsed_url = urlparse(url)
 
         result = {

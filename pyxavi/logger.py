@@ -3,7 +3,6 @@ from logging.handlers import TimedRotatingFileHandler
 from datetime import datetime
 from logging import Logger as OriginalLogger
 import logging
-import multiprocessing_logging
 import sys
 import os
 import re
@@ -126,6 +125,9 @@ class Logger:
 
         # Make it available for multiprocessing
         if self._logger_config.get("stdout.multiprocess"):
+            # Imported here: it is only needed in this case.
+            import multiprocessing_logging
+
             multiprocessing_logging.install_mp_handler(logger=self._logger)
 
         # In case we are using the old config, show a warning

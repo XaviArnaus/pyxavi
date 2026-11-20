@@ -1,8 +1,4 @@
 from urllib.parse import urlparse, urljoin
-import validators
-import requests
-import feedparser
-from bs4 import BeautifulSoup as bs4
 
 
 class Url:
@@ -42,6 +38,9 @@ class Url:
 
     @staticmethod
     def is_valid(url: str) -> bool:
+        # Imported here: it is only needed when validating.
+        import validators
+
         return True if validators.url(url) else False
 
     @staticmethod
@@ -70,6 +69,10 @@ class Url:
           4. Sort, I want RSS mainly
           5. HEAD wins, if present
         """
+
+        # Imported here: they are heavy imports that are only needed when searching.
+        import requests
+        from bs4 import BeautifulSoup as bs4
 
         def by_priority(element):
             prio_value = 9
@@ -136,5 +139,8 @@ class Url:
 
     @staticmethod
     def is_a_valid_feed(url) -> bool:
+        # Imported here: it is a heavy import that is only needed when parsing a feed.
+        import feedparser
+
         f = feedparser.parse(url)
         return len(f.entries) > 0

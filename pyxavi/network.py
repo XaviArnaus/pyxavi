@@ -1,4 +1,3 @@
-import requests
 import ipaddress
 import logging
 
@@ -40,7 +39,14 @@ class Network:
 
     @staticmethod
     def _call(endpoint: str, timeout: float = DEFAULT_TIMEOUT) -> str:
-        response = requests.get(endpoint, timeout=timeout)
+        # Imported here: it is a heavy import that is only needed when calling.
+        import requests
+
+        try:
+            response = requests.get(endpoint, timeout=timeout)
+        except requests.RequestException as e:
+            # Timeouts and connection errors are reported as any other failure
+            raise RuntimeError(f"{endpoint} could not be reached -> {e}") from e
         if response.status_code == 200:
             # Some services end the address with a new line
             return response.text.strip()
@@ -59,7 +65,7 @@ class Network:
                     logger.debug(f"Getting external IP from {name}")
                 address = Network._call(endpoint=url)
                 break
-            except (RuntimeError, requests.RequestException) as e:
+            except RuntimeError as e:
                 if logger is not None:
                     logger.warning(str(e))
                 continue
@@ -81,7 +87,7 @@ class Network:
                     logger.debug(f"Getting external IP from {name}")
                 address = Network._call(endpoint=url)
                 break
-            except (RuntimeError, requests.RequestException) as e:
+            except RuntimeError as e:
                 if logger is not None:
                     logger.warning(str(e))
                 continue

@@ -1,4 +1,3 @@
-import requests
 import socket
 
 
@@ -55,6 +54,9 @@ class Janitor:
         return socket.gethostname()
 
     def _send_message(self, params: dict) -> int:
+        # Imported here: it is a heavy import that is only needed when sending.
+        import requests
+
         r = requests.post(f"{self._remote_url}/message", data=params, timeout=self._timeout)
         return r.status_code
 
