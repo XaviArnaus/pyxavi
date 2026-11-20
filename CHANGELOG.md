@@ -1,5 +1,17 @@
 # Changelog
 
+## [v1.4.0](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.4.0) - Unreleased
+
+### Fixed
+
+- `Storage.write_file()` is now atomic: the content is written to a temporary file that replaces the real one only when complete, so a crash or a power cut can't leave a half-written file that makes the next load fail. The permissions of the file are kept, and a symbolic link stays a link. The write also forces the content to the disk, which can be turned off with `Storage.FSYNC_ON_WRITE = False`.
+- `Storage` reads and writes files as UTF-8 and writes accents and other non-ASCII characters as they are, instead of as escape sequences (`"Això"` was written as `"Aix\xF2"`). Files already written with escapes are still read correctly.
+- `Config` no longer fails with an empty configuration file, neither loading it nor merging it (`merge_from_file()`): it is an empty configuration.
+
+### Changed
+
+- `Storage` uses the libyaml based YAML loader and dumper (written in C) when PyYAML has them, and the pure Python ones otherwise. Loading and dumping a file of some hundreds of KB is about 10 times faster. The data read and written is the same.
+
 ## [v1.3.1](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.3.1) - 2025-12-19
 
 ### Added

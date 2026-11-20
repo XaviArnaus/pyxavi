@@ -2,11 +2,12 @@ from unittest.mock import Mock, patch, call, mock_open
 from pyxavi import Config, Storage
 from unittest import TestCase
 import os
+import tempfile
 
 CONFIG = {"foo": {"bar": "hola", "foo2": {"bar2": "adios"}}, "que": "tal"}
 
 
-def patched_yaml_safe_load(stream):
+def patched_yaml_load(stream, Loader=None):
     return CONFIG
 
 
@@ -33,7 +34,7 @@ def test_initialize_config_without_params_exception():
         _ = Config()
 
 
-@patch("yaml.safe_load", new=patched_yaml_safe_load)
+@patch("yaml.load", new=patched_yaml_load)
 @patch("builtins.open", mock_open(read_data=""))
 @patch("os.path.exists", new=os_path_exists_true)
 def test_initialize_config_with_filename():
@@ -138,3 +139,45 @@ def test_merging_from_file_path_not_exists():
 
         with TestCase.assertRaises(config, RuntimeError):
             config.merge_from_file(filename="second.yaml")
+
+
+def test_empty_config_file_is_an_empty_config():
+    with tempfile.TemporaryDirectory() as folder:
+        filename = os.path.join(folder, "empty.yaml")
+        open(filename, "w").close()
+
+        config = Config(filename=filename)
+
+        assert config.get_all() == {}
+        assert config.get("any.thing") is None
+        assert config.get("any", "default") == "default"
+
+
+def test_empty_config_file_with_params_takes_the_params():
+    with tempfile.TemporaryDirectory() as folder:
+        filename = os.path.join(folder, "empty.yaml")
+        open(filename, "w").close()
+
+        config = Config(filename=filename, params=CONFIG)
+
+        assert config.get_all() == CONFIG
+
+
+def test_merging_from_an_empty_file_changes_nothing():
+    with tempfile.TemporaryDirectory() as folder:
+        filename = os.path.join(folder, "empty.yaml")
+        open(filename, "w").close()
+        config = Config(params=CONFIG)
+
+        config.merge_from_file(filename=filename)
+
+        assert config.get_all() == CONFIG
+
+
+def test_config_file_with_unicode_is_read_as_utf_8():
+    with tempfile.TemporaryDirectory() as folder:
+        filename = os.path.join(folder, "unicode.yaml")
+        with open(filename, "w", encoding="utf-8") as stream:
+            stream.write("greeting: Això és un cafè\n")
+
+        assert Config(filename=filename).get("greeting") == "Això és un cafè"

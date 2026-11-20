@@ -42,7 +42,8 @@ class Config(Storage):
             return
 
         if os.path.exists(self._filename):
-            self._content = super()._load_file_contents(self._filename)
+            # An empty file loads as None: that is an empty config, not a broken one.
+            self._content = super()._load_file_contents(self._filename) or {}
         else:
             raise RuntimeError(f"Config file [{self._filename}] not found")
 
@@ -51,7 +52,7 @@ class Config(Storage):
 
     def merge_from_file(self, filename: str) -> None:
         if os.path.exists(filename):
-            self.merge_from_dict(parameters=super()._load_file_contents(filename))
+            self.merge_from_dict(parameters=super()._load_file_contents(filename) or {})
         else:
             raise RuntimeError(f"Config file [{filename}] not found")
 
