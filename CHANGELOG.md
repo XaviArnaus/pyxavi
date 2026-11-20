@@ -7,6 +7,12 @@
 - `Storage.write_file()` is now atomic: the content is written to a temporary file that replaces the real one only when complete, so a crash or a power cut can't leave a half-written file that makes the next load fail. The permissions of the file are kept, and a symbolic link stays a link. The write also forces the content to the disk, which can be turned off with `Storage.FSYNC_ON_WRITE = False`.
 - `Storage` reads and writes files as UTF-8 and writes accents and other non-ASCII characters as they are, instead of as escape sequences (`"Això"` was written as `"Aix\xF2"`). Files already written with escapes are still read correctly.
 - `Config` no longer fails with an empty configuration file, neither loading it nor merging it (`merge_from_file()`): it is an empty configuration.
+- `Dictionary()` without content no longer shares one dict between instances: each one starts with its own empty content. An empty `{}` given as content is now kept as it is, not replaced.
+- `Dictionary.get()` gives the default value, instead of failing or returning a wrong item, for a negative list index out of range, for a path going below a value that is not a dict, and for an empty key part.
+- `Dictionary.set()` replaces a `None` parent with a dict when creating the missing keys, raises a `RuntimeError` when the parent is not a dict (it used to fail with a `TypeError`), and checks the bounds of negative list indexes.
+- `Dictionary.get_parent_path()` and `Dictionary.resolve_wildcards()` respect a custom path separator, instead of using `"."` in some places.
+- `Dictionary.merge()` gives a deterministic order of keys: the ones of the base, then the new ones. It used to change on every run.
+- `Dictionary.delete()` is annotated as returning a bool, which is what it returns.
 
 ### Changed
 

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from collections.abc import Mapping, MutableMapping
 from slugify import slugify
 import copy
 
@@ -37,13 +38,17 @@ class Dictionary:
 
     """
 
-    def __init__(self, content: dict = {}, path_separator_char=None) -> None:
-        self._content = content
+    def __init__(self, content: dict = None, path_separator_char=None) -> None:
+        # A new dict for every instance: the default can't be a shared one.
+        self._content = content if content is not None else {}
         self._separator = path_separator_char\
             if path_separator_char is not None else PATH_SEPARATOR_CHAR
 
     def _is_int(self, element: str) -> bool:
         """Check if the given element is an integer without converting it"""
+        if not element:
+            # An empty part of a path, like in "a..b" or "a.", is not a number.
+            return False
         if element[0] in ('-', '+'):
             return element[1:].isdecimal()
         return element.isdecimal()
@@ -72,7 +77,7 @@ class Dictionary:
                     item = int(item)
 
                     if isinstance(local_content, list) and\
-                       item < len(local_content) and\
+                       -len(local_content) <= item < len(local_content) and\
                        local_content[item] is not None:
                         # If exists and is not None we keep digging
                         local_content = local_content[item]
@@ -80,7 +85,11 @@ class Dictionary:
                         # Otherwise we just return the default value
                         return default_value
                 else:
-                    if item in local_content and local_content[item] is not None:
+                    # Only a dict can have this key. A string, a number, a list...
+                    #   in the middle of the path can't be dug into.
+                    if isinstance(local_content, Mapping) and\
+                       item in local_content and\
+                       local_content[item] is not None:
                         # If exists and is not None we keep digging
                         local_content = local_content[item]
                     else:
@@ -127,7 +136,7 @@ class Dictionary:
                         f" but its [{type(dictionary)}]"
                     )
 
-                if item < len(dictionary) and dictionary[item] is not None:
+                if -len(dictionary) <= item < len(dictionary) and dictionary[item] is not None:
                     self.__recursive_set(
                         param_name=self._separator.join(pieces[1:]),
                         value=value,
@@ -137,13 +146,15 @@ class Dictionary:
                     raise RuntimeError(
                         f"Dictionary path [{item}] is out of bounds for [{dictionary}]"
                     )
-            elif isinstance(dictionary, dict):
+            elif isinstance(dictionary, MutableMapping):
                 # The dictionary argument is a dict
 
-                # Now, the key may not exists.
-                if pieces[0] not in dictionary:
+                # Now, the key may not exists, or exist without a value (None).
+                if pieces[0] not in dictionary or dictionary[pieces[0]] is None:
                     # This is a set(), if the key doesn't exist, we create it as an empty dict
                     # This should solve the issue of setting into non-existing root paths
+                    # A None is also "nothing here": it is replaced, otherwise the value
+                    #   would be set into nowhere and silently lost.
                     dictionary[pieces[0]] = {}
 
                 # if pieces[0] not in dictionary:
@@ -171,9 +182,13 @@ class Dictionary:
                         f" but its [{type(dictionary)}]"
                     )
 
-                if param_name < len(dictionary):
+                if -len(dictionary) <= param_name < len(dictionary):
                     # Normal set. Possibly an overwrite.
                     dictionary[param_name] = value
+                elif param_name < 0:
+                    raise RuntimeError(
+                        f"Dictionary path [{param_name}] is out of bounds for [{dictionary}]"
+                    )
                 else:
                     # So it is an append or a set out of bounds
                     #   Let's fill with None until the desired index
@@ -183,10 +198,13 @@ class Dictionary:
                         else:
                             dictionary.append(value if idx == param_name else None)
             else:
-                if dictionary is not None:
-                    dictionary[param_name] = value
-                else:
-                    dictionary = {param_name: value}
+                if not isinstance(dictionary, MutableMapping):
+                    # Nowhere to put a key: a string, a number, a list...
+                    raise RuntimeError(
+                        f"Dictionary path [{param_name}] can't be set in " +
+                        f"[{dictionary}], as it is not a dict"
+                    )
+                dictionary[param_name] = value
 
     def set(self, param_name: str, value: any = None, slugify_param_name=False) -> None:
         """
@@ -194,10 +212,13 @@ class Dictionary:
 
         If the final key's parent does not exist, it sets it new
         If the final key's parent exists and is a dict, it adds a new key with the value
-        If the final key's parent exists and is not a dict, overwrites it with a dict
+        If the final key's parent exists but has no value (None), it is replaced with a dict
             consisting of the new key with the value
+        If the final key's parent exists and has any other value (a string, a number,
+            a list...) that is not a dict, it complains. It never overwrites a value.
 
-        Raises a RuntimeError if any of the keys in the param_name does not exist
+        Raises a RuntimeError if any of the keys in the param_name does not exist,
+            or if the final key's parent is not a dict.
         Raises a ValueError if a key from the param_name is an index but the parent is
             not a list.
 
@@ -251,7 +272,9 @@ class Dictionary:
         Returns the all the path without the last key of the param_name
         """
         if slugify_param_name:
-            param_name = ".".join([slugify(part) for part in param_name.split(".")])
+            param_name = self._separator.join(
+                [slugify(part) for part in param_name.split(self._separator)]
+            )
 
         return self._separator.join(param_name.split(self._separator)[:-1])\
             if param_name.find(self._separator) > 0 else None
@@ -274,9 +297,11 @@ class Dictionary:
         else:
             return self._content
 
-    def delete(self, param_name: str, slugify_param_name=False) -> None:
+    def delete(self, param_name: str, slugify_param_name=False) -> bool:
         """
         Deletes the given param_name path key
+
+        Returns True if the key existed and was deleted, False otherwise.
         """
         param_name = self._slugify_param_name_if_needed(param_name, slugify_param_name)
 
@@ -398,9 +423,12 @@ class Dictionary:
 
     @staticmethod
     def _merge_complex_recursive(base_dict: dict, over_dict: dict) -> dict:
+        # The order of the keys is deterministic: first the ones of the base, in its order,
+        #   then the new ones of the over dict, in its order. Iterating over a set
+        #   gave a different order in every run.
         merged_dict = {}
-        for key in set(base_dict) | set(over_dict):
-            if key in base_dict and key in over_dict:
+        for key in base_dict:
+            if key in over_dict:
                 if isinstance(base_dict[key], list) and isinstance(over_dict[key], list):
                     merged_dict[key] = base_dict[key] + over_dict[key]
                 elif isinstance(base_dict[key], dict) and isinstance(over_dict[key], dict):
@@ -409,9 +437,10 @@ class Dictionary:
                     )
                 else:
                     merged_dict[key] = over_dict[key]
-            elif key in base_dict:
-                merged_dict[key] = copy.deepcopy(base_dict[key])
             else:
+                merged_dict[key] = copy.deepcopy(base_dict[key])
+        for key in over_dict:
+            if key not in base_dict:
                 merged_dict[key] = copy.deepcopy(over_dict[key])
         return merged_dict
 
@@ -458,7 +487,7 @@ class Dictionary:
         # Get the portions between the '#' and clean them (to avoid starting or ending with ".")
         portions = param_name.split(LIST_HORIZONTAL_RESOLVING_CHAR)
         portions = [
-            portion.removeprefix(PATH_SEPARATOR_CHAR).removesuffix(PATH_SEPARATOR_CHAR)
+            portion.removeprefix(self._separator).removesuffix(self._separator)
             for portion in portions
         ]
 
@@ -474,14 +503,14 @@ class Dictionary:
         # And walk through all iterations in that list.
         #   Because it MUST be a list
         for key in keys_in_portion:
-            path = f"{portion}{PATH_SEPARATOR_CHAR}{key}"
+            path = f"{portion}{self._separator}{key}"
 
-            portions_path = f"{PATH_SEPARATOR_CHAR}"
+            portions_path = f"{self._separator}"
             portions_path = f"{portions_path}{LIST_HORIZONTAL_RESOLVING_CHAR}"
-            portions_path = f"{portions_path}{PATH_SEPARATOR_CHAR}"
+            portions_path = f"{portions_path}{self._separator}"
             portions_path = portions_path.join(portions)
             if portions_path:
-                path = f"{path}{PATH_SEPARATOR_CHAR}{portions_path}"
+                path = f"{path}{self._separator}{portions_path}"
 
             if Dictionary.needs_resolving(path):
                 # We still have more "#", go deeper.
