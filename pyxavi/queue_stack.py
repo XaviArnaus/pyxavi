@@ -85,15 +85,24 @@ class Queue:
 
     def deduplicate(self, param: str = None) -> None:
         self._logger.debug("Deduplicating queue")
-        uniques_queue = []
+        # Hashable values are looked up in a set (fast). The ones that are not hashable,
+        #   like a list or a dict, are compared one by one in a list, as it always was.
+        seen_hashable = set()
+        seen_unhashable = []
         output_queue = []
         for item in self._queue:
             unique = item.unique_value(param=param)
             if unique is None:
                 raise RuntimeError("The unique value can't be None while deduplicating.")
-            if unique not in uniques_queue:
-                output_queue.append(item)
-                uniques_queue.append(unique)
+            try:
+                if unique in seen_hashable:
+                    continue
+                seen_hashable.add(unique)
+            except TypeError:
+                if unique in seen_unhashable:
+                    continue
+                seen_unhashable.append(unique)
+            output_queue.append(item)
         self._queue = output_queue
 
     def save(self) -> None:

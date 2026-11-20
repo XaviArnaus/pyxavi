@@ -3,6 +3,7 @@ from unittest.mock import patch, Mock
 import pytest
 from logging import Logger
 from datetime import datetime
+import time
 
 
 @pytest.fixture
@@ -241,3 +242,47 @@ def test_last(queue_item_1, queue_item_2, queue_item_3):
 
     assert queue_item, queue_item_3
     assert len(queue.get_all()), 3
+
+
+def test_deduplicate_keeps_the_first_of_each_value_in_order():
+    queue = Queue()
+    for text in ["b", "a", "b", "c", "a"]:
+        queue.append(SimpleQueueItem({"text": text, "n": len(queue.get_all())}))
+
+    queue.deduplicate(param="text")
+
+    assert [i.to_dict() for i in queue.get_all()] == [
+        {"text": "b", "n": 0}, {"text": "a", "n": 1}, {"text": "c", "n": 3}
+    ]
+
+
+def test_deduplicate_supports_values_that_are_not_hashable():
+    queue = Queue()
+    for value in [[1, 2], {"a": 1}, [1, 2], {"a": 1}, "x", [3]]:
+        queue.append(SimpleQueueItem({"v": value}))
+
+    queue.deduplicate(param="v")
+
+    assert [i.to_dict()["v"] for i in queue.get_all()] == [[1, 2], {"a": 1}, "x", [3]]
+
+
+def test_deduplicate_raises_with_a_none_value():
+    queue = Queue()
+    queue.append(SimpleQueueItem({"v": 1}))
+    queue.append(SimpleQueueItem({"other": 1}))
+
+    with pytest.raises(RuntimeError):
+        queue.deduplicate(param="v")
+
+
+def test_deduplicate_a_big_queue_is_fast():
+    queue = Queue()
+    for i in range(20000):
+        queue.append(SimpleQueueItem({"v": i % 10000}))
+
+    started = time.perf_counter()
+    queue.deduplicate(param="v")
+
+    assert queue.length() == 10000
+    # A very generous limit, just to catch a return to a quadratic behaviour.
+    assert time.perf_counter() - started < 2

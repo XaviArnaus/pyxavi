@@ -36,6 +36,7 @@
 - `Logger` has its own list of handlers per instance instead of one shared by the class.
 - `PIDTimedRotateFileHandler` now respects `interval`, `delay` and `errors` (they were ignored), and `PIDFileHandler` accepts and respects `errors`.
 - `full_stack()` removes the traceback header with `removeprefix()` instead of `lstrip()`, which removes any of the chars of the header. The output is the same.
+- `Queue.deduplicate()` is no longer quadratic: it looks the unique values up in a set (values that are not hashable are still compared one by one). The result and the order are the same.
 
 ## [v1.3.1](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.3.1) - 2025-12-19
 
