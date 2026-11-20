@@ -16,6 +16,7 @@
 
 ### Changed
 
+- The minimum Python version is now 3.11 (it was 3.9), as 3.9 is no longer supported by GitHub Actions.
 - `Storage` uses the libyaml based YAML loader and dumper (written in C) when PyYAML has them, and the pure Python ones otherwise. Loading and dumping a file of some hundreds of KB is about 10 times faster. The data read and written is the same.
 
 ## [v1.3.1](https://github.com/XaviArnaus/pyxavi/releases/tag/v1.3.1) - 2025-12-19
