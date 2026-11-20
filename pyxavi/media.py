@@ -17,32 +17,44 @@ class Media:
         soup = BeautifulSoup(text, 'html.parser')
         img = soup.select('img')
         if img:
-            return [{"url": i['src'], "alt_text": i.get('alt', None)} for i in img if i['src']]
+            # An img without src is skipped
+            found = [
+                {
+                    "url": i['src'], "alt_text": i.get('alt', None)
+                } for i in img if i.get('src')
+            ]
+            return found if found else None
         else:
             return None
 
-    def download_from_url(self, url: str, destination_path: str) -> dict:
+    def download_from_url(self, url: str, destination_path: str, timeout: float = 30) -> dict:
         parsed_url = urlparse(url)
 
         result = {
-            "file": destination_path.strip("/") + "/" + os.path.basename(parsed_url.path),
+            "file": os.path.join(destination_path, os.path.basename(parsed_url.path)),
             "mime_type": None
         }
 
-        with open(result["file"], 'wb') as handle:
-            # Download
-            response = requests.get(url, stream=True, allow_redirects=True)
+        # Download first and check the response, so a failure does not leave an empty file.
+        with requests.get(url, stream=True, allow_redirects=True, timeout=timeout) as response:
 
             # Check the response and raise if not OK
             if not response.ok:
                 raise RuntimeError(response)
 
-            # Write the binary
-            for block in response.iter_content(1024):
-                if not block:
-                    break
+            try:
+                with open(result["file"], 'wb') as handle:
+                    # Write the binary
+                    for block in response.iter_content(1024):
+                        if not block:
+                            break
 
-                handle.write(block)
+                        handle.write(block)
+            except BaseException:
+                # Do not leave a half downloaded file behind
+                if os.path.exists(result["file"]):
+                    os.remove(result["file"])
+                raise
 
         # Get the Mime type from the binary
         discovered_mime = mimetypes.guess_type(url)

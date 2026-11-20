@@ -1,4 +1,5 @@
 from pyxavi import Network, EXTERNAL_SERVICE_IPv4, EXTERNAL_SERVICE_IPv6
+from pyxavi.network import DEFAULT_TIMEOUT
 from unittest.mock import Mock, patch, call
 import pytest
 import logging
@@ -52,7 +53,9 @@ def test_get_external_ipv4_first_call_success_no_log():
         with patch.object(Network, "is_valid_ipv4", new=mocked_validator):
             address = Network.get_external_ipv4()
 
-            mocked_requests_request.assert_called_once_with(EXTERNAL_SERVICE_IPv4["ipfy IPv4"])
+            mocked_requests_request.assert_called_once_with(
+                EXTERNAL_SERVICE_IPv4["ipfy IPv4"], timeout=DEFAULT_TIMEOUT
+            )
 
             assert address == test_address
 
@@ -82,7 +85,7 @@ def test_get_external_ipv4_first_call_success_with_log():
                 address = Network.get_external_ipv4(logger=logger)
 
                 mocked_requests_request.assert_called_once_with(
-                    EXTERNAL_SERVICE_IPv4["ipfy IPv4"]
+                    EXTERNAL_SERVICE_IPv4["ipfy IPv4"], timeout=DEFAULT_TIMEOUT
                 )
 
                 mocked_logger_debug.assert_has_calls(
@@ -121,8 +124,8 @@ def test_get_external_ipv4_second_call_success_no_log():
 
             mocked_requests_request.assert_has_calls(
                 [
-                    call(EXTERNAL_SERVICE_IPv4["ipfy IPv4"]),
-                    call(EXTERNAL_SERVICE_IPv4["ident.me IPv4"])
+                    call(EXTERNAL_SERVICE_IPv4["ipfy IPv4"], timeout=DEFAULT_TIMEOUT),
+                    call(EXTERNAL_SERVICE_IPv4["ident.me IPv4"], timeout=DEFAULT_TIMEOUT)
                 ]
             )
 
@@ -160,8 +163,10 @@ def test_get_external_ipv4_second_call_success_with_log():
 
                     mocked_requests_request.assert_has_calls(
                         [
-                            call(EXTERNAL_SERVICE_IPv4["ipfy IPv4"]),
-                            call(EXTERNAL_SERVICE_IPv4["ident.me IPv4"])
+                            call(EXTERNAL_SERVICE_IPv4["ipfy IPv4"], timeout=DEFAULT_TIMEOUT),
+                            call(
+                                EXTERNAL_SERVICE_IPv4["ident.me IPv4"], timeout=DEFAULT_TIMEOUT
+                            )
                         ]
                     )
 
@@ -203,7 +208,7 @@ def test_get_external_ipv6_first_call_success_no_log():
             address = Network.get_external_ipv6()
 
             mocked_requests_request.assert_called_once_with(
-                EXTERNAL_SERVICE_IPv6["ident.me IPv6"]
+                EXTERNAL_SERVICE_IPv6["ident.me IPv6"], timeout=DEFAULT_TIMEOUT
             )
 
             assert address == test_address
@@ -234,7 +239,7 @@ def test_get_external_ipv6_second_call_success_with_log():
                 address = Network.get_external_ipv6(logger=logger)
 
                 mocked_requests_request.assert_called_once_with(
-                    EXTERNAL_SERVICE_IPv6["ident.me IPv6"]
+                    EXTERNAL_SERVICE_IPv6["ident.me IPv6"], timeout=DEFAULT_TIMEOUT
                 )
 
                 mocked_logger_debug.assert_has_calls(
@@ -245,3 +250,38 @@ def test_get_external_ipv6_second_call_success_with_log():
                 )
 
                 assert address == test_address
+
+
+class _FakeResponse:
+
+    def __init__(self, status_code=200, text="", reason=""):
+        self.status_code = status_code
+        self.text = text
+        self.reason = reason
+
+
+def test_get_external_ipv4_strips_the_trailing_new_line():
+    with patch.object(requests, "get", new=Mock(return_value=_FakeResponse(text="1.2.3.4\n"))):
+        assert Network.get_external_ipv4() == "1.2.3.4"
+
+
+def test_get_external_ipv4_tries_the_next_service_on_timeouts_and_connection_errors():
+    answers = [
+        requests.exceptions.ConnectTimeout("slow"),
+        requests.exceptions.ConnectionError("down"),
+        _FakeResponse(text="1.2.3.4"),
+    ]
+    with patch.object(requests, "get", new=Mock(side_effect=answers)):
+        assert Network.get_external_ipv4() == "1.2.3.4"
+
+
+def test_get_external_ipv4_gives_none_when_every_service_fails():
+    failure = requests.exceptions.ConnectionError("down")
+    with patch.object(requests, "get", new=Mock(side_effect=failure)):
+        assert Network.get_external_ipv4() is None
+
+
+def test_get_external_ipv6_gives_none_when_every_service_fails():
+    failure = requests.exceptions.ReadTimeout("slow")
+    with patch.object(requests, "get", new=Mock(side_effect=failure)):
+        assert Network.get_external_ipv6() is None

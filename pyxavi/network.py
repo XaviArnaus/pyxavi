@@ -12,6 +12,9 @@ EXTERNAL_SERVICE_IPv6 = {
     "ident.me IPv6": "https://v6.ident.me/",
 }
 
+# Seconds to wait for an external service before trying with the next one
+DEFAULT_TIMEOUT = 10
+
 
 class Network:
 
@@ -36,10 +39,11 @@ class Network:
             return False
 
     @staticmethod
-    def _call(endpoint: str) -> str:
-        response = requests.get(endpoint)
+    def _call(endpoint: str, timeout: float = DEFAULT_TIMEOUT) -> str:
+        response = requests.get(endpoint, timeout=timeout)
         if response.status_code == 200:
-            return response.text
+            # Some services end the address with a new line
+            return response.text.strip()
         else:
             raise RuntimeError(
                 f"{endpoint} answered with an error -> " +
@@ -55,7 +59,7 @@ class Network:
                     logger.debug(f"Getting external IP from {name}")
                 address = Network._call(endpoint=url)
                 break
-            except RuntimeError as e:
+            except (RuntimeError, requests.RequestException) as e:
                 if logger is not None:
                     logger.warning(str(e))
                 continue
@@ -77,7 +81,7 @@ class Network:
                     logger.debug(f"Getting external IP from {name}")
                 address = Network._call(endpoint=url)
                 break
-            except RuntimeError as e:
+            except (RuntimeError, requests.RequestException) as e:
                 if logger is not None:
                     logger.warning(str(e))
                 continue

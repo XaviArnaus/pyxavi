@@ -17,6 +17,13 @@
 - `Stopwatch.reset()` (and so `start()` on an existing name) deleted the whole running stopwatches attribute instead of the one stopwatch, breaking the instance.
 - `Stopwatch.start()` without a name no longer fails: it uses a generated UUID as the name.
 - `Stopwatch` instances no longer share their stopwatches (they were class attributes): each instance has its own.
+- `Network.get_external_ipv4()` and `get_external_ipv6()` no longer crash on a timeout or a connection error: they try the next service and give `None` if all fail. The calls have a timeout (`DEFAULT_TIMEOUT`, 10 seconds) and the trailing new line of the answer is removed.
+- `Janitor` has a timeout when sending messages, so an unreachable Janitor can't block the caller forever. It is the new optional parameter `timeout` (10 seconds by default).
+- `Media.download_from_url()` works with absolute destination paths (the leading `/` was stripped), does not leave an empty or half downloaded file when the download fails, and has a timeout, the new optional parameter `timeout` (30 seconds by default).
+- `Media.get_image_url_from_text()` no longer fails with an `img` without `src`.
+- `Url.clean()` now removes the `netloc` when asked to (it did nothing). The result for `netloc` is e.g. `http:///a/path.html`.
+- `Url.ensure_absolute()` resolves the relative URL against the base properly (`feed.xml` gave `https://base.comfeed.xml`).
+- `Url.findfeeds()` has a timeout, the new optional parameter `timeout` (15 seconds by default), keeps the port of the site for relative feeds and does not print to the standard output.
 
 ### Changed
 

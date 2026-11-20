@@ -14,6 +14,8 @@ class Janitor:
     - `hostname` [str, optional] the string that will identify the
         messages sender. If none comes it will discover the hostname
         of the machine.
+    - `timeout` [float, optional] seconds to wait for Janitor to answer.
+        Defaults to 10.
 
     :Authors:
         Xavier Arnaus <xavi@arnaus.net>
@@ -38,9 +40,11 @@ class Janitor:
 
     _remote_url: str = None
     _hostname: str = None
+    _timeout: float = 10
 
-    def __init__(self, remote_url: str, hostname: str = None) -> None:
+    def __init__(self, remote_url: str, hostname: str = None, timeout: float = 10) -> None:
         self._remote_url = remote_url
+        self._timeout = timeout
 
         if hostname is None:
             self._hostname = self._get_hostname()
@@ -51,7 +55,7 @@ class Janitor:
         return socket.gethostname()
 
     def _send_message(self, params: dict) -> int:
-        r = requests.post(f"{self._remote_url}/message", data=params)
+        r = requests.post(f"{self._remote_url}/message", data=params, timeout=self._timeout)
         return r.status_code
 
     def log(self, message: str, summary: str = None) -> int:

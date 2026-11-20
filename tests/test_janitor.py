@@ -88,4 +88,17 @@ def test_messaging(call, message_type, message, summary, expected_result):
             result = instance.alarm(message=message, summary=summary)
 
     assert result == expected_result
-    mocked_requests_post.assert_called_once_with(f"{remote_url}/message", data=expected_params)
+    mocked_requests_post.assert_called_once_with(
+        f"{remote_url}/message", data=expected_params, timeout=10
+    )
+
+
+def test_timeout_is_configurable():
+    mocked_requests_post = Mock()
+    mocked_requests_post.return_value = Mock(status_code=200)
+    instance = Janitor(remote_url="http://janitor", hostname="h", timeout=3)
+
+    with patch.object(requests, "post", new=mocked_requests_post):
+        instance.info("hi")
+
+    assert mocked_requests_post.call_args.kwargs["timeout"] == 3

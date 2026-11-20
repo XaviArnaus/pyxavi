@@ -23,7 +23,7 @@ import feedparser
             "http://domain.com/a/path.html?query=string#anchor", {
                 "netloc": True
             },
-            "http://domain.com/a/path.html?query=string#anchor"
+            "http:///a/path.html?query=string#anchor"
         ),
         (
             "http://domain.com/a/path.html?query=string#anchor", {
@@ -468,3 +468,38 @@ def test_findfeeds(
         with patch.object(requests, "get", new=mocked_requests_get):
             with patch.object(feedparser, "parse", new=mocked_feedparse):
                 assert Url.findfeeds(url=url) == expected_result
+
+
+@pytest.mark.parametrize(
+    argnames=('url', 'base', 'expected_result'),
+    argvalues=[
+        ("https://other.com/feed.xml", "https://base.com", "https://other.com/feed.xml"),
+        ("/feed.xml", "https://base.com", "https://base.com/feed.xml"),
+        ("feed.xml", "https://base.com", "https://base.com/feed.xml"),
+        ("//cdn.base.com/feed.xml", "https://base.com", "https://cdn.base.com/feed.xml"),
+        ("/feed.xml", "https://base.com:8080", "https://base.com:8080/feed.xml"),
+    ],
+)
+def test_ensure_absolute(url, base, expected_result):
+    assert Url.ensure_absolute(url=url, base=base) == expected_result
+
+
+def test_findfeeds_uses_timeouts_and_keeps_the_port_for_relative_feeds(capsys):
+
+    class FakeResponse:
+        url = "https://site.com:8443/page"
+        text = '<html><head><link rel="alternate" type="application/rss+xml" href="/rss.xml">' \
+            '</head></html>'
+
+    mocked_head = Mock(return_value=FakeResponse())
+    mocked_get = Mock(return_value=FakeResponse())
+    with patch.object(requests, "head", new=mocked_head):
+        with patch.object(requests, "get", new=mocked_get):
+            with patch.object(Url, "is_a_valid_feed", new=lambda url: True):
+                result = Url.findfeeds("https://site.com:8443/page", timeout=7)
+
+    assert result == ["https://site.com:8443/rss.xml"]
+    assert mocked_head.call_args.kwargs["timeout"] == 7
+    assert mocked_get.call_args.kwargs["timeout"] == 7
+    # Nothing is printed to the standard output
+    assert capsys.readouterr().out == ""
